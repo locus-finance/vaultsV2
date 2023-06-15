@@ -4,7 +4,6 @@ require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
 require('@nomiclabs/hardhat-truffle5');
 require('@nomiclabs/hardhat-ethers');
-require("@nomiclabs/hardhat-vyper");
 require('hardhat-gas-reporter');
 require('hardhat-log-remover');
 require('hardhat-abi-exporter');
@@ -233,12 +232,6 @@ task("flat", "Flattens and prints contracts and their dependencies")
             output
         })
     )
-});
-
-subtask("compile:vyper:get-source-names").setAction(async (_, __, runSuper) => {
-    const paths = await runSuper();
-    paths.push("lib/yearn-vaults/contracts/Vault.vy");
-    return paths;
 });
 
 subtask("compile:solidity:transform-import-name").setAction(
