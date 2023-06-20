@@ -11,3 +11,4 @@ cache
 cache_hardhat
 artifacts
 process.env
+deployments

@@ -7,6 +7,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 interface ISgBridge {
     error TokenNotSupported(address token, uint16 destChainId);
     error DestinationNotSupported(uint16 destChainId);
+    error ReceiveForbidden(address sender);
 
     event Bridge(uint16 indexed chainId, uint256 amount);
     event SgReceived(address indexed token, uint256 amount, bool success);

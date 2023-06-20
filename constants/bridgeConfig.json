@@ -1,0 +1,18 @@
+{
+    "goerli": {
+        "chainId": 10121,
+        "USDC": {
+            "address": "0xDf0360Ad8C5ccf25095Aa97ee5F2785c8d848620",
+            "poolId": 1
+        },
+        "sgBridge": "0xe5bb8e93E2d7C1670F35B5Ee7929D5964ACF5F3b"
+    },
+    "fujiavax": {
+        "chainId": 10106,
+        "USDC": {
+            "address": "0x4A0D1092E9df255cf95D72834Ea9255132782318",
+            "poolId": 1
+        },
+        "sgBridge": "0x0eAaDb50167702993fe0b4d5Cce7d6a3C1572109"
+    }
+}

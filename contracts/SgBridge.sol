@@ -49,7 +49,7 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
         uint16 chainId,
         uint256 poolId
     ) external override onlyOwner {
-        IERC20(token).safeApprove(address(router), type(uint256).max);
+        IERC20(token).approve(address(router), type(uint256).max);
         poolIds[token][chainId] = poolId;
     }
 
@@ -107,7 +107,9 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
         uint256 amountLD,
         bytes memory payload
     ) external override {
-        require(msg.sender == address(router), "SgBridge::Forbidden");
+        if (msg.sender != address(router)) {
+            revert ReceiveForbidden(msg.sender);
+        }
 
         (address toAddr, bytes memory message) = abi.decode(
             payload,
