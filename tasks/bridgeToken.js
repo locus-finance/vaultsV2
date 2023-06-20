@@ -1,9 +1,9 @@
 const { utils } = require("ethers");
 
 const bridgeConfig = require("../constants/bridgeConfig.json");
+const stargateRouters = require("../constants/stargateRouters.json");
 
 const TOKEN = "USDC";
-
 const IERC20_SOURCE = "@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20";
 
 module.exports = async function (taskArgs, hre) {
@@ -17,26 +17,37 @@ module.exports = async function (taskArgs, hre) {
         bridgeConfig[networkName][TOKEN].address
     );
 
-    console.log(
-        await sgBridge.poolIds(token.address, bridgeConfig[networkName].chainId)
-    );
-    console.log(
-        await sgBridge.poolIds(
-            token.address,
-            bridgeConfig[destinationChain].chainId
-        )
-    );
-    return;
+    await token
+        .approve(sgBridge.address, ethers.constants.MaxUint256)
+        .then((tx) => tx.wait());
 
-    await token.approve(sgBridge.address, ethers.constants.MaxUint256);
-    await sgBridge.bridge(
-        token.address,
-        utils.parseEther("10"),
+    const startgateRouter = await ethers.getContractAt(
+        "IStargateRouter",
+        stargateRouters[networkName]
+    );
+    const dstGasForCall = await sgBridge.dstGasForCall();
+    const [feeWei] = await startgateRouter.quoteLayerZeroFee(
         bridgeConfig[destinationChain].chainId,
+        /* functionType= */ 1,
         destinationAddr,
         "0x",
         {
-            value: utils.parseEther("1"),
+            dstGasForCall,
+            dstNativeAmount: 0,
+            dstNativeAddr: sgBridge.address,
         }
     );
+
+    await sgBridge
+        .bridge(
+            token.address,
+            utils.parseEther("10"),
+            bridgeConfig[destinationChain].chainId,
+            destinationAddr,
+            "0x",
+            {
+                value: feeWei.mul(3),
+            }
+        )
+        .then((tx) => tx.wait());
 };
