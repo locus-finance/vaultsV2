@@ -9,6 +9,8 @@ import {ISgBridge} from "./interfaces/ISgBridge.sol";
 import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 
 abstract contract BaseStrategy is IStrategyMessages, NonblockingLzApp {
+    error InsufficientFunds(uint256 amount, uint256 balance);
+
     modifier onlyStrategist() {
         _onlyStrategist();
         _;
@@ -43,8 +45,8 @@ abstract contract BaseStrategy is IStrategyMessages, NonblockingLzApp {
 
     function reportTotalAssets() public virtual onlyStrategist {
         bytes memory payload = abi.encode(
-            MessageType.ReportTotalAssets,
-            ReportTotalAssetsMessage({
+            MessageType.ReportTotalAssetsResponse,
+            ReportTotalAssetsResponse({
                 timestamp: block.timestamp,
                 totalAssets: estimatedTotalAssets()
             })
@@ -61,6 +63,11 @@ abstract contract BaseStrategy is IStrategyMessages, NonblockingLzApp {
             false,
             bytes("")
         );
+
+        if (address(this).balance < nativeFee) {
+            revert InsufficientFunds(nativeFee, address(this).balance);
+        }
+
         lzEndpoint.send{value: nativeFee}(
             vaultChainId,
             remoteAndLocalAddresses,
@@ -87,9 +94,58 @@ abstract contract BaseStrategy is IStrategyMessages, NonblockingLzApp {
     function _nonblockingLzReceive(
         uint16 _srcChainId,
         bytes memory _srcAddress,
-        uint64 _nonce,
+        uint64,
         bytes memory _payload
-    ) internal override {}
+    ) internal override {
+        require(
+            _srcChainId == vaultChainId,
+            "BaseStrategy::VaultChainIdMismatch"
+        );
+        require(
+            keccak256(_srcAddress) ==
+                keccak256(trustedRemoteLookup[_srcChainId]),
+            "BaseStrategy::TrustedAddressMismatch"
+        );
+
+        MessageType _messageType = abi.decode(_payload, (MessageType));
+        if (_messageType == MessageType.WithdrawSomeRequest) {
+            (, WithdrawSomeRequest memory _message) = abi.decode(
+                _payload,
+                (uint256, WithdrawSomeRequest)
+            );
+            (uint256 _liquidatedAmount, uint256 _loss) = _liquidatePosition(
+                _message.amount
+            );
+            sgBridge.bridge(
+                address(want),
+                _liquidatedAmount,
+                vaultChainId,
+                vault,
+                abi.encode(
+                    WithdrawSomeResponse({
+                        amount: _liquidatedAmount,
+                        loss: _loss,
+                        id: _message.id
+                    })
+                )
+            );
+        } else if (_messageType == MessageType.WithdrawAllRequest) {
+            (, WithdrawAllRequest memory _message) = abi.decode(
+                _payload,
+                (uint256, WithdrawAllRequest)
+            );
+            uint256 _amountFreed = _liquidateAllPositions();
+            sgBridge.bridge(
+                address(want),
+                _amountFreed,
+                vaultChainId,
+                vault,
+                abi.encode(
+                    WithdrawAllResponse({amount: _amountFreed, id: _message.id})
+                )
+            );
+        }
+    }
 
     receive() external payable {}
 }

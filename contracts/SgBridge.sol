@@ -111,13 +111,10 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
             revert ReceiveForbidden(msg.sender);
         }
 
-        (address toAddr, bytes memory message) = abi.decode(
-            payload,
-            (address, bytes)
-        );
+        (address toAddr, ) = abi.decode(payload, (address, bytes));
 
         IERC20(token).safeTransfer(toAddr, amountLD);
-        (bool success, ) = toAddr.call(message);
+        (bool success, ) = toAddr.call(msg.data);
 
         emit SgReceived(token, amountLD, success);
     }
