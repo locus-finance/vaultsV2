@@ -2,51 +2,46 @@
 
 pragma solidity ^0.8.18;
 
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
 struct StrategyParams {
     uint256 performanceFee;
     uint256 activation;
     uint256 debtRatio;
-    uint256 lastReport;
     uint256 totalDebt;
     uint256 totalGain;
     uint256 totalLoss;
+    uint256 lastReport;
     uint256 lastReportedTotalAssets;
 }
 
-interface IVault is IERC4626 {
-    function name() external view returns (string calldata);
+interface IVault {
+    event SgReceived(address indexed token, uint256 amount, address sender);
 
-    function symbol() external view returns (string calldata);
-
-    function initialize(
-        address token,
-        address governance,
-        address rewards,
-        string memory name,
-        string memory symbol
-    ) external;
+    function totalAssets() external view returns (uint256, uint256);
 
     function addStrategy(
+        uint16 _chainId,
         address _strategy,
         uint256 _debtRatio,
         uint256 _performanceFee
     ) external;
 
-    function token() external view returns (address);
+    function token() external view returns (IERC20);
+
+    function handleDeposits() external;
 
     function handleWithdrawals() external;
 
-    function strategies(
+    function viewStrategy(
+        uint16 _chainId,
         address _strategy
     ) external view returns (StrategyParams memory);
 
     function pricePerShare() external view returns (uint256);
 
-    function totalAssets() external view returns (uint256);
-
-    function revokeStrategy(address strategy) external;
+    function revokeStrategy(uint16 _chainId, address _strategy) external;
 
     function governance() external view returns (address);
 }
