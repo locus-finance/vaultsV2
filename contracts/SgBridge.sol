@@ -19,6 +19,12 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
 
     mapping(address => mapping(uint16 => uint256)) public poolIds;
     mapping(uint16 => address) public supportedDestinations;
+    mapping(address => bool) public whitelisted;
+
+    modifier onlyWhitelisted() {
+        require(whitelisted[msg.sender], "SgBridge:NotWhitelisted");
+        _;
+    }
 
     function initialize(address _router) public override initializer {
         __Ownable_init();
@@ -30,6 +36,10 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
 
     function setSlippage(uint256 _slippage) external override onlyOwner {
         slippage = _slippage;
+    }
+
+    function setWhitelist(address _address) external onlyOwner {
+        whitelisted[_address] = true;
     }
 
     function setDstGasForCall(
@@ -66,7 +76,7 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
         uint16 destChainId,
         address destinationAddress,
         bytes memory message
-    ) external payable override {
+    ) external payable override onlyWhitelisted {
         uint256 destinationPool = poolIds[token][destChainId];
         if (destinationPool == 0) {
             revert TokenNotSupported(token, destChainId);
@@ -88,13 +98,46 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
             revert DestinationNotSupported(destChainId);
         }
 
+        bytes memory payload = abi.encode(destinationAddress, message);
+        _bridgeInternal(
+            amount,
+            sourcePool,
+            destChainId,
+            destinationPool,
+            receiveContract,
+            payload
+        );
+    }
+
+    function send(
+        address token,
+        uint256 amount,
+        uint16 destChainId,
+        address destinationAddress,
+        bytes memory message
+    ) external payable override onlyWhitelisted {
+        uint256 destinationPool = poolIds[token][destChainId];
+        if (destinationPool == 0) {
+            revert TokenNotSupported(token, destChainId);
+        }
+
+        uint256 sourcePool = poolIds[token][currentChainId];
+        if (sourcePool == 0) {
+            revert TokenNotSupported(token, currentChainId);
+        }
+
+        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
+        if (currentChainId == destChainId) {
+            IERC20(token).safeTransfer(destinationAddress, amount);
+            return;
+        }
+
         _bridgeInternal(
             amount,
             sourcePool,
             destChainId,
             destinationPool,
             destinationAddress,
-            receiveContract,
             message
         );
     }
@@ -124,14 +167,20 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
         uint256 srcPoolId,
         uint16 destChainId,
         uint256 destinationPoolId,
-        address destinationAddress,
         address destinationContract,
-        bytes memory message
+        bytes memory payload
     ) internal {
-        bytes memory payload = abi.encode(destinationAddress, message);
         uint256 withSlippage = (amount * slippage) / 10_000;
 
-        router.swap{value: msg.value}(
+        (uint256 fee, ) = router.quoteLayerZeroFee(
+            destChainId,
+            /* _functionType */ 1,
+            abi.encodePacked(destinationContract),
+            payload,
+            _getLzParams()
+        );
+
+        router.swap{value: fee}(
             destChainId,
             srcPoolId,
             destinationPoolId,
@@ -158,4 +207,6 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
                 dstNativeAddr: abi.encode(address(this))
             });
     }
+
+    receive() external payable {}
 }

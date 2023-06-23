@@ -10,6 +10,7 @@ import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 
 abstract contract BaseStrategy is IStrategyMessages, NonblockingLzApp {
     error InsufficientFunds(uint256 amount, uint256 balance);
+    error IncorrectMessageType(uint256 messageType);
 
     modifier onlyStrategist() {
         _onlyStrategist();
@@ -47,6 +48,7 @@ abstract contract BaseStrategy is IStrategyMessages, NonblockingLzApp {
         bytes memory payload = abi.encode(
             MessageType.ReportTotalAssetsResponse,
             ReportTotalAssetsResponse({
+                source: address(this),
                 timestamp: block.timestamp,
                 totalAssets: estimatedTotalAssets()
             })
@@ -79,7 +81,7 @@ abstract contract BaseStrategy is IStrategyMessages, NonblockingLzApp {
     }
 
     function _onlyStrategist() internal view {
-        require(msg.sender == strategist, "BaseStrategy::onlyStrategist");
+        require(msg.sender == strategist, "BaseStrategy::OnlyStrategist");
     }
 
     function _liquidatePosition(
@@ -123,6 +125,7 @@ abstract contract BaseStrategy is IStrategyMessages, NonblockingLzApp {
                 vault,
                 abi.encode(
                     WithdrawSomeResponse({
+                        source: address(this),
                         amount: _liquidatedAmount,
                         loss: _loss,
                         id: _message.id
@@ -141,9 +144,15 @@ abstract contract BaseStrategy is IStrategyMessages, NonblockingLzApp {
                 vaultChainId,
                 vault,
                 abi.encode(
-                    WithdrawAllResponse({amount: _amountFreed, id: _message.id})
+                    WithdrawAllResponse({
+                        source: address(this),
+                        amount: _amountFreed,
+                        id: _message.id
+                    })
                 )
             );
+        } else {
+            revert IncorrectMessageType(uint256(_messageType));
         }
     }
 

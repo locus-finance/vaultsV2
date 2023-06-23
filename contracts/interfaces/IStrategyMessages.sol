@@ -12,6 +12,7 @@ interface IStrategyMessages {
     }
 
     struct ReportTotalAssetsResponse {
+        address source;
         uint256 timestamp;
         uint256 totalAssets;
     }
@@ -22,6 +23,7 @@ interface IStrategyMessages {
     }
 
     struct WithdrawSomeResponse {
+        address source;
         uint256 amount;
         uint256 loss;
         uint256 id;
@@ -32,6 +34,7 @@ interface IStrategyMessages {
     }
 
     struct WithdrawAllResponse {
+        address source;
         uint256 amount;
         uint256 id;
     }

@@ -16,6 +16,8 @@ interface ISgBridge {
 
     function setSlippage(uint256 _slippage) external;
 
+    function setWhitelist(address _address) external;
+
     function setDstGasForCall(uint256 _dstGasForCall) external;
 
     function setCurrentChainId(uint16 _currentChainId) external;
@@ -32,6 +34,14 @@ interface ISgBridge {
     ) external;
 
     function bridge(
+        address token,
+        uint256 amount,
+        uint16 destChainId,
+        address destinationAddress,
+        bytes memory message
+    ) external payable;
+
+    function send(
         address token,
         uint256 amount,
         uint16 destChainId,
