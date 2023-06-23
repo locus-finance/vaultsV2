@@ -5,12 +5,20 @@ pragma solidity ^0.8.18;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {NonblockingLzApp} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
 
+import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
 import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 
-abstract contract BaseStrategy is IStrategyMessages, NonblockingLzApp {
+abstract contract BaseStrategy is
+    IStrategyMessages,
+    IStargateReceiver,
+    NonblockingLzApp
+{
     error InsufficientFunds(uint256 amount, uint256 balance);
     error IncorrectMessageType(uint256 messageType);
+    error ReceiveForbidden(address sender);
+
+    event SgReceived(address indexed token, uint256 amount, address sender);
 
     modifier onlyStrategist() {
         _onlyStrategist();
@@ -23,13 +31,15 @@ abstract contract BaseStrategy is IStrategyMessages, NonblockingLzApp {
         IERC20 _want,
         address _vault,
         uint16 _vaultChainId,
-        address _sgBridge
+        address _sgBridge,
+        address _router
     ) NonblockingLzApp(_lzEndpoint) {
         strategist = _strategist;
         want = _want;
         vaultChainId = _vaultChainId;
         vault = _vault;
         sgBridge = ISgBridge(_sgBridge);
+        router = IStargateRouter(_router);
     }
 
     address public strategist;
@@ -37,6 +47,7 @@ abstract contract BaseStrategy is IStrategyMessages, NonblockingLzApp {
     address public vault;
     uint16 public vaultChainId;
     ISgBridge public sgBridge;
+    IStargateRouter public router;
 
     function name() external view virtual returns (string memory);
 
@@ -109,51 +120,66 @@ abstract contract BaseStrategy is IStrategyMessages, NonblockingLzApp {
             "BaseStrategy::TrustedAddressMismatch"
         );
 
-        MessageType _messageType = abi.decode(_payload, (MessageType));
-        if (_messageType == MessageType.WithdrawSomeRequest) {
-            (, WithdrawSomeRequest memory _message) = abi.decode(
+        MessageType messageType = abi.decode(_payload, (MessageType));
+        if (messageType == MessageType.WithdrawSomeRequest) {
+            (, WithdrawSomeRequest memory message) = abi.decode(
                 _payload,
                 (uint256, WithdrawSomeRequest)
             );
-            (uint256 _liquidatedAmount, uint256 _loss) = _liquidatePosition(
-                _message.amount
+            (uint256 liquidatedAmount, uint256 loss) = _liquidatePosition(
+                message.amount
             );
             sgBridge.bridge(
                 address(want),
-                _liquidatedAmount,
+                liquidatedAmount,
                 vaultChainId,
                 vault,
                 abi.encode(
                     WithdrawSomeResponse({
                         source: address(this),
-                        amount: _liquidatedAmount,
-                        loss: _loss,
-                        id: _message.id
+                        amount: liquidatedAmount,
+                        loss: loss,
+                        id: message.id
                     })
                 )
             );
-        } else if (_messageType == MessageType.WithdrawAllRequest) {
-            (, WithdrawAllRequest memory _message) = abi.decode(
+        } else if (messageType == MessageType.WithdrawAllRequest) {
+            (, WithdrawAllRequest memory message) = abi.decode(
                 _payload,
                 (uint256, WithdrawAllRequest)
             );
-            uint256 _amountFreed = _liquidateAllPositions();
+            uint256 amountFreed = _liquidateAllPositions();
             sgBridge.bridge(
                 address(want),
-                _amountFreed,
+                amountFreed,
                 vaultChainId,
                 vault,
                 abi.encode(
                     WithdrawAllResponse({
                         source: address(this),
-                        amount: _amountFreed,
-                        id: _message.id
+                        amount: amountFreed,
+                        id: message.id
                     })
                 )
             );
+        } else if (messageType == MessageType.ReportTotalAssetsRequest) {
+            reportTotalAssets();
         } else {
-            revert IncorrectMessageType(uint256(_messageType));
+            revert IncorrectMessageType(uint256(messageType));
         }
+    }
+
+    function sgReceive(
+        uint16,
+        bytes memory _srcAddress,
+        uint,
+        address _token,
+        uint256 _amountLD,
+        bytes memory
+    ) external override {
+        require(msg.sender == address(router), "SgBridge::RouterOnly");
+        address srcAddress = abi.decode(_srcAddress, (address));
+        emit SgReceived(_token, _amountLD, srcAddress);
     }
 
     receive() external payable {}

@@ -38,7 +38,7 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
         slippage = _slippage;
     }
 
-    function setWhitelist(address _address) external onlyOwner {
+    function setWhitelist(address _address) external override onlyOwner {
         whitelisted[_address] = true;
     }
 
@@ -55,22 +55,22 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
     }
 
     function setStargatePoolId(
-        address token,
-        uint16 chainId,
-        uint256 poolId
+        address _token,
+        uint16 _chainId,
+        uint256 _poolId
     ) external override onlyOwner {
-        IERC20(token).approve(address(router), type(uint256).max);
-        poolIds[token][chainId] = poolId;
+        IERC20(_token).approve(address(router), type(uint256).max);
+        poolIds[_token][_chainId] = _poolId;
     }
 
     function setSupportedDestination(
-        uint16 chainId,
-        address receiveContract
+        uint16 _chainId,
+        address _receiveContract
     ) external override onlyOwner {
-        supportedDestinations[chainId] = receiveContract;
+        supportedDestinations[_chainId] = _receiveContract;
     }
 
-    function bridge(
+    function bridgeProxy(
         address token,
         uint256 amount,
         uint16 destChainId,
@@ -109,7 +109,7 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
         );
     }
 
-    function send(
+    function bridge(
         address token,
         uint256 amount,
         uint16 destChainId,
@@ -150,9 +150,7 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
         uint256 amountLD,
         bytes memory payload
     ) external override {
-        if (msg.sender != address(router)) {
-            revert ReceiveForbidden(msg.sender);
-        }
+        require(msg.sender == address(router), "SgBridge::RouterOnly");
 
         (address toAddr, ) = abi.decode(payload, (address, bytes));
 

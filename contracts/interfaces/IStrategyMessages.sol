@@ -4,6 +4,7 @@ pragma solidity ^0.8.18;
 
 interface IStrategyMessages {
     enum MessageType {
+        ReportTotalAssetsRequest,
         ReportTotalAssetsResponse,
         WithdrawSomeRequest,
         WithdrawSomeResponse,

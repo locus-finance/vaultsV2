@@ -39,7 +39,7 @@ module.exports = async function (taskArgs, hre) {
     );
 
     await sgBridge
-        .bridge(
+        .bridgeProxy(
             token.address,
             utils.parseEther("10"),
             bridgeConfig[destinationChain].chainId,
