@@ -3,6 +3,7 @@
 pragma solidity ^0.8.18;
 
 import {ERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ERC4626} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
@@ -12,7 +13,7 @@ import {NonblockingLzApp} from "@layerzerolabs/solidity-examples/contracts/lzApp
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
 import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
-import {StrategyParams, IVault} from "./interfaces/IVault.sol";
+import {StrategyParams, DepositRequest, WithdrawRequest, DepositEpoch, WithdrawEpoch, IVault} from "./interfaces/IVault.sol";
 
 contract Vault is
     Ownable,
@@ -24,6 +25,7 @@ contract Vault is
 {
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.AddressSet;
+    using SafeERC20 for IERC20;
 
     constructor(
         address _governance,
@@ -38,7 +40,8 @@ contract Vault is
         router = IStargateRouter(_router);
     }
 
-    uint256 public immutable VALID_REPORT_THRESHOLD = 6 hours;
+    uint256 public constant VALID_REPORT_THRESHOLD = 6 hours;
+    uint256 public constant MAX_BPS = 10_000;
 
     address public override governance;
     IERC20 public override token;
@@ -46,11 +49,17 @@ contract Vault is
     ISgBridge public sgBridge;
     IStargateRouter public router;
 
-    uint256 public totalDebt;
+    uint256 public totalDebtRatio;
     mapping(uint16 => mapping(address => StrategyParams)) public strategies;
+    uint256 public activeStrategies;
 
     mapping(uint16 => EnumerableSet.AddressSet) internal _strategiesByChainId;
     EnumerableSet.UintSet internal _supportedChainIds;
+
+    uint256 internal _depositEpoch;
+    uint256 internal _withdrawEpoch;
+    mapping(uint256 => DepositEpoch) internal _depositEpochs;
+    mapping(uint256 => WithdrawEpoch) internal _withdrawEpochs;
 
     modifier onlyAuthorized() {
         require(
@@ -93,6 +102,10 @@ contract Vault is
             strategies[_chainId][_strategy].activation == 0,
             "Vault::StrategyAlreadyAdded"
         );
+        require(
+            totalDebtRatio + _debtRatio <= MAX_BPS,
+            "Vault::DebtRatioExceeded"
+        );
 
         strategies[_chainId][_strategy] = StrategyParams({
             performanceFee: _performanceFee,
@@ -107,14 +120,110 @@ contract Vault is
 
         _strategiesByChainId[_chainId].add(_strategy);
         _supportedChainIds.add(uint256(_chainId));
+        activeStrategies++;
+        totalDebtRatio += _debtRatio;
     }
 
-    function handleDeposits() external override onlyAuthorized {}
+    function initiateDeposit(uint256 _amount) external override {
+        token.safeTransferFrom(msg.sender, address(this), _amount);
+        _depositEpochs[_depositEpoch].requests.push(
+            DepositRequest({amount: _amount, user: msg.sender})
+        );
+    }
 
-    function handleWithdrawals() external override onlyAuthorized {}
+    function initiateWithdraw(
+        uint256 _shares,
+        uint256 _maxLoss
+    ) external override {
+        IERC20(address(this)).safeTransferFrom(
+            msg.sender,
+            address(this),
+            _shares
+        );
+
+        _withdrawEpochs[_withdrawEpoch].requests.push(
+            WithdrawRequest({
+                shares: _shares,
+                maxLoss: _maxLoss,
+                user: msg.sender
+            })
+        );
+    }
+
+    function handleDeposits() external override onlyAuthorized {
+        require(_isLastReportValid(), "Vault::LastReportInvalid");
+
+        uint256 requestsLength = _depositEpochs[_depositEpoch].requests.length;
+        require(requestsLength > 0, "Vault::NoDepositRequests");
+
+        (uint256 assets, ) = totalAssets();
+        for (uint256 i = 0; i < requestsLength; i++) {
+            DepositRequest storage request = _depositEpochs[_depositEpoch]
+                .requests[i];
+            _issueSharesForAmount(request.user, request.amount, assets);
+        }
+        _depositEpoch++;
+    }
+
+    function handleWithdrawals() external override onlyAuthorized {
+        require(_isLastReportValid(), "Vault::LastReportInvalid");
+        require(
+            !_withdrawEpochs[_withdrawEpoch].inProgress,
+            "Vault::AlreadyInProgress"
+        );
+
+        uint256 requestsLength = _withdrawEpochs[_withdrawEpoch]
+            .requests
+            .length;
+        require(requestsLength > 0, "Vault::NoWithdrawRequests");
+
+        _withdrawEpochs[_withdrawEpoch].approveExpected = activeStrategies;
+        uint256 vaultBalance = token.balanceOf(address(this));
+
+        uint256 sharesToWithdraw = 0;
+        for (uint256 i = 0; i < requestsLength; i++) {
+            WithdrawRequest storage request = _withdrawEpochs[_withdrawEpoch]
+                .requests[i];
+            sharesToWithdraw += request.shares;
+        }
+        (uint256 assets, ) = totalAssets();
+        uint256 withdrawValue = _shareValue(sharesToWithdraw, assets);
+        uint256 toWithdrawFromStrategies = withdrawValue > vaultBalance
+            ? withdrawValue - vaultBalance
+            : 0;
+
+        if (toWithdrawFromStrategies == 0) {
+            _fulfillWithdrawEpoch();
+            return;
+        }
+
+        _withdrawEpochs[_withdrawEpoch].inProgress = true;
+        for (uint256 i = 0; i < _supportedChainIds.length(); i++) {
+            uint16 chainId = uint16(_supportedChainIds.at(i));
+            EnumerableSet.AddressSet
+                storage strategiesByChainId = _strategiesByChainId[chainId];
+
+            for (uint256 j = 0; j < strategiesByChainId.length(); j++) {
+                address strategy = strategiesByChainId.at(j);
+                StrategyParams storage params = strategies[chainId][strategy];
+                if (params.debtRatio > 0) {
+                    uint256 valueToWithdraw = (toWithdrawFromStrategies *
+                        params.debtRatio) / totalDebtRatio;
+                    if (valueToWithdraw > 0) {
+                        _requestToWithdrawFromStrategy(
+                            chainId,
+                            strategy,
+                            valueToWithdraw
+                        );
+                    }
+                }
+            }
+        }
+    }
 
     function pricePerShare() external view override returns (uint256) {
-        return _shareValue(10 ** decimals());
+        (uint256 assets, ) = totalAssets();
+        return _shareValue(10 ** decimals(), assets);
     }
 
     function viewStrategy(
@@ -129,12 +238,30 @@ contract Vault is
         address strategy
     ) external override onlyAuthorized {}
 
-    function _shareValue(uint256 shares) internal view returns (uint256) {
+    function _shareValue(
+        uint256 _shares,
+        uint256 _totalAssets
+    ) internal view returns (uint256) {
         if (totalSupply() == 0) {
-            return shares;
+            return _shares;
         }
-        (uint256 assets, ) = totalAssets();
-        return (shares * assets) / totalSupply();
+        return (_shares * _totalAssets) / totalSupply();
+    }
+
+    function _issueSharesForAmount(
+        address _to,
+        uint256 _amount,
+        uint256 _totalAssets
+    ) internal returns (uint256) {
+        uint256 shares = 0;
+        if (totalSupply() == 0) {
+            shares = _amount;
+        } else {
+            shares = (_amount * totalSupply()) / _totalAssets;
+        }
+        require(shares > 0, "Vault::ZeroShares");
+        _mint(_to, shares);
+        return shares;
     }
 
     function _isLastReportValid() internal view returns (bool) {
@@ -142,6 +269,86 @@ contract Vault is
         return
             lastReport > 0 &&
             block.timestamp - lastReport < VALID_REPORT_THRESHOLD;
+    }
+
+    function _requestToWithdrawFromStrategy(
+        uint16 _chainId,
+        address _strategy,
+        uint256 _valueToWithdraw
+    ) internal {
+        StrategyParams storage params = strategies[_chainId][_strategy];
+        require(params.activation > 0, "Vault::InactiveStrategy");
+
+        uint256 valueToWithdraw = _valueToWithdraw;
+        bytes memory payload = abi.encode(
+            MessageType.WithdrawSomeRequest,
+            WithdrawSomeRequest({amount: valueToWithdraw, id: _withdrawEpoch})
+        );
+        bytes memory remoteAndLocalAddresses = abi.encodePacked(
+            _strategy,
+            address(this)
+        );
+        (uint256 nativeFee, ) = lzEndpoint.estimateFees(
+            _chainId,
+            address(this),
+            payload,
+            false,
+            bytes("")
+        );
+        if (address(this).balance < nativeFee) {
+            revert InsufficientFunds(nativeFee, address(this).balance);
+        }
+        lzEndpoint.send{value: nativeFee}(
+            _chainId,
+            remoteAndLocalAddresses,
+            payload,
+            payable(address(this)),
+            address(this),
+            bytes("")
+        );
+    }
+
+    function _fulfillWithdrawEpoch() internal {
+        uint256 requestsLength = _withdrawEpochs[_withdrawEpoch]
+            .requests
+            .length;
+        require(requestsLength > 0, "Vault::NoWithdrawRequests");
+
+        (uint256 assets, ) = totalAssets();
+        for (uint256 i = 0; i < requestsLength; i++) {
+            WithdrawRequest storage request = _withdrawEpochs[_withdrawEpoch]
+                .requests[i];
+            uint256 valueToTransfer = Math.min(
+                _shareValue(request.shares, assets),
+                IERC20(token).balanceOf(address(this))
+            );
+            if (valueToTransfer > 0) {
+                token.safeTransfer(request.user, valueToTransfer);
+            }
+        }
+        for (uint256 i = 0; i < requestsLength; i++) {
+            WithdrawRequest storage request = _withdrawEpochs[_withdrawEpoch]
+                .requests[i];
+            _burn(request.user, request.shares);
+        }
+        _withdrawEpoch++;
+    }
+
+    function _handleWithdrawSomeResponse(
+        uint16 _chainId,
+        WithdrawSomeResponse memory _message
+    ) internal {
+        require(
+            strategies[_chainId][_message.source].activation > 0,
+            "Vault::InactiveStrategy"
+        );
+        _withdrawEpochs[_message.id].approveExpected++;
+        if (
+            _withdrawEpochs[_message.id].approveExpected ==
+            _withdrawEpochs[_message.id].approveActual
+        ) {
+            _fulfillWithdrawEpoch();
+        }
     }
 
     function _nonblockingLzReceive(
@@ -173,6 +380,7 @@ contract Vault is
                 _payload,
                 (uint256, WithdrawSomeResponse)
             );
+            _handleWithdrawSomeResponse(_srcChainId, message);
         }
 
         emit SgReceived(_token, _amountLD, srcAddress);

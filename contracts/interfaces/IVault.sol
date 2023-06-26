@@ -16,8 +16,34 @@ struct StrategyParams {
     uint256 lastReportedTotalAssets;
 }
 
+struct DepositRequest {
+    address user;
+    uint256 amount;
+}
+
+struct WithdrawRequest {
+    address user;
+    uint256 shares;
+    uint256 maxLoss;
+}
+
+struct DepositEpoch {
+    DepositRequest[] requests;
+}
+
+struct WithdrawEpoch {
+    WithdrawRequest[] requests;
+    bool inProgress;
+    uint256 approveExpected;
+    uint256 approveActual;
+}
+
 interface IVault {
+    error InsufficientFunds(uint256 amount, uint256 balance);
+
     event SgReceived(address indexed token, uint256 amount, address sender);
+
+    function token() external view returns (IERC20);
 
     function totalAssets() external view returns (uint256, uint256);
 
@@ -28,7 +54,9 @@ interface IVault {
         uint256 _performanceFee
     ) external;
 
-    function token() external view returns (IERC20);
+    function initiateDeposit(uint256 _amount) external;
+
+    function initiateWithdraw(uint256 _shares, uint256 _maxLoss) external;
 
     function handleDeposits() external;
 
