@@ -8,7 +8,7 @@ import {ERC4626} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.so
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {NonblockingLzApp} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
+import {BytesLib, NonblockingLzApp} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
 
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
@@ -26,6 +26,7 @@ contract Vault is
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
+    using BytesLib for bytes;
 
     constructor(
         address _governance,
@@ -356,7 +357,26 @@ contract Vault is
         bytes memory _srcAddress,
         uint64,
         bytes memory _payload
-    ) internal override {}
+    ) internal override {
+        address srcAddress = address(
+            bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
+        );
+        require(
+            strategies[_srcChainId][srcAddress].activation > 0,
+            "Vault::IncorrectSender"
+        );
+
+        MessageType messageType = abi.decode(_payload, (MessageType));
+        if (messageType == MessageType.ReportTotalAssetsResponse) {
+            (, ReportTotalAssetsResponse memory message) = abi.decode(
+                _payload,
+                (uint256, ReportTotalAssetsResponse)
+            );
+            strategies[_srcChainId][srcAddress].lastReport = message.timestamp;
+            strategies[_srcChainId][srcAddress]
+                .lastReportedTotalAssets = message.totalAssets;
+        }
+    }
 
     function sgReceive(
         uint16 _srcChainId,
