@@ -214,7 +214,8 @@ contract Vault is
                         _requestToWithdrawFromStrategy(
                             chainId,
                             strategy,
-                            valueToWithdraw
+                            valueToWithdraw,
+                            false
                         );
                     }
                 }
@@ -236,8 +237,10 @@ contract Vault is
 
     function revokeStrategy(
         uint16 _chainId,
-        address strategy
-    ) external override onlyAuthorized {}
+        address _strategy
+    ) external override onlyAuthorized {
+        _requestToWithdrawFromStrategy(_chainId, _strategy, 0, true);
+    }
 
     function _shareValue(
         uint256 _shares,
@@ -275,16 +278,24 @@ contract Vault is
     function _requestToWithdrawFromStrategy(
         uint16 _chainId,
         address _strategy,
-        uint256 _valueToWithdraw
+        uint256 _valueToWithdraw,
+        bool _withdrawAll
     ) internal {
         StrategyParams storage params = strategies[_chainId][_strategy];
         require(params.activation > 0, "Vault::InactiveStrategy");
 
-        uint256 valueToWithdraw = _valueToWithdraw;
-        bytes memory payload = abi.encode(
-            MessageType.WithdrawSomeRequest,
-            WithdrawSomeRequest({amount: valueToWithdraw, id: _withdrawEpoch})
-        );
+        bytes memory payload = _withdrawAll
+            ? abi.encode(
+                MessageType.WithdrawAllRequest,
+                WithdrawAllRequest({id: _withdrawEpoch})
+            )
+            : abi.encode(
+                MessageType.WithdrawSomeRequest,
+                WithdrawSomeRequest({
+                    amount: _valueToWithdraw,
+                    id: _withdrawEpoch
+                })
+            );
         bytes memory remoteAndLocalAddresses = abi.encodePacked(
             _strategy,
             address(this)
@@ -330,7 +341,7 @@ contract Vault is
         for (uint256 i = 0; i < requestsLength; i++) {
             WithdrawRequest storage request = _withdrawEpochs[_withdrawEpoch]
                 .requests[i];
-            _burn(request.user, request.shares);
+            _burn(address(this), request.shares);
         }
         _withdrawEpoch++;
     }
@@ -350,6 +361,17 @@ contract Vault is
         ) {
             _fulfillWithdrawEpoch();
         }
+    }
+
+    function _handleWithdrawAllResponse(
+        uint16 _chainId,
+        WithdrawAllResponse memory _message
+    ) internal {
+        require(
+            strategies[_chainId][_message.source].activation > 0,
+            "Vault::InactiveStrategy"
+        );
+        emit StrategyWithdrawnAll(_chainId, _message.source, _message.amount);
     }
 
     function _nonblockingLzReceive(
@@ -401,6 +423,12 @@ contract Vault is
                 (uint256, WithdrawSomeResponse)
             );
             _handleWithdrawSomeResponse(_srcChainId, message);
+        } else if (messageType == MessageType.WithdrawAllResponse) {
+            (, WithdrawAllResponse memory message) = abi.decode(
+                _payload,
+                (uint256, WithdrawAllResponse)
+            );
+            _handleWithdrawAllResponse(_srcChainId, message);
         }
 
         emit SgReceived(_token, _amountLD, srcAddress);
