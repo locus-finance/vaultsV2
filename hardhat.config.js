@@ -10,6 +10,9 @@ require('hardhat-abi-exporter');
 require("hardhat-tracer");
 require('dotenv').config();
 require('solidity-coverage');
+require('hardhat-deploy');
+require('hardhat-deploy-ethers');
+require('./tasks');
 
 const fs = require("fs");
 
@@ -45,6 +48,11 @@ module.exports = {
             }
         }
         ]
+    },
+    namedAccounts: {
+        deployer: {
+            default: 0
+        }
     },
     networks: {
         localhost: {
@@ -93,6 +101,10 @@ module.exports = {
             chainId: 43113,
             accounts: [`0x${DEPLOYER_PRIVATE_KEY}`]
         },
+        goerli: {
+            url: `https://rpc.ankr.com/eth_goerli`,
+            accounts: [`0x${DEPLOYER_PRIVATE_KEY}`]
+        },
         avalanche: {
             url: `https://api.avax.network/ext/bc/C/rpc`,
             chainId: 43114,
@@ -107,13 +119,14 @@ module.exports = {
             url: `https://arb1.arbitrum.io/rpc`,
             chainId: 42161,
             accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
-        }
+        },
     },
     etherscan: {
         apiKey: {
             mainnet: process.env.ETHERSCAN_API_KEY,
             sepolia: process.env.ETHERSCAN_API_KEY,
-            arbitrumOne: process.env.ARBISCAN_API_KEY
+            arbitrumOne: process.env.ARBISCAN_API_KEY,
+            goerli: process.env.ETHERSCAN_API_KEY
         }
     },
     gasReporter: {
