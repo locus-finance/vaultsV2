@@ -5,7 +5,10 @@
             "address": "0xDf0360Ad8C5ccf25095Aa97ee5F2785c8d848620",
             "poolId": 1
         },
-        "sgBridge": "0xe5bb8e93E2d7C1670F35B5Ee7929D5964ACF5F3b"
+        "sgBridge": "0xFf05295fC24bD6d5787fBa217f6C900fb6e3eDa6",
+        "sgRouter": "0x7612aE2a34E5A363E137De748801FB4c86499152",
+        "lzEndpoint": "0xbfD2135BFfbb0B5378b56643c2Df8a87552Bfa23",
+        "vault": "0x3E0273096c6b6B4666dA5cd3f7262e734a8d4c17"
     },
     "fujiavax": {
         "chainId": 10106,
@@ -13,6 +16,9 @@
             "address": "0x4A0D1092E9df255cf95D72834Ea9255132782318",
             "poolId": 1
         },
-        "sgBridge": "0x0eAaDb50167702993fe0b4d5Cce7d6a3C1572109"
+        "sgBridge": "0x5d96b6c3Ef16e118F0cbe9dddD3A408798342233",
+        "sgRouter": "0x13093E05Eb890dfA6DacecBdE51d24DabAb2Faa1",
+        "lzEndpoint": "0x93f54D755A063cE7bB9e6Ac47Eccc8e33411d706",
+        "TestStrategy": "0x037D972181E08c4B1C20f7D7A3039fB5c7b3364e"
     }
 }
