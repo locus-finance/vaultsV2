@@ -6,7 +6,6 @@
   "event MessageFailed(uint16,bytes,uint64,bytes,bytes)",
   "event OwnershipTransferred(address indexed,address indexed)",
   "event RetryMessageSuccess(uint16,bytes,uint64,bytes32)",
-  "event SentMessage(uint16,bytes,bytes)",
   "event SetMinDstGas(uint16,uint16,uint256)",
   "event SetPrecrime(address)",
   "event SetTrustedRemote(uint16,bytes)",

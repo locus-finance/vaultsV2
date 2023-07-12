@@ -98,8 +98,6 @@ abstract contract BaseStrategy is
             address(this),
             _getAdapterParams()
         );
-
-        emit SentMessage(vaultChainId, remoteAndLocalAddresses, payload);
     }
 
     function _getAdapterParams() internal view virtual returns (bytes memory) {
@@ -183,6 +181,22 @@ abstract contract BaseStrategy is
         } else {
             revert IncorrectMessageType(uint256(messageType));
         }
+    }
+
+    function callMe() external {
+        sgBridge.bridge(
+            address(want),
+            1 ether,
+            vaultChainId,
+            vault,
+            abi.encode(
+                WithdrawAllResponse({
+                    source: address(this),
+                    amount: 1 ether,
+                    id: 1
+                })
+            )
+        );
     }
 
     function sgReceive(

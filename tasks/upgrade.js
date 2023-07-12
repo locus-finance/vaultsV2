@@ -11,7 +11,10 @@ module.exports = async function (taskArgs, hre) {
     const TargetContract = await ethers.getContractFactory(targetContract);
     const upgraded = await hre.upgrades.upgradeProxy(
         targetAddr,
-        TargetContract
+        TargetContract,
+        {
+            unsafeSkipStorageCheck: true,
+        }
     );
 
     await hre.run("verify:verify", {

@@ -27,6 +27,8 @@ contract Vault is
     IStrategyMessages,
     IStargateReceiver
 {
+    event SgData(bytes payload);
+
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
@@ -420,28 +422,24 @@ contract Vault is
     ) external override {
         require(msg.sender == address(router), "Vault::RouterOnly");
 
-        address srcAddress = abi.decode(_srcAddress, (address));
-        require(
-            strategies[_srcChainId][srcAddress].activation > 0,
-            "Vault::IncorrectSender"
-        );
+        emit SgData(_payload);
 
-        MessageType messageType = abi.decode(_payload, (MessageType));
-        if (messageType == MessageType.WithdrawSomeResponse) {
-            (, WithdrawSomeResponse memory message) = abi.decode(
-                _payload,
-                (uint256, WithdrawSomeResponse)
-            );
-            _handleWithdrawSomeResponse(_srcChainId, message);
-        } else if (messageType == MessageType.WithdrawAllResponse) {
-            (, WithdrawAllResponse memory message) = abi.decode(
-                _payload,
-                (uint256, WithdrawAllResponse)
-            );
-            _handleWithdrawAllResponse(_srcChainId, message);
-        }
+        // MessageType messageType = abi.decode(_payload, (MessageType));
+        // if (messageType == MessageType.WithdrawSomeResponse) {
+        //     (, WithdrawSomeResponse memory message) = abi.decode(
+        //         _payload,
+        //         (uint256, WithdrawSomeResponse)
+        //     );
+        //     _handleWithdrawSomeResponse(_srcChainId, message);
+        // } else if (messageType == MessageType.WithdrawAllResponse) {
+        //     (, WithdrawAllResponse memory message) = abi.decode(
+        //         _payload,
+        //         (uint256, WithdrawAllResponse)
+        //     );
+        //     _handleWithdrawAllResponse(_srcChainId, message);
+        // }
 
-        emit SgReceived(_token, _amountLD, srcAddress);
+        emit SgReceived(_token, _amountLD, address(0));
     }
 
     function lzReceive(

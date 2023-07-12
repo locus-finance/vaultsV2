@@ -16,6 +16,7 @@
   "function router() view returns (address)",
   "function setCurrentChainId(uint16)",
   "function setDstGasForCall(uint256)",
+  "function setRouter(address)",
   "function setSlippage(uint256)",
   "function setStargatePoolId(address,uint16,uint256)",
   "function setSupportedDestination(uint16,address)",

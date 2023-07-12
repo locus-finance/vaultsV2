@@ -13,6 +13,8 @@ interface ISgBridge {
 
     function initialize(address _router) external;
 
+    function setRouter(address _router) external;
+
     function setSlippage(uint256 _slippage) external;
 
     function setWhitelist(address _address) external;

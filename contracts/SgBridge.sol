@@ -40,6 +40,10 @@ contract SgBridge is
         dstGasForCall = 500_000;
     }
 
+    function setRouter(address _router) external override onlyOwner {
+        router = IStargateRouter(_router);
+    }
+
     function setSlippage(uint256 _slippage) external override onlyOwner {
         slippage = _slippage;
     }
@@ -65,7 +69,12 @@ contract SgBridge is
         uint16 _chainId,
         uint256 _poolId
     ) external override onlyOwner {
-        IERC20(_token).approve(address(router), type(uint256).max);
+        if (
+            IERC20(_token).allowance(address(this), address(router)) !=
+            type(uint256).max
+        ) {
+            IERC20(_token).safeApprove(address(router), type(uint256).max);
+        }
         poolIds[_token][_chainId] = _poolId;
     }
 
