@@ -1,4 +1,6 @@
 module.exports = async function (taskArgs, hre) {
+    await hre.run("compile");
+
     const { deployer } = await getNamedAccounts();
     const { targetContract, targetAddr } = taskArgs;
     const networkName = hre.network.name;

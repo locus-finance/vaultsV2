@@ -5,6 +5,7 @@ pragma solidity ^0.8.18;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
 
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
@@ -16,6 +17,8 @@ abstract contract BaseStrategy is
     IStrategyMessages,
     IStargateReceiver
 {
+    using BytesLib for bytes;
+
     error InsufficientFunds(uint256 amount, uint256 balance);
     error IncorrectMessageType(uint256 messageType);
     error ReceiveForbidden(address sender);
@@ -44,6 +47,8 @@ abstract contract BaseStrategy is
         vault = _vault;
         sgBridge = ISgBridge(_sgBridge);
         router = IStargateRouter(_router);
+
+        want.approve(address(sgBridge), type(uint256).max);
     }
 
     address public strategist;
@@ -78,7 +83,7 @@ abstract contract BaseStrategy is
             address(this),
             payload,
             false,
-            bytes("")
+            _getAdapterParams()
         );
 
         if (address(this).balance < nativeFee) {
@@ -91,8 +96,16 @@ abstract contract BaseStrategy is
             payload,
             payable(address(this)),
             address(this),
-            bytes("")
+            _getAdapterParams()
         );
+
+        emit SentMessage(vaultChainId, remoteAndLocalAddresses, payload);
+    }
+
+    function _getAdapterParams() internal view virtual returns (bytes memory) {
+        uint16 version = 1;
+        uint gasForDestinationLzReceive = 350_000;
+        return abi.encodePacked(version, gasForDestinationLzReceive);
     }
 
     function _onlyStrategist() internal view {
@@ -118,11 +131,10 @@ abstract contract BaseStrategy is
             _srcChainId == vaultChainId,
             "BaseStrategy::VaultChainIdMismatch"
         );
-        require(
-            keccak256(_srcAddress) ==
-                keccak256(trustedRemoteLookup[_srcChainId]),
-            "BaseStrategy::TrustedAddressMismatch"
+        address srcAddress = address(
+            bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
+        require(srcAddress == vault, "BaseStrategy::VaultAddressMismatch");
 
         MessageType messageType = abi.decode(_payload, (MessageType));
         if (messageType == MessageType.WithdrawSomeRequest) {
@@ -184,6 +196,20 @@ abstract contract BaseStrategy is
         require(msg.sender == address(router), "SgBridge::RouterOnly");
         address srcAddress = abi.decode(_srcAddress, (address));
         emit SgReceived(_token, _amountLD, srcAddress);
+    }
+
+    function lzReceive(
+        uint16 _srcChainId,
+        bytes calldata _srcAddress,
+        uint64 _nonce,
+        bytes calldata _payload
+    ) public virtual override {
+        require(
+            msg.sender == address(lzEndpoint),
+            "BaseStrategy::InvalidEndpointCaller"
+        );
+
+        _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
 
     receive() external payable {}

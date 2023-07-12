@@ -34,17 +34,25 @@ contract TestStrategy is Initializable, BaseStrategy {
 
     function harvest() external override {}
 
-    function estimatedTotalAssets() public pure override returns (uint256) {
-        return 0;
+    function estimatedTotalAssets() public view override returns (uint256) {
+        return want.balanceOf(address(this));
     }
 
     function _liquidatePosition(
         uint256 _amountNeeded
-    ) internal override returns (uint256 _liquidatedAmount, uint256 _loss) {}
+    ) internal override returns (uint256 _liquidatedAmount, uint256 _loss) {
+        uint256 wantBal = want.balanceOf(address(this));
+        _liquidatedAmount = (wantBal > _amountNeeded) ? _amountNeeded : wantBal;
+        _loss = (_liquidatedAmount < _amountNeeded)
+            ? _amountNeeded - _liquidatedAmount
+            : 0;
+    }
 
     function _liquidateAllPositions()
         internal
         override
         returns (uint256 _amountFreed)
-    {}
+    {
+        return want.balanceOf(address(this));
+    }
 }

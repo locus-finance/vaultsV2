@@ -47,6 +47,8 @@ contract Vault is
         token = _token;
         sgBridge = ISgBridge(_sgBridge);
         router = IStargateRouter(_router);
+
+        token.approve(address(sgBridge), type(uint256).max);
     }
 
     uint256 public constant VALID_REPORT_THRESHOLD = 6 hours;
@@ -440,6 +442,20 @@ contract Vault is
         }
 
         emit SgReceived(_token, _amountLD, srcAddress);
+    }
+
+    function lzReceive(
+        uint16 _srcChainId,
+        bytes calldata _srcAddress,
+        uint64 _nonce,
+        bytes calldata _payload
+    ) public virtual override {
+        require(
+            msg.sender == address(lzEndpoint),
+            "Vault::InvalidEndpointCaller"
+        );
+
+        _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
 
     receive() external payable {}

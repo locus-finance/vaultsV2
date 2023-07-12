@@ -15,6 +15,10 @@ module.exports = async function (_, hre) {
     await pt(sgBridge.setWhitelist(deployer));
 
     for (const [_, config] of Object.entries(bridgeConfig)) {
+        if (config.vault) await pt(sgBridge.setWhitelist(config.vault));
+        if (config.TestStrategy)
+            await pt(sgBridge.setWhitelist(config.TestStrategy));
+
         await pt(
             sgBridge.setSupportedDestination(config.chainId, config.sgBridge)
         );
