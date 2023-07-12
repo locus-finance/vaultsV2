@@ -3,16 +3,18 @@
 pragma solidity ^0.8.18;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {NonblockingLzApp} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
+import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
 import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 
 abstract contract BaseStrategy is
+    Initializable,
+    NonblockingLzAppUpgradeable,
     IStrategyMessages,
-    IStargateReceiver,
-    NonblockingLzApp
+    IStargateReceiver
 {
     error InsufficientFunds(uint256 amount, uint256 balance);
     error IncorrectMessageType(uint256 messageType);
@@ -25,7 +27,7 @@ abstract contract BaseStrategy is
         _;
     }
 
-    constructor(
+    function __BaseStrategy_init(
         address _lzEndpoint,
         address _strategist,
         IERC20 _want,
@@ -33,7 +35,9 @@ abstract contract BaseStrategy is
         uint16 _vaultChainId,
         address _sgBridge,
         address _router
-    ) NonblockingLzApp(_lzEndpoint) {
+    ) internal onlyInitializing {
+        __NonblockingLzAppUpgradeable_init(_lzEndpoint);
+
         strategist = _strategist;
         want = _want;
         vaultChainId = _vaultChainId;

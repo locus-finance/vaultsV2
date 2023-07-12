@@ -1,4 +1,4 @@
-const { ethers } = require("hardhat");
+const { ethers, upgrades } = require("hardhat");
 
 const bridgeConfig = require("../constants/bridgeConfig.json");
 const { oppositeChain } = require("../utils");
@@ -13,22 +13,9 @@ module.exports = async function ({ getNamedAccounts }) {
     const config = bridgeConfig[hre.network.name];
     const vaultConfig = bridgeConfig[oppositeChain(hre.network.name)];
     const TestStrategy = await ethers.getContractFactory("TestStrategy");
-    const testStrategy = await TestStrategy.deploy(
-        config.lzEndpoint,
-        deployer,
-        config[TOKEN].address,
-        vaultConfig.vault,
-        vaultConfig.chainId,
-        config.sgBridge,
-        config.sgRouter
-    );
-    await testStrategy.deployed();
-
-    console.log("TestStrategy deployed to:", testStrategy.address);
-
-    await hre.run("verify:verify", {
-        address: testStrategy.address,
-        constructorArguments: [
+    const testStrategy = await upgrades.deployProxy(
+        TestStrategy,
+        [
             config.lzEndpoint,
             deployer,
             config[TOKEN].address,
@@ -37,6 +24,17 @@ module.exports = async function ({ getNamedAccounts }) {
             config.sgBridge,
             config.sgRouter,
         ],
+        {
+            initializer: "initialize",
+            kind: "transparent",
+        }
+    );
+    await testStrategy.deployed();
+
+    console.log("TestStrategy deployed to:", testStrategy.address);
+
+    await hre.run("verify:verify", {
+        address: testStrategy.address,
     });
 };
 

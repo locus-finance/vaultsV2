@@ -1,6 +1,6 @@
 const { ethers, upgrades } = require("hardhat");
 
-const stargateRouters = require("../constants/stargateRouters.json");
+const bridgeConfig = require("../constants/bridgeConfig.json");
 
 module.exports = async function ({ getNamedAccounts }) {
     const { deployer } = await getNamedAccounts();
@@ -10,7 +10,7 @@ module.exports = async function ({ getNamedAccounts }) {
     const SgBridge = await ethers.getContractFactory("SgBridge");
     const sgBridge = await upgrades.deployProxy(
         SgBridge,
-        [stargateRouters[hre.network.name]],
+        [bridgeConfig[hre.network.name].lzEndpoint],
         {
             initializer: "initialize",
             kind: "transparent",

@@ -2,13 +2,16 @@
 
 pragma solidity ^0.8.18;
 
-import {ERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ERC4626} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {BytesLib, NonblockingLzApp} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
+import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
+import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
@@ -16,25 +19,30 @@ import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 import {StrategyParams, DepositRequest, WithdrawRequest, DepositEpoch, WithdrawEpoch, IVault} from "./interfaces/IVault.sol";
 
 contract Vault is
-    Ownable,
-    ERC20,
+    Initializable,
+    OwnableUpgradeable,
+    ERC20Upgradeable,
+    NonblockingLzAppUpgradeable,
     IVault,
     IStrategyMessages,
-    IStargateReceiver,
-    NonblockingLzApp
+    IStargateReceiver
 {
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
     using BytesLib for bytes;
 
-    constructor(
+    function initialize(
         address _governance,
         address _lzEndpoint,
         IERC20 _token,
         address _sgBridge,
         address _router
-    ) NonblockingLzApp(_lzEndpoint) ERC20("Omnichain Vault", "OMV") {
+    ) external initializer {
+        __NonblockingLzAppUpgradeable_init(_lzEndpoint);
+        __Ownable_init();
+        __ERC20_init("Omnichain Vault", "OMV");
+
         governance = _governance;
         token = _token;
         sgBridge = ISgBridge(_sgBridge);

@@ -68,6 +68,10 @@ module.exports = {
             chainId: 1,
             accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
         },
+        arbgoerli: {
+            url: `https://goerli-rollup.arbitrum.io/rpc`,
+            accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
+        },
         optimismgoerli: {
             url: `https://rpc.ankr.com/optimism_testnet`,
             accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
@@ -125,6 +129,7 @@ module.exports = {
             mainnet: process.env.ETHERSCAN_API_KEY,
             sepolia: process.env.ETHERSCAN_API_KEY,
             arbitrumOne: process.env.ARBISCAN_API_KEY,
+            arbitrumGoerli: process.env.ARBISCAN_API_KEY,
             goerli: process.env.ETHERSCAN_API_KEY,
             avalancheFujiTestnet: process.env.SNOWTRACE_API_KEY,
         },
@@ -144,7 +149,7 @@ module.exports = {
         flat: true,
         spacing: 2,
         format: "minimal",
-        only: [":Vault$", ":BaseStrategy$", ":SgBridge$"],
+        only: [":Vault$", ":BaseStrategy$", ":SgBridge$", ":TestStrategy$"],
     },
 };
 

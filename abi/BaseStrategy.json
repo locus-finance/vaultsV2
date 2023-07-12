@@ -2,6 +2,7 @@
   "error IncorrectMessageType(uint256)",
   "error InsufficientFunds(uint256,uint256)",
   "error ReceiveForbidden(address)",
+  "event Initialized(uint8)",
   "event MessageFailed(uint16,bytes,uint64,bytes,bytes)",
   "event OwnershipTransferred(address indexed,address indexed)",
   "event RetryMessageSuccess(uint16,bytes,uint64,bytes32)",
