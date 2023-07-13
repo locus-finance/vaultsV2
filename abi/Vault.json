@@ -9,7 +9,6 @@
   "event SetPrecrime(address)",
   "event SetTrustedRemote(uint16,bytes)",
   "event SetTrustedRemoteAddress(uint16,bytes)",
-  "event SgData(bytes)",
   "event SgReceived(address indexed,uint256,address)",
   "event StrategyWithdrawnAll(uint16 indexed,address indexed,uint256)",
   "event Transfer(address indexed,address indexed,uint256)",

@@ -27,8 +27,6 @@ contract Vault is
     IStrategyMessages,
     IStargateReceiver
 {
-    event SgData(bytes payload);
-
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
@@ -312,24 +310,33 @@ contract Vault is
             _strategy,
             address(this)
         );
+
         (uint256 nativeFee, ) = lzEndpoint.estimateFees(
             _chainId,
             address(this),
             payload,
             false,
-            bytes("")
+            _getAdapterParams()
         );
+
         if (address(this).balance < nativeFee) {
             revert InsufficientFunds(nativeFee, address(this).balance);
         }
+
         lzEndpoint.send{value: nativeFee}(
             _chainId,
             remoteAndLocalAddresses,
             payload,
             payable(address(this)),
             address(this),
-            bytes("")
+            _getAdapterParams()
         );
+    }
+
+    function _getAdapterParams() internal view virtual returns (bytes memory) {
+        uint16 version = 1;
+        uint gasForDestinationLzReceive = 1_000_000;
+        return abi.encodePacked(version, gasForDestinationLzReceive);
     }
 
     function _fulfillWithdrawEpoch() internal {
@@ -422,24 +429,26 @@ contract Vault is
     ) external override {
         require(msg.sender == address(router), "Vault::RouterOnly");
 
-        emit SgData(_payload);
+        address srcAddress = address(
+            bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
+        );
 
-        // MessageType messageType = abi.decode(_payload, (MessageType));
-        // if (messageType == MessageType.WithdrawSomeResponse) {
-        //     (, WithdrawSomeResponse memory message) = abi.decode(
-        //         _payload,
-        //         (uint256, WithdrawSomeResponse)
-        //     );
-        //     _handleWithdrawSomeResponse(_srcChainId, message);
-        // } else if (messageType == MessageType.WithdrawAllResponse) {
-        //     (, WithdrawAllResponse memory message) = abi.decode(
-        //         _payload,
-        //         (uint256, WithdrawAllResponse)
-        //     );
-        //     _handleWithdrawAllResponse(_srcChainId, message);
-        // }
+        MessageType messageType = abi.decode(_payload, (MessageType));
+        if (messageType == MessageType.WithdrawSomeResponse) {
+            (, WithdrawSomeResponse memory message) = abi.decode(
+                _payload,
+                (uint256, WithdrawSomeResponse)
+            );
+            _handleWithdrawSomeResponse(_srcChainId, message);
+        } else if (messageType == MessageType.WithdrawAllResponse) {
+            (, WithdrawAllResponse memory message) = abi.decode(
+                _payload,
+                (uint256, WithdrawAllResponse)
+            );
+            _handleWithdrawAllResponse(_srcChainId, message);
+        }
 
-        emit SgReceived(_token, _amountLD, address(0));
+        emit SgReceived(_token, _amountLD, srcAddress);
     }
 
     function lzReceive(

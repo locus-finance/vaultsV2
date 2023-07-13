@@ -102,7 +102,7 @@ abstract contract BaseStrategy is
 
     function _getAdapterParams() internal view virtual returns (bytes memory) {
         uint16 version = 1;
-        uint gasForDestinationLzReceive = 350_000;
+        uint gasForDestinationLzReceive = 500_000;
         return abi.encodePacked(version, gasForDestinationLzReceive);
     }
 
@@ -149,6 +149,7 @@ abstract contract BaseStrategy is
                 vaultChainId,
                 vault,
                 abi.encode(
+                    MessageType.WithdrawSomeResponse,
                     WithdrawSomeResponse({
                         source: address(this),
                         amount: liquidatedAmount,
@@ -169,6 +170,7 @@ abstract contract BaseStrategy is
                 vaultChainId,
                 vault,
                 abi.encode(
+                    MessageType.WithdrawAllResponse,
                     WithdrawAllResponse({
                         source: address(this),
                         amount: amountFreed,
@@ -183,22 +185,6 @@ abstract contract BaseStrategy is
         }
     }
 
-    function callMe() external {
-        sgBridge.bridge(
-            address(want),
-            1 ether,
-            vaultChainId,
-            vault,
-            abi.encode(
-                WithdrawAllResponse({
-                    source: address(this),
-                    amount: 1 ether,
-                    id: 1
-                })
-            )
-        );
-    }
-
     function sgReceive(
         uint16,
         bytes memory _srcAddress,
@@ -208,7 +194,9 @@ abstract contract BaseStrategy is
         bytes memory
     ) external override {
         require(msg.sender == address(router), "SgBridge::RouterOnly");
-        address srcAddress = abi.decode(_srcAddress, (address));
+        address srcAddress = address(
+            bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
+        );
         emit SgReceived(_token, _amountLD, srcAddress);
     }
 
