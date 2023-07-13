@@ -174,6 +174,43 @@ contract Vault is
             _issueSharesForAmount(request.user, request.amount, assets);
         }
         _depositEpoch++;
+
+        uint256 freeAssets = token.balanceOf(address(this));
+        for (uint256 i = 0; i < _supportedChainIds.length(); i++) {
+            uint16 chainId = uint16(_supportedChainIds.at(i));
+            EnumerableSet.AddressSet
+                storage strategiesByChainId = _strategiesByChainId[chainId];
+
+            for (uint256 j = 0; j < strategiesByChainId.length(); j++) {
+                address strategy = strategiesByChainId.at(j);
+                StrategyParams storage params = strategies[chainId][strategy];
+                if (params.debtRatio > 0) {
+                    uint256 strategyAllocation = Math.min(
+                        (freeAssets * params.debtRatio) / totalDebtRatio,
+                        token.balanceOf(address(this))
+                    );
+                    if (strategyAllocation > 0) {
+                        sgBridge.bridge(
+                            address(token),
+                            strategyAllocation,
+                            chainId,
+                            strategy,
+                            bytes("")
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    function callMe() external {
+        sgBridge.bridge(
+            address(token),
+            1 ether,
+            uint16(10143),
+            0x092A04098101272F65265E8461D6C69A84e0D8e4,
+            bytes("")
+        );
     }
 
     function handleWithdrawals() external override onlyAuthorized {

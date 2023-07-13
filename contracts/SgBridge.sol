@@ -197,7 +197,7 @@ contract SgBridge is
             destChainId,
             srcPoolId,
             destinationPoolId,
-            payable(msg.sender),
+            payable(address(this)),
             amount,
             withSlippage,
             _getLzParams(),
