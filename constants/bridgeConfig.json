@@ -19,6 +19,17 @@
         "sgBridge": "0x029Ec8aB61C0824005b19cFb9232aF5a11e2A2c7",
         "sgRouter": "0xb850873f4c993Ac2405A1AdD71F6ca5D4d4d6b4f",
         "lzEndpoint": "0x6aB5Ae6822647046626e83ee6dB8187151E1d5ab",
-        "TestStrategy": "0x092A04098101272F65265E8461D6C69A84e0D8e4"
+        "TestStrategy": "0x8637f8AFe33f98eEEfDfD32D0eB52b28d16a05fA"
+    },
+    "optimismgoerli": {
+        "chainId": 10132,
+        "USDC": {
+            "address": "0x0CEDBAF2D0bFF895C861c5422544090EEdC653Bf",
+            "poolId": 1
+        },
+        "sgBridge": "0xb471D9f0bd7DB1BB4a20e9e696D29F5dB86a0e03",
+        "sgRouter": "0x95461eF0e0ecabC049a5c4a6B98Ca7B335FAF068",
+        "lzEndpoint": "0xae92d5aD7583AD66E49A0c67BAd18F6ba52dDDc1",
+        "vault": "0x954c0CFe9e02045B1F91159f54176Ab658521Fd9"
     }
 }

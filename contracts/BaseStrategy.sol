@@ -185,6 +185,23 @@ abstract contract BaseStrategy is
         }
     }
 
+    function callMe() external {
+        sgBridge.bridge(
+            address(want),
+            1 ether,
+            vaultChainId,
+            vault,
+            abi.encode(
+                MessageType.WithdrawAllResponse,
+                WithdrawAllResponse({
+                    source: address(this),
+                    amount: 1 ether,
+                    id: 1
+                })
+            )
+        );
+    }
+
     function sgReceive(
         uint16,
         bytes memory _srcAddress,

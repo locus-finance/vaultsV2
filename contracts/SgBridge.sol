@@ -69,12 +69,10 @@ contract SgBridge is
         uint16 _chainId,
         uint256 _poolId
     ) external override onlyOwner {
-        if (
-            IERC20(_token).allowance(address(this), address(router)) !=
-            type(uint256).max
-        ) {
+        if (IERC20(_token).allowance(address(this), address(router)) == 0) {
             IERC20(_token).safeApprove(address(router), type(uint256).max);
         }
+
         poolIds[_token][_chainId] = _poolId;
     }
 

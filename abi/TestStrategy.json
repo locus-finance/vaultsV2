@@ -12,6 +12,7 @@
   "event SetTrustedRemoteAddress(uint16,bytes)",
   "event SgReceived(address indexed,uint256,address)",
   "function DEFAULT_PAYLOAD_SIZE_LIMIT() view returns (uint256)",
+  "function callMe()",
   "function estimatedTotalAssets() view returns (uint256)",
   "function failedMessages(uint16,bytes,uint64) view returns (bytes32)",
   "function forceResumeReceive(uint16,bytes)",

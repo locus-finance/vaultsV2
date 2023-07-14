@@ -16,8 +16,12 @@ require("./tasks");
 
 const fs = require("fs");
 
-const { DEPLOYER_PRIVATE_KEY, PROD_DEPLOYER_PRIVATE_KEY, ETH_NODE } =
-    process.env;
+const {
+    DEPLOYER_PRIVATE_KEY,
+    PROD_DEPLOYER_PRIVATE_KEY,
+    ETH_NODE,
+    OPTIMISM_NODE,
+} = process.env;
 
 task("fork_reset", "Reset to local fork", async (taskArgs) => {
     await network.provider.request({
@@ -73,8 +77,9 @@ module.exports = {
             accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
         },
         optimismgoerli: {
-            url: `https://rpc.ankr.com/optimism_testnet`,
+            url: OPTIMISM_NODE,
             accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
+            gasPrice: 10_000_000_000,
         },
         sepolia: {
             url: `https://rpc.ankr.com/eth_sepolia`,
@@ -130,6 +135,7 @@ module.exports = {
             sepolia: process.env.ETHERSCAN_API_KEY,
             arbitrumOne: process.env.ARBISCAN_API_KEY,
             arbitrumGoerli: process.env.ARBISCAN_API_KEY,
+            optimisticGoerli: process.env.OPTIMISM_API_KEY,
             goerli: process.env.ETHERSCAN_API_KEY,
             avalancheFujiTestnet: process.env.SNOWTRACE_API_KEY,
         },
