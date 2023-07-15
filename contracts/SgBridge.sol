@@ -4,11 +4,17 @@ pragma solidity ^0.8.18;
 
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
 
-contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
+contract SgBridge is
+    Initializable,
+    OwnableUpgradeable,
+    ISgBridge,
+    IStargateReceiver
+{
     using SafeERC20 for IERC20;
 
     IStargateRouter public router;
@@ -32,6 +38,10 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
         router = IStargateRouter(_router);
         slippage = 9_900;
         dstGasForCall = 500_000;
+    }
+
+    function setRouter(address _router) external override onlyOwner {
+        router = IStargateRouter(_router);
     }
 
     function setSlippage(uint256 _slippage) external override onlyOwner {
@@ -59,7 +69,10 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
         uint16 _chainId,
         uint256 _poolId
     ) external override onlyOwner {
-        IERC20(_token).approve(address(router), type(uint256).max);
+        if (IERC20(_token).allowance(address(this), address(router)) == 0) {
+            IERC20(_token).safeApprove(address(router), type(uint256).max);
+        }
+
         poolIds[_token][_chainId] = _poolId;
     }
 
@@ -182,7 +195,7 @@ contract SgBridge is OwnableUpgradeable, ISgBridge, IStargateReceiver {
             destChainId,
             srcPoolId,
             destinationPoolId,
-            payable(msg.sender),
+            payable(address(this)),
             amount,
             withSlippage,
             _getLzParams(),

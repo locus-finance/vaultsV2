@@ -1,18 +1,35 @@
 {
-    "goerli": {
-        "chainId": 10121,
-        "USDC": {
-            "address": "0xDf0360Ad8C5ccf25095Aa97ee5F2785c8d848620",
-            "poolId": 1
-        },
-        "sgBridge": "0xe5bb8e93E2d7C1670F35B5Ee7929D5964ACF5F3b"
-    },
     "fujiavax": {
         "chainId": 10106,
         "USDC": {
             "address": "0x4A0D1092E9df255cf95D72834Ea9255132782318",
             "poolId": 1
         },
-        "sgBridge": "0x0eAaDb50167702993fe0b4d5Cce7d6a3C1572109"
+        "sgBridge": "0x1B7Aa2A0AE1A15E3FBBD2e471179E9C5830Cdf96",
+        "sgRouter": "0x13093E05Eb890dfA6DacecBdE51d24DabAb2Faa1",
+        "lzEndpoint": "0x93f54D755A063cE7bB9e6Ac47Eccc8e33411d706",
+        "vault": "0x0BFf684cFDBd855402B1cFcE7f562bBfAfd1B824"
+    },
+    "arbgoerli": {
+        "chainId": 10143,
+        "USDC": {
+            "address": "0x6aAd876244E7A1Ad44Ec4824Ce813729E5B6C291",
+            "poolId": 1
+        },
+        "sgBridge": "0x029Ec8aB61C0824005b19cFb9232aF5a11e2A2c7",
+        "sgRouter": "0xb850873f4c993Ac2405A1AdD71F6ca5D4d4d6b4f",
+        "lzEndpoint": "0x6aB5Ae6822647046626e83ee6dB8187151E1d5ab",
+        "TestStrategy": "0x8637f8AFe33f98eEEfDfD32D0eB52b28d16a05fA"
+    },
+    "optimismgoerli": {
+        "chainId": 10132,
+        "USDC": {
+            "address": "0x0CEDBAF2D0bFF895C861c5422544090EEdC653Bf",
+            "poolId": 1
+        },
+        "sgBridge": "0xb471D9f0bd7DB1BB4a20e9e696D29F5dB86a0e03",
+        "sgRouter": "0x95461eF0e0ecabC049a5c4a6B98Ca7B335FAF068",
+        "lzEndpoint": "0xae92d5aD7583AD66E49A0c67BAd18F6ba52dDDc1",
+        "vault": "0x954c0CFe9e02045B1F91159f54176Ab658521Fd9"
     }
 }

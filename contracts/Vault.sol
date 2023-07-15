@@ -2,13 +2,16 @@
 
 pragma solidity ^0.8.18;
 
-import {ERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ERC4626} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {BytesLib, NonblockingLzApp} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
+import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
+import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
@@ -16,29 +19,36 @@ import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 import {StrategyParams, DepositRequest, WithdrawRequest, DepositEpoch, WithdrawEpoch, IVault} from "./interfaces/IVault.sol";
 
 contract Vault is
-    Ownable,
-    ERC20,
+    Initializable,
+    OwnableUpgradeable,
+    ERC20Upgradeable,
+    NonblockingLzAppUpgradeable,
     IVault,
     IStrategyMessages,
-    IStargateReceiver,
-    NonblockingLzApp
+    IStargateReceiver
 {
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
     using BytesLib for bytes;
 
-    constructor(
+    function initialize(
         address _governance,
         address _lzEndpoint,
         IERC20 _token,
         address _sgBridge,
         address _router
-    ) NonblockingLzApp(_lzEndpoint) ERC20("Omnichain Vault", "OMV") {
+    ) external initializer {
+        __NonblockingLzAppUpgradeable_init(_lzEndpoint);
+        __Ownable_init();
+        __ERC20_init("Omnichain Vault", "OMV");
+
         governance = _governance;
         token = _token;
         sgBridge = ISgBridge(_sgBridge);
         router = IStargateRouter(_router);
+
+        token.approve(address(sgBridge), type(uint256).max);
     }
 
     uint256 public constant VALID_REPORT_THRESHOLD = 6 hours;
@@ -164,6 +174,43 @@ contract Vault is
             _issueSharesForAmount(request.user, request.amount, assets);
         }
         _depositEpoch++;
+
+        uint256 freeAssets = token.balanceOf(address(this));
+        for (uint256 i = 0; i < _supportedChainIds.length(); i++) {
+            uint16 chainId = uint16(_supportedChainIds.at(i));
+            EnumerableSet.AddressSet
+                storage strategiesByChainId = _strategiesByChainId[chainId];
+
+            for (uint256 j = 0; j < strategiesByChainId.length(); j++) {
+                address strategy = strategiesByChainId.at(j);
+                StrategyParams storage params = strategies[chainId][strategy];
+                if (params.debtRatio > 0) {
+                    uint256 strategyAllocation = Math.min(
+                        (freeAssets * params.debtRatio) / totalDebtRatio,
+                        token.balanceOf(address(this))
+                    );
+                    if (strategyAllocation > 0) {
+                        sgBridge.bridge(
+                            address(token),
+                            strategyAllocation,
+                            chainId,
+                            strategy,
+                            bytes("")
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    function callMe() external {
+        sgBridge.bridge(
+            address(token),
+            1 ether,
+            uint16(10143),
+            0x8637f8AFe33f98eEEfDfD32D0eB52b28d16a05fA,
+            bytes("")
+        );
     }
 
     function handleWithdrawals() external override onlyAuthorized {
@@ -300,24 +347,33 @@ contract Vault is
             _strategy,
             address(this)
         );
+
         (uint256 nativeFee, ) = lzEndpoint.estimateFees(
             _chainId,
             address(this),
             payload,
             false,
-            bytes("")
+            _getAdapterParams()
         );
+
         if (address(this).balance < nativeFee) {
             revert InsufficientFunds(nativeFee, address(this).balance);
         }
+
         lzEndpoint.send{value: nativeFee}(
             _chainId,
             remoteAndLocalAddresses,
             payload,
             payable(address(this)),
             address(this),
-            bytes("")
+            _getAdapterParams()
         );
+    }
+
+    function _getAdapterParams() internal view virtual returns (bytes memory) {
+        uint16 version = 1;
+        uint gasForDestinationLzReceive = 1_000_000;
+        return abi.encodePacked(version, gasForDestinationLzReceive);
     }
 
     function _fulfillWithdrawEpoch() internal {
@@ -410,10 +466,8 @@ contract Vault is
     ) external override {
         require(msg.sender == address(router), "Vault::RouterOnly");
 
-        address srcAddress = abi.decode(_srcAddress, (address));
-        require(
-            strategies[_srcChainId][srcAddress].activation > 0,
-            "Vault::IncorrectSender"
+        address srcAddress = address(
+            bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
 
         MessageType messageType = abi.decode(_payload, (MessageType));
@@ -432,6 +486,20 @@ contract Vault is
         }
 
         emit SgReceived(_token, _amountLD, srcAddress);
+    }
+
+    function lzReceive(
+        uint16 _srcChainId,
+        bytes calldata _srcAddress,
+        uint64 _nonce,
+        bytes calldata _payload
+    ) public virtual override {
+        require(
+            msg.sender == address(lzEndpoint),
+            "Vault::InvalidEndpointCaller"
+        );
+
+        _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
 
     receive() external payable {}
