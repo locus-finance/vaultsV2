@@ -46,6 +46,8 @@ interface IVault {
         address indexed strategy,
         uint256 amount
     );
+    event FulfilledDepositEpoch(uint256 epochId, uint256 requestCount);
+    event FulfilledWithdrawEpoch(uint256 epochId, uint256 requestCount);
 
     function token() external view returns (IERC20);
 
@@ -76,6 +78,8 @@ interface IVault {
     function pricePerShare() external view returns (uint256);
 
     function revokeStrategy(uint16 _chainId, address _strategy) external;
+
+    function cancelWithdrawalEpoch(uint256 _epochId) external;
 
     function governance() external view returns (address);
 }

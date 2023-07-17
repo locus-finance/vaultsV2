@@ -1,6 +1,8 @@
 [
   "error InsufficientFunds(uint256,uint256)",
   "event Approval(address indexed,address indexed,uint256)",
+  "event FulfilledDepositEpoch(uint256,uint256)",
+  "event FulfilledWithdrawEpoch(uint256,uint256)",
   "event Initialized(uint8)",
   "event MessageFailed(uint16,bytes,uint64,bytes,bytes)",
   "event OwnershipTransferred(address indexed,address indexed)",
@@ -21,6 +23,7 @@
   "function approve(address,uint256) returns (bool)",
   "function balanceOf(address) view returns (uint256)",
   "function callMe()",
+  "function cancelWithdrawalEpoch(uint256)",
   "function decimals() view returns (uint8)",
   "function decreaseAllowance(address,uint256) returns (bool)",
   "function failedMessages(uint16,bytes,uint64) view returns (bytes32)",

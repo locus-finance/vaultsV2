@@ -80,7 +80,7 @@ contract Vault is
         _;
     }
 
-    function revokeFunds() external override onlyOwner {
+    function revokeFunds() external override onlyAuthorized {
         payable(owner()).transfer(address(this).balance);
     }
 
@@ -177,7 +177,6 @@ contract Vault is
                 .requests[i];
             _issueSharesForAmount(request.user, request.amount, assets);
         }
-        _depositEpoch++;
 
         uint256 freeAssets = token.balanceOf(address(this));
         for (uint256 i = 0; i < _supportedChainIds.length(); i++) {
@@ -199,12 +198,15 @@ contract Vault is
                             strategyAllocation,
                             chainId,
                             strategy,
-                            bytes("")
+                            abi.encodePacked(address(this))
                         );
                     }
                 }
             }
         }
+
+        emit FulfilledDepositEpoch(_depositEpoch, requestsLength);
+        _depositEpoch++;
     }
 
     function callMe() external {
@@ -291,6 +293,12 @@ contract Vault is
         address _strategy
     ) external override onlyAuthorized {
         _requestToWithdrawFromStrategy(_chainId, _strategy, 0, true);
+    }
+
+    function cancelWithdrawalEpoch(
+        uint256 _epochId
+    ) external override onlyAuthorized {
+        _withdrawEpochs[_epochId].inProgress = false;
     }
 
     function _shareValue(
@@ -403,6 +411,8 @@ contract Vault is
                 .requests[i];
             _burn(address(this), request.shares);
         }
+        emit FulfilledWithdrawEpoch(_withdrawEpoch, requestsLength);
+
         _withdrawEpoch++;
     }
 
@@ -414,7 +424,7 @@ contract Vault is
             strategies[_chainId][_message.source].activation > 0,
             "Vault::InactiveStrategy"
         );
-        _withdrawEpochs[_message.id].approveExpected++;
+        _withdrawEpochs[_message.id].approveActual++;
         if (
             _withdrawEpochs[_message.id].approveExpected ==
             _withdrawEpochs[_message.id].approveActual
