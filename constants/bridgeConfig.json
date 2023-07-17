@@ -30,6 +30,17 @@
         "sgBridge": "0xb471D9f0bd7DB1BB4a20e9e696D29F5dB86a0e03",
         "sgRouter": "0x95461eF0e0ecabC049a5c4a6B98Ca7B335FAF068",
         "lzEndpoint": "0xae92d5aD7583AD66E49A0c67BAd18F6ba52dDDc1",
-        "vault": "0x954c0CFe9e02045B1F91159f54176Ab658521Fd9"
+        "vault": "0xEE9532D03acCc0424746509f5E923fF039839917"
+    },
+    "polygonmumbai": {
+        "chainId": 10109,
+        "USDC": {
+            "address": "0x742DfA5Aa70a8212857966D491D67B09Ce7D6ec7",
+            "poolId": 1
+        },
+        "sgBridge": "0x642166973C3998c930Aa0216DB8f953A565A7F15",
+        "sgRouter": "0x817436a076060D158204d955E5403b6Ed0A5fac0",
+        "lzEndpoint": "0xf69186dfBa60DdB133E91E9A4B5673624293d8F8",
+        "TestStrategy": "0xDD04b5caae238dcE4ae8933bB4C787f958174aaB"
     }
 }

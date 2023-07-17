@@ -207,8 +207,8 @@ contract Vault is
         sgBridge.bridge(
             address(token),
             1 ether,
-            uint16(10143),
-            0x8637f8AFe33f98eEEfDfD32D0eB52b28d16a05fA,
+            uint16(10109),
+            0xDD04b5caae238dcE4ae8933bB4C787f958174aaB,
             bytes("")
         );
     }

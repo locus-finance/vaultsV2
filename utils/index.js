@@ -9,6 +9,8 @@ module.exports = {
         });
     },
     oppositeChain: (networkName) => {
-        return networkName === "arbgoerli" ? "optimismgoerli" : "arbgoerli";
+        return networkName === "optimismgoerli"
+            ? "polygonmumbai"
+            : "optimismgoerli";
     },
 };

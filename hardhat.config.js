@@ -134,6 +134,7 @@ module.exports = {
             mainnet: process.env.ETHERSCAN_API_KEY,
             sepolia: process.env.ETHERSCAN_API_KEY,
             arbitrumOne: process.env.ARBISCAN_API_KEY,
+            polygonMumbai: process.env.POLYGONSCAN_API_KEY,
             arbitrumGoerli: process.env.ARBISCAN_API_KEY,
             optimisticGoerli: process.env.OPTIMISM_API_KEY,
             goerli: process.env.ETHERSCAN_API_KEY,
