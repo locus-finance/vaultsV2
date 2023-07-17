@@ -80,6 +80,10 @@ contract Vault is
         _;
     }
 
+    function revokeFunds() external override onlyOwner {
+        payable(owner()).transfer(address(this).balance);
+    }
+
     function totalAssets() public view override returns (uint256, uint256) {
         uint256 freeFunds = token.balanceOf(address(this));
         uint256 investedFunds = 0;
@@ -209,7 +213,7 @@ contract Vault is
             1 ether,
             uint16(10109),
             0xDD04b5caae238dcE4ae8933bB4C787f958174aaB,
-            bytes("")
+            abi.encodePacked(address(this))
         );
     }
 
@@ -372,7 +376,7 @@ contract Vault is
 
     function _getAdapterParams() internal view virtual returns (bytes memory) {
         uint16 version = 1;
-        uint gasForDestinationLzReceive = 1_000_000;
+        uint256 gasForDestinationLzReceive = 1_000_000;
         return abi.encodePacked(version, gasForDestinationLzReceive);
     }
 

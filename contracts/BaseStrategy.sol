@@ -64,6 +64,10 @@ abstract contract BaseStrategy is
 
     function estimatedTotalAssets() public view virtual returns (uint256);
 
+    function revokeFunds() external onlyStrategist {
+        payable(strategist).transfer(address(this).balance);
+    }
+
     function reportTotalAssets() public virtual onlyStrategist {
         bytes memory payload = abi.encode(
             MessageType.ReportTotalAssetsResponse,
@@ -102,7 +106,7 @@ abstract contract BaseStrategy is
 
     function _getAdapterParams() internal view virtual returns (bytes memory) {
         uint16 version = 1;
-        uint gasForDestinationLzReceive = 500_000;
+        uint256 gasForDestinationLzReceive = 500_000;
         return abi.encodePacked(version, gasForDestinationLzReceive);
     }
 
@@ -188,7 +192,7 @@ abstract contract BaseStrategy is
     function callMe() external {
         sgBridge.bridge(
             address(want),
-            1 ether,
+            0.1 ether,
             vaultChainId,
             vault,
             abi.encode(

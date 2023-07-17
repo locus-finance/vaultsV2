@@ -46,6 +46,7 @@
   "function pricePerShare() view returns (uint256)",
   "function renounceOwnership()",
   "function retryMessage(uint16,bytes,uint64,bytes) payable",
+  "function revokeFunds()",
   "function revokeStrategy(uint16,address)",
   "function router() view returns (address)",
   "function setConfig(uint16,uint16,uint256,bytes)",

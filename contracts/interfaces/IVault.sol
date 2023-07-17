@@ -49,6 +49,8 @@ interface IVault {
 
     function token() external view returns (IERC20);
 
+    function revokeFunds() external;
+
     function totalAssets() external view returns (uint256, uint256);
 
     function addStrategy(

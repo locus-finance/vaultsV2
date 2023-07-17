@@ -34,6 +34,8 @@ interface ISgBridge {
         address receiveContract
     ) external;
 
+    function revokeFunds() external;
+
     function bridgeProxy(
         address token,
         uint256 amount,

@@ -31,6 +31,7 @@
   "function renounceOwnership()",
   "function reportTotalAssets()",
   "function retryMessage(uint16,bytes,uint64,bytes) payable",
+  "function revokeFunds()",
   "function router() view returns (address)",
   "function setConfig(uint16,uint16,uint256,bytes)",
   "function setMinDstGas(uint16,uint16,uint256)",

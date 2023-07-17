@@ -83,6 +83,10 @@ contract SgBridge is
         supportedDestinations[_chainId] = _receiveContract;
     }
 
+    function revokeFunds() external override onlyOwner {
+        payable(owner()).transfer(address(this).balance);
+    }
+
     function bridgeProxy(
         address token,
         uint256 amount,
