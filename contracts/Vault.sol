@@ -231,7 +231,7 @@ contract Vault is
             .length;
         require(requestsLength > 0, "Vault::NoWithdrawRequests");
 
-        _withdrawEpochs[_withdrawEpoch].approveExpected = activeStrategies;
+        _withdrawEpochs[_withdrawEpoch].approveExpected = 0;
         uint256 vaultBalance = token.balanceOf(address(this));
 
         uint256 sharesToWithdraw = 0;
@@ -252,6 +252,8 @@ contract Vault is
         }
 
         _withdrawEpochs[_withdrawEpoch].inProgress = true;
+        _withdrawEpochs[_withdrawEpoch].approveActual = 0;
+
         for (uint256 i = 0; i < _supportedChainIds.length(); i++) {
             uint16 chainId = uint16(_supportedChainIds.at(i));
             EnumerableSet.AddressSet
@@ -262,6 +264,8 @@ contract Vault is
                 StrategyParams storage params = strategies[chainId][strategy];
                 if (params.debtRatio > 0) {
                     params.lastReport = 0;
+                    _withdrawEpochs[_withdrawEpoch].approveExpected++;
+
                     uint256 valueToWithdraw = (toWithdrawFromStrategies *
                         params.debtRatio) / totalDebtRatio;
                     if (valueToWithdraw > 0) {
