@@ -303,18 +303,15 @@ contract Vault is
         _sendMessageToStrategy(_chainId, _strategy, payload);
     }
 
-    function feeForWithdrawRequestFromStrategy()
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function feeForWithdrawRequestFromStrategy(
+        uint16 _destChainId
+    ) external view override returns (uint256) {
         bytes memory payload = abi.encode(
             MessageType.WithdrawSomeRequest,
             WithdrawSomeRequest({amount: MAX_BPS, id: _withdrawEpoch})
         );
         (uint256 nativeFee, ) = lzEndpoint.estimateFees(
-            0,
+            _destChainId,
             address(this),
             payload,
             false,

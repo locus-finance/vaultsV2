@@ -109,7 +109,9 @@ abstract contract BaseStrategy is
         );
     }
 
-    function feeForReportTotalAssets() external view returns (uint256) {
+    function feeForReportTotalAssets(
+        uint16 _destChainId
+    ) external view returns (uint256) {
         bytes memory payload = abi.encode(
             MessageType.ReportTotalAssetsResponse,
             ReportTotalAssetsResponse({
@@ -120,7 +122,7 @@ abstract contract BaseStrategy is
         );
 
         (uint256 nativeFee, ) = lzEndpoint.estimateFees(
-            vaultChainId,
+            _destChainId,
             address(this),
             payload,
             false,
@@ -130,7 +132,9 @@ abstract contract BaseStrategy is
         return nativeFee;
     }
 
-    function feeForWithdrawResponse() external view returns (uint256) {
+    function feeForWithdrawResponse(
+        uint16 _destChainId
+    ) external view returns (uint256) {
         bytes memory payload = abi.encode(
             MessageType.WithdrawSomeResponse,
             WithdrawSomeResponse({
@@ -141,7 +145,7 @@ abstract contract BaseStrategy is
             })
         );
 
-        return sgBridge.feeForBridge(vaultChainId, vault, payload);
+        return sgBridge.feeForBridge(_destChainId, vault, payload);
     }
 
     function _getAdapterParams() internal view virtual returns (bytes memory) {
