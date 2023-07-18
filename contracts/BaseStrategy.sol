@@ -30,6 +30,11 @@ abstract contract BaseStrategy is
         _;
     }
 
+    modifier onlyStrategistOrSelf() {
+        _onlyStrategistOrSelf();
+        _;
+    }
+
     function __BaseStrategy_init(
         address _lzEndpoint,
         address _strategist,
@@ -68,7 +73,7 @@ abstract contract BaseStrategy is
         payable(strategist).transfer(address(this).balance);
     }
 
-    function reportTotalAssets() public virtual onlyStrategist {
+    function reportTotalAssets() public virtual onlyStrategistOrSelf {
         bytes memory payload = abi.encode(
             MessageType.ReportTotalAssetsResponse,
             ReportTotalAssetsResponse({
@@ -112,6 +117,13 @@ abstract contract BaseStrategy is
 
     function _onlyStrategist() internal view {
         require(msg.sender == strategist, "BaseStrategy::OnlyStrategist");
+    }
+
+    function _onlyStrategistOrSelf() internal view {
+        require(
+            msg.sender == strategist || msg.sender == address(this),
+            "BaseStrategy::OnlyStrategistOrSelf"
+        );
     }
 
     function _liquidatePosition(

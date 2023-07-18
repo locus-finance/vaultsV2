@@ -188,6 +188,7 @@ contract Vault is
                 address strategy = strategiesByChainId.at(j);
                 StrategyParams storage params = strategies[chainId][strategy];
                 if (params.debtRatio > 0) {
+                    params.lastReport = 0;
                     uint256 strategyAllocation = Math.min(
                         (freeAssets * params.debtRatio) / totalDebtRatio,
                         token.balanceOf(address(this))
@@ -261,6 +262,7 @@ contract Vault is
                 address strategy = strategiesByChainId.at(j);
                 StrategyParams storage params = strategies[chainId][strategy];
                 if (params.debtRatio > 0) {
+                    params.lastReport = 0;
                     uint256 valueToWithdraw = (toWithdrawFromStrategies *
                         params.debtRatio) / totalDebtRatio;
                     if (valueToWithdraw > 0) {
@@ -301,6 +303,14 @@ contract Vault is
         _withdrawEpochs[_epochId].inProgress = false;
     }
 
+    function requestReportFromStrategy(
+        uint16 _chainId,
+        address _strategy
+    ) external override onlyAuthorized {
+        bytes memory payload = abi.encode(MessageType.ReportTotalAssetsRequest);
+        _sendMessageToStrategy(_chainId, _strategy, payload);
+    }
+
     function _shareValue(
         uint256 _shares,
         uint256 _totalAssets
@@ -334,15 +344,47 @@ contract Vault is
             block.timestamp - lastReport < VALID_REPORT_THRESHOLD;
     }
 
+    function _sendMessageToStrategy(
+        uint16 _chainId,
+        address _strategy,
+        bytes memory _payload
+    ) internal {
+        StrategyParams storage params = strategies[_chainId][_strategy];
+        require(params.activation > 0, "Vault::InactiveStrategy");
+
+        bytes memory remoteAndLocalAddresses = abi.encodePacked(
+            _strategy,
+            address(this)
+        );
+
+        (uint256 nativeFee, ) = lzEndpoint.estimateFees(
+            _chainId,
+            address(this),
+            _payload,
+            false,
+            _getAdapterParams()
+        );
+
+        if (address(this).balance < nativeFee) {
+            revert InsufficientFunds(nativeFee, address(this).balance);
+        }
+
+        lzEndpoint.send{value: nativeFee}(
+            _chainId,
+            remoteAndLocalAddresses,
+            _payload,
+            payable(address(this)),
+            address(this),
+            _getAdapterParams()
+        );
+    }
+
     function _requestToWithdrawFromStrategy(
         uint16 _chainId,
         address _strategy,
         uint256 _valueToWithdraw,
         bool _withdrawAll
     ) internal {
-        StrategyParams storage params = strategies[_chainId][_strategy];
-        require(params.activation > 0, "Vault::InactiveStrategy");
-
         bytes memory payload = _withdrawAll
             ? abi.encode(
                 MessageType.WithdrawAllRequest,
@@ -355,31 +397,8 @@ contract Vault is
                     id: _withdrawEpoch
                 })
             );
-        bytes memory remoteAndLocalAddresses = abi.encodePacked(
-            _strategy,
-            address(this)
-        );
 
-        (uint256 nativeFee, ) = lzEndpoint.estimateFees(
-            _chainId,
-            address(this),
-            payload,
-            false,
-            _getAdapterParams()
-        );
-
-        if (address(this).balance < nativeFee) {
-            revert InsufficientFunds(nativeFee, address(this).balance);
-        }
-
-        lzEndpoint.send{value: nativeFee}(
-            _chainId,
-            remoteAndLocalAddresses,
-            payload,
-            payable(address(this)),
-            address(this),
-            _getAdapterParams()
-        );
+        _sendMessageToStrategy(_chainId, _strategy, payload);
     }
 
     function _getAdapterParams() internal view virtual returns (bytes memory) {
@@ -431,6 +450,14 @@ contract Vault is
         ) {
             _fulfillWithdrawEpoch();
         }
+
+        emit StrategyWithdrawnSome(
+            _chainId,
+            _message.source,
+            _message.amount,
+            _message.loss,
+            _message.id
+        );
     }
 
     function _handleWithdrawAllResponse(
@@ -441,7 +468,13 @@ contract Vault is
             strategies[_chainId][_message.source].activation > 0,
             "Vault::InactiveStrategy"
         );
-        emit StrategyWithdrawnAll(_chainId, _message.source, _message.amount);
+
+        emit StrategyWithdrawnAll(
+            _chainId,
+            _message.source,
+            _message.amount,
+            _message.id
+        );
     }
 
     function _nonblockingLzReceive(
@@ -467,6 +500,13 @@ contract Vault is
             strategies[_srcChainId][srcAddress].lastReport = message.timestamp;
             strategies[_srcChainId][srcAddress]
                 .lastReportedTotalAssets = message.totalAssets;
+
+            emit StrategyReportedAssets(
+                _srcChainId,
+                srcAddress,
+                message.timestamp,
+                message.totalAssets
+            );
         }
     }
 

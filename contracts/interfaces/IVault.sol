@@ -44,7 +44,21 @@ interface IVault {
     event StrategyWithdrawnAll(
         uint16 indexed chainId,
         address indexed strategy,
-        uint256 amount
+        uint256 amount,
+        uint256 id
+    );
+    event StrategyWithdrawnSome(
+        uint16 indexed chainId,
+        address indexed strategy,
+        uint256 amount,
+        uint256 loss,
+        uint256 id
+    );
+    event StrategyReportedAssets(
+        uint16 indexed chainId,
+        address indexed strategy,
+        uint256 timestamp,
+        uint256 totalAssets
     );
     event FulfilledDepositEpoch(uint256 epochId, uint256 requestCount);
     event FulfilledWithdrawEpoch(uint256 epochId, uint256 requestCount);
@@ -80,6 +94,11 @@ interface IVault {
     function revokeStrategy(uint16 _chainId, address _strategy) external;
 
     function cancelWithdrawalEpoch(uint256 _epochId) external;
+
+    function requestReportFromStrategy(
+        uint16 _chainId,
+        address _strategy
+    ) external;
 
     function governance() external view returns (address);
 }
