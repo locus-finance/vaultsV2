@@ -88,33 +88,33 @@ contract SgBridge is
     }
 
     function bridgeProxy(
-        address token,
-        uint256 amount,
-        uint16 destChainId,
-        address destinationAddress,
-        bytes memory message
+        address _token,
+        uint256 _amount,
+        uint16 _destChainId,
+        address _destinationAddress,
+        bytes memory _message
     ) external payable override onlyWhitelisted {
-        uint256 destinationPool = poolIds[token][destChainId];
+        uint256 destinationPool = poolIds[_token][_destChainId];
         if (destinationPool == 0) {
-            revert TokenNotSupported(token, destChainId);
+            revert TokenNotSupported(_token, _destChainId);
         }
 
-        uint256 sourcePool = poolIds[token][currentChainId];
+        uint256 sourcePool = poolIds[_token][currentChainId];
         if (sourcePool == 0) {
-            revert TokenNotSupported(token, currentChainId);
+            revert TokenNotSupported(_token, currentChainId);
         }
 
-        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
-        address receiveContract = supportedDestinations[destChainId];
+        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+        address receiveContract = supportedDestinations[_destChainId];
         if (receiveContract == address(0)) {
-            revert DestinationNotSupported(destChainId);
+            revert DestinationNotSupported(_destChainId);
         }
 
-        bytes memory payload = abi.encode(destinationAddress, message);
+        bytes memory payload = abi.encode(_destinationAddress, _message);
         _bridgeInternal(
-            amount,
+            _amount,
             sourcePool,
-            destChainId,
+            _destChainId,
             destinationPool,
             receiveContract,
             payload
@@ -122,47 +122,47 @@ contract SgBridge is
     }
 
     function bridge(
-        address token,
-        uint256 amount,
-        uint16 destChainId,
-        address destinationAddress,
-        bytes memory message
+        address _token,
+        uint256 _amount,
+        uint16 _destChainId,
+        address _destinationAddress,
+        bytes memory _message
     ) external payable override onlyWhitelisted {
-        uint256 destinationPool = poolIds[token][destChainId];
+        uint256 destinationPool = poolIds[_token][_destChainId];
         if (destinationPool == 0) {
-            revert TokenNotSupported(token, destChainId);
+            revert TokenNotSupported(_token, _destChainId);
         }
 
-        uint256 sourcePool = poolIds[token][currentChainId];
+        uint256 sourcePool = poolIds[_token][currentChainId];
         if (sourcePool == 0) {
-            revert TokenNotSupported(token, currentChainId);
+            revert TokenNotSupported(_token, currentChainId);
         }
 
-        if (destChainId == currentChainId) {
-            IERC20(token).safeTransferFrom(
+        if (_destChainId == currentChainId) {
+            IERC20(_token).safeTransferFrom(
                 msg.sender,
-                destinationAddress,
-                amount
+                _destinationAddress,
+                _amount
             );
-            IStargateReceiver(destinationAddress).sgReceive(
-                destChainId,
+            IStargateReceiver(_destinationAddress).sgReceive(
+                _destChainId,
                 abi.encodePacked(address(this)),
                 0,
-                token,
-                amount,
-                message
+                _token,
+                _amount,
+                _message
             );
             return;
         }
 
-        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
+        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
         _bridgeInternal(
-            amount,
+            _amount,
             sourcePool,
-            destChainId,
+            _destChainId,
             destinationPool,
-            destinationAddress,
-            message
+            _destinationAddress,
+            _message
         );
     }
 
@@ -170,51 +170,67 @@ contract SgBridge is
         uint16,
         bytes memory,
         uint,
-        address token,
-        uint256 amountLD,
-        bytes memory payload
+        address _token,
+        uint256 _amountLD,
+        bytes memory _payload
     ) external override {
         require(msg.sender == address(router), "SgBridge::RouterOnly");
 
-        (address toAddr, ) = abi.decode(payload, (address, bytes));
+        (address toAddr, ) = abi.decode(_payload, (address, bytes));
 
-        IERC20(token).safeTransfer(toAddr, amountLD);
+        IERC20(_token).safeTransfer(toAddr, _amountLD);
         (bool success, ) = toAddr.call(msg.data);
 
-        emit SgReceived(token, amountLD, success);
+        emit SgReceived(_token, _amountLD, success);
+    }
+
+    function feeForBridge(
+        uint16 _destChainId,
+        address _destinationContract,
+        bytes memory _payload
+    ) external view override returns (uint256) {
+        (uint256 fee, ) = router.quoteLayerZeroFee(
+            _destChainId,
+            /* _functionType */ 1,
+            abi.encodePacked(_destinationContract),
+            _payload,
+            _getLzParams()
+        );
+
+        return fee;
     }
 
     function _bridgeInternal(
-        uint256 amount,
-        uint256 srcPoolId,
-        uint16 destChainId,
-        uint256 destinationPoolId,
-        address destinationContract,
-        bytes memory payload
+        uint256 _amount,
+        uint256 _srcPoolId,
+        uint16 _destChainId,
+        uint256 _destinationPoolId,
+        address _destinationContract,
+        bytes memory _payload
     ) internal {
-        uint256 withSlippage = (amount * slippage) / 10_000;
+        uint256 withSlippage = (_amount * slippage) / 10_000;
 
         (uint256 fee, ) = router.quoteLayerZeroFee(
-            destChainId,
+            _destChainId,
             /* _functionType */ 1,
-            abi.encodePacked(destinationContract),
-            payload,
+            abi.encodePacked(_destinationContract),
+            _payload,
             _getLzParams()
         );
 
         router.swap{value: fee}(
-            destChainId,
-            srcPoolId,
-            destinationPoolId,
+            _destChainId,
+            _srcPoolId,
+            _destinationPoolId,
             payable(address(this)),
-            amount,
+            _amount,
             withSlippage,
             _getLzParams(),
-            abi.encodePacked(destinationContract),
-            payload
+            abi.encodePacked(_destinationContract),
+            _payload
         );
 
-        emit Bridge(destChainId, amount);
+        emit Bridge(_destChainId, _amount);
     }
 
     function _getLzParams()

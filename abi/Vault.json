@@ -16,6 +16,7 @@
   "event StrategyWithdrawnAll(uint16 indexed,address indexed,uint256,uint256)",
   "event StrategyWithdrawnSome(uint16 indexed,address indexed,uint256,uint256,uint256)",
   "event Transfer(address indexed,address indexed,uint256)",
+  "function DEFAULT_MAX_LOSS() view returns (uint256)",
   "function DEFAULT_PAYLOAD_SIZE_LIMIT() view returns (uint256)",
   "function MAX_BPS() view returns (uint256)",
   "function VALID_REPORT_THRESHOLD() view returns (uint256)",
@@ -28,7 +29,10 @@
   "function cancelWithdrawalEpoch(uint256)",
   "function decimals() view returns (uint8)",
   "function decreaseAllowance(address,uint256) returns (bool)",
+  "function deposit(uint256,address)",
+  "function deposit(uint256)",
   "function failedMessages(uint16,bytes,uint64) view returns (bytes32)",
+  "function feeForWithdrawRequestFromStrategy() view returns (uint256)",
   "function forceResumeReceive(uint16,bytes)",
   "function getConfig(uint16,uint16,address,uint256) view returns (bytes)",
   "function getTrustedRemoteAddress(uint16) view returns (bytes)",
@@ -37,8 +41,6 @@
   "function handleWithdrawals()",
   "function increaseAllowance(address,uint256) returns (bool)",
   "function initialize(address,address,address,address,address)",
-  "function initiateDeposit(uint256)",
-  "function initiateWithdraw(uint256,uint256)",
   "function isTrustedRemote(uint16,bytes) view returns (bool)",
   "function lzEndpoint() view returns (address)",
   "function lzReceive(uint16,bytes,uint64,bytes)",
@@ -75,5 +77,7 @@
   "function transferFrom(address,address,uint256) returns (bool)",
   "function transferOwnership(address)",
   "function trustedRemoteLookup(uint16) view returns (bytes)",
-  "function viewStrategy(uint16,address) view returns (tuple(uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256))"
+  "function withdraw()",
+  "function withdraw(uint256,uint256)",
+  "function withdraw(uint256,address,uint256)"
 ]

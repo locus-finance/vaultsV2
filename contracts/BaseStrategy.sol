@@ -109,6 +109,41 @@ abstract contract BaseStrategy is
         );
     }
 
+    function feeForReportTotalAssets() external view returns (uint256) {
+        bytes memory payload = abi.encode(
+            MessageType.ReportTotalAssetsResponse,
+            ReportTotalAssetsResponse({
+                source: address(this),
+                timestamp: block.timestamp,
+                totalAssets: estimatedTotalAssets()
+            })
+        );
+
+        (uint256 nativeFee, ) = lzEndpoint.estimateFees(
+            vaultChainId,
+            address(this),
+            payload,
+            false,
+            _getAdapterParams()
+        );
+
+        return nativeFee;
+    }
+
+    function feeForWithdrawResponse() external view returns (uint256) {
+        bytes memory payload = abi.encode(
+            MessageType.WithdrawSomeResponse,
+            WithdrawSomeResponse({
+                source: address(this),
+                amount: 1 ether,
+                loss: 1 ether,
+                id: 1
+            })
+        );
+
+        return sgBridge.feeForBridge(vaultChainId, vault, payload);
+    }
+
     function _getAdapterParams() internal view virtual returns (bytes memory) {
         uint16 version = 1;
         uint256 gasForDestinationLzReceive = 500_000;

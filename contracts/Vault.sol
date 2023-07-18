@@ -38,7 +38,7 @@ contract Vault is
         IERC20 _token,
         address _sgBridge,
         address _router
-    ) external initializer {
+    ) external override initializer {
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
         __Ownable_init();
         __ERC20_init("Omnichain Vault", "OMV");
@@ -53,6 +53,7 @@ contract Vault is
 
     uint256 public constant VALID_REPORT_THRESHOLD = 6 hours;
     uint256 public constant MAX_BPS = 10_000;
+    uint256 public constant DEFAULT_MAX_LOSS = 100;
 
     address public override governance;
     IERC20 public override token;
@@ -107,6 +108,30 @@ contract Vault is
         return (freeFunds + investedFunds, lastReport);
     }
 
+    function deposit(uint256 _amount) external override {
+        _initiateDeposit(_amount, msg.sender);
+    }
+
+    function deposit(uint256 _amount, address _recipient) external override {
+        _initiateDeposit(_amount, _recipient);
+    }
+
+    function withdraw() external override {
+        _initiateWithdraw(balanceOf(msg.sender), msg.sender, DEFAULT_MAX_LOSS);
+    }
+
+    function withdraw(uint256 _maxShares, uint256 _maxLoss) external override {
+        _initiateWithdraw(_maxShares, msg.sender, _maxLoss);
+    }
+
+    function withdraw(
+        uint256 _maxShares,
+        address _recipient,
+        uint256 _maxLoss
+    ) external override {
+        _initiateWithdraw(_maxShares, _recipient, _maxLoss);
+    }
+
     function addStrategy(
         uint16 _chainId,
         address _strategy,
@@ -137,32 +162,6 @@ contract Vault is
         _supportedChainIds.add(uint256(_chainId));
         activeStrategies++;
         totalDebtRatio += _debtRatio;
-    }
-
-    function initiateDeposit(uint256 _amount) external override {
-        token.safeTransferFrom(msg.sender, address(this), _amount);
-        _depositEpochs[_depositEpoch].requests.push(
-            DepositRequest({amount: _amount, user: msg.sender})
-        );
-    }
-
-    function initiateWithdraw(
-        uint256 _shares,
-        uint256 _maxLoss
-    ) external override {
-        IERC20(address(this)).safeTransferFrom(
-            msg.sender,
-            address(this),
-            _shares
-        );
-
-        _withdrawEpochs[_withdrawEpoch].requests.push(
-            WithdrawRequest({
-                shares: _shares,
-                maxLoss: _maxLoss,
-                user: msg.sender
-            })
-        );
     }
 
     function handleDeposits() external override onlyAuthorized {
@@ -283,13 +282,6 @@ contract Vault is
         return _shareValue(10 ** decimals(), assets);
     }
 
-    function viewStrategy(
-        uint16 _chainId,
-        address _strategy
-    ) external view override returns (StrategyParams memory) {
-        return strategies[_chainId][_strategy];
-    }
-
     function revokeStrategy(
         uint16 _chainId,
         address _strategy
@@ -309,6 +301,53 @@ contract Vault is
     ) external override onlyAuthorized {
         bytes memory payload = abi.encode(MessageType.ReportTotalAssetsRequest);
         _sendMessageToStrategy(_chainId, _strategy, payload);
+    }
+
+    function feeForWithdrawRequestFromStrategy()
+        external
+        view
+        override
+        returns (uint256)
+    {
+        bytes memory payload = abi.encode(
+            MessageType.WithdrawSomeRequest,
+            WithdrawSomeRequest({amount: MAX_BPS, id: _withdrawEpoch})
+        );
+        (uint256 nativeFee, ) = lzEndpoint.estimateFees(
+            0,
+            address(this),
+            payload,
+            false,
+            _getAdapterParams()
+        );
+        return nativeFee;
+    }
+
+    function _initiateDeposit(uint256 _amount, address _recipient) internal {
+        token.safeTransferFrom(msg.sender, address(this), _amount);
+        _depositEpochs[_depositEpoch].requests.push(
+            DepositRequest({amount: _amount, user: _recipient})
+        );
+    }
+
+    function _initiateWithdraw(
+        uint256 _shares,
+        address _recipient,
+        uint256 _maxLoss
+    ) internal {
+        IERC20(address(this)).safeTransferFrom(
+            msg.sender,
+            address(this),
+            _shares
+        );
+
+        _withdrawEpochs[_withdrawEpoch].requests.push(
+            WithdrawRequest({
+                shares: _shares,
+                maxLoss: _maxLoss,
+                user: _recipient
+            })
+        );
     }
 
     function _shareValue(

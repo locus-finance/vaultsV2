@@ -24,31 +24,37 @@ interface ISgBridge {
     function setCurrentChainId(uint16 _currentChainId) external;
 
     function setStargatePoolId(
-        address token,
-        uint16 chainId,
-        uint256 poolId
+        address _token,
+        uint16 _chainId,
+        uint256 _poolId
     ) external;
 
     function setSupportedDestination(
-        uint16 chainId,
-        address receiveContract
+        uint16 _chainId,
+        address _receiveContract
     ) external;
 
     function revokeFunds() external;
 
     function bridgeProxy(
-        address token,
-        uint256 amount,
-        uint16 destChainId,
-        address destinationAddress,
-        bytes memory message
+        address _token,
+        uint256 _amount,
+        uint16 _destChainId,
+        address _destinationAddress,
+        bytes memory _message
     ) external payable;
 
     function bridge(
-        address token,
-        uint256 amount,
-        uint16 destChainId,
-        address destinationAddress,
-        bytes memory message
+        address _token,
+        uint256 _amount,
+        uint16 _destChainId,
+        address _destinationAddress,
+        bytes memory _message
     ) external payable;
+
+    function feeForBridge(
+        uint16 _destChainId,
+        address _destinationContract,
+        bytes memory _payload
+    ) external view returns (uint256);
 }

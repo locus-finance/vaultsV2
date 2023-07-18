@@ -63,11 +63,33 @@ interface IVault {
     event FulfilledDepositEpoch(uint256 epochId, uint256 requestCount);
     event FulfilledWithdrawEpoch(uint256 epochId, uint256 requestCount);
 
+    function initialize(
+        address _governance,
+        address _lzEndpoint,
+        IERC20 _token,
+        address _sgBridge,
+        address _router
+    ) external;
+
     function token() external view returns (IERC20);
 
     function revokeFunds() external;
 
     function totalAssets() external view returns (uint256, uint256);
+
+    function deposit(uint256 _amount) external;
+
+    function deposit(uint256 _amount, address _recipient) external;
+
+    function withdraw() external;
+
+    function withdraw(uint256 _maxShares, uint256 _maxLoss) external;
+
+    function withdraw(
+        uint256 _maxShares,
+        address _recipient,
+        uint256 _maxLoss
+    ) external;
 
     function addStrategy(
         uint16 _chainId,
@@ -76,18 +98,9 @@ interface IVault {
         uint256 _performanceFee
     ) external;
 
-    function initiateDeposit(uint256 _amount) external;
-
-    function initiateWithdraw(uint256 _shares, uint256 _maxLoss) external;
-
     function handleDeposits() external;
 
     function handleWithdrawals() external;
-
-    function viewStrategy(
-        uint16 _chainId,
-        address _strategy
-    ) external view returns (StrategyParams memory);
 
     function pricePerShare() external view returns (uint256);
 
@@ -99,6 +112,11 @@ interface IVault {
         uint16 _chainId,
         address _strategy
     ) external;
+
+    function feeForWithdrawRequestFromStrategy()
+        external
+        view
+        returns (uint256);
 
     function governance() external view returns (address);
 }
