@@ -105,11 +105,6 @@ contract SgBridge is
         }
 
         IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
-        if (currentChainId == destChainId) {
-            IERC20(token).safeTransfer(destinationAddress, amount);
-            return;
-        }
-
         address receiveContract = supportedDestinations[destChainId];
         if (receiveContract == address(0)) {
             revert DestinationNotSupported(destChainId);
@@ -143,12 +138,24 @@ contract SgBridge is
             revert TokenNotSupported(token, currentChainId);
         }
 
-        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
-        if (currentChainId == destChainId) {
-            IERC20(token).safeTransfer(destinationAddress, amount);
+        if (destChainId == currentChainId) {
+            IERC20(token).safeTransferFrom(
+                msg.sender,
+                destinationAddress,
+                amount
+            );
+            IStargateReceiver(destinationAddress).sgReceive(
+                destChainId,
+                abi.encodePacked(address(this)),
+                0,
+                token,
+                amount,
+                message
+            );
             return;
         }
 
+        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
         _bridgeInternal(
             amount,
             sourcePool,

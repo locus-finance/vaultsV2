@@ -226,7 +226,10 @@ abstract contract BaseStrategy is
         uint256 _amountLD,
         bytes memory
     ) external override {
-        require(msg.sender == address(router), "SgBridge::RouterOnly");
+        require(
+            msg.sender == address(router) || msg.sender == address(sgBridge),
+            "SgBridge::RouterOrBridgeOnly"
+        );
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );

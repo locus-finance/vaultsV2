@@ -518,7 +518,10 @@ contract Vault is
         uint256 _amountLD,
         bytes memory _payload
     ) external override {
-        require(msg.sender == address(router), "Vault::RouterOnly");
+        require(
+            msg.sender == address(router) || msg.sender == address(sgBridge),
+            "Vault::RouterOrBridgeOnly"
+        );
 
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))

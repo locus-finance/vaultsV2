@@ -30,7 +30,8 @@
         "sgBridge": "0xb471D9f0bd7DB1BB4a20e9e696D29F5dB86a0e03",
         "sgRouter": "0x95461eF0e0ecabC049a5c4a6B98Ca7B335FAF068",
         "lzEndpoint": "0xae92d5aD7583AD66E49A0c67BAd18F6ba52dDDc1",
-        "vault": "0xEE9532D03acCc0424746509f5E923fF039839917"
+        "vault": "0xEE9532D03acCc0424746509f5E923fF039839917",
+        "TestStrategy": "0x3CC6c601C8Fab30A9A07f8d2c17f526e1E44858E"
     },
     "polygonmumbai": {
         "chainId": 10109,
