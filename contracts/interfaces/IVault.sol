@@ -113,6 +113,8 @@ interface IVault {
         address _strategy
     ) external;
 
+    function requestReportFromAllStrategies() external;
+
     function feeForWithdrawRequestFromStrategy(
         uint16 _destChainId
     ) external view returns (uint256);

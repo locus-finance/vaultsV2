@@ -193,6 +193,7 @@ contract Vault is
                         token.balanceOf(address(this))
                     );
                     if (strategyAllocation > 0) {
+                        params.lastReportedTotalAssets += strategyAllocation;
                         sgBridge.bridge(
                             address(token),
                             strategyAllocation,
@@ -269,6 +270,10 @@ contract Vault is
                     uint256 valueToWithdraw = (toWithdrawFromStrategies *
                         params.debtRatio) / totalDebtRatio;
                     if (valueToWithdraw > 0) {
+                        params.lastReportedTotalAssets -= Math.min(
+                            params.lastReportedTotalAssets,
+                            valueToWithdraw
+                        );
                         _requestToWithdrawFromStrategy(
                             chainId,
                             strategy,
@@ -305,6 +310,25 @@ contract Vault is
     ) external override onlyAuthorized {
         bytes memory payload = abi.encode(MessageType.ReportTotalAssetsRequest);
         _sendMessageToStrategy(_chainId, _strategy, payload);
+    }
+
+    function requestReportFromAllStrategies() external override onlyAuthorized {
+        for (uint256 i = 0; i < _supportedChainIds.length(); i++) {
+            uint16 chainId = uint16(_supportedChainIds.at(i));
+            EnumerableSet.AddressSet
+                storage strategiesByChainId = _strategiesByChainId[chainId];
+
+            for (uint256 j = 0; j < strategiesByChainId.length(); j++) {
+                address strategy = strategiesByChainId.at(j);
+                StrategyParams storage params = strategies[chainId][strategy];
+                if (params.debtRatio > 0) {
+                    bytes memory payload = abi.encode(
+                        MessageType.ReportTotalAssetsRequest
+                    );
+                    _sendMessageToStrategy(chainId, strategy, payload);
+                }
+            }
+        }
     }
 
     function feeForWithdrawRequestFromStrategy(

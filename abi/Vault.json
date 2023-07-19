@@ -52,6 +52,7 @@
   "function precrime() view returns (address)",
   "function pricePerShare() view returns (uint256)",
   "function renounceOwnership()",
+  "function requestReportFromAllStrategies()",
   "function requestReportFromStrategy(uint16,address)",
   "function retryMessage(uint16,bytes,uint64,bytes) payable",
   "function revokeFunds()",
