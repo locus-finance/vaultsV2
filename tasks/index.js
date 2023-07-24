@@ -22,3 +22,9 @@ task(
 )
     .addParam("targetContract", "Name of the contract to upgrade")
     .addParam("targetAddr", "Address of the contract to upgrade");
+
+task(
+    "calculateLZFee",
+    "Calculates the Layer Zero fee",
+    require("./calculateLZFee")
+);

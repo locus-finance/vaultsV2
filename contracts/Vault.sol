@@ -304,14 +304,6 @@ contract Vault is
         _withdrawEpochs[_epochId].inProgress = false;
     }
 
-    function requestReportFromStrategy(
-        uint16 _chainId,
-        address _strategy
-    ) external override onlyAuthorized {
-        bytes memory payload = abi.encode(MessageType.ReportTotalAssetsRequest);
-        _sendMessageToStrategy(_chainId, _strategy, payload);
-    }
-
     function requestReportFromAllStrategies() external override onlyAuthorized {
         for (uint256 i = 0; i < _supportedChainIds.length(); i++) {
             uint16 chainId = uint16(_supportedChainIds.at(i));
@@ -331,6 +323,14 @@ contract Vault is
         }
     }
 
+    function requestReportFromStrategy(
+        uint16 _chainId,
+        address _strategy
+    ) external override onlyAuthorized {
+        bytes memory payload = abi.encode(MessageType.ReportTotalAssetsRequest);
+        _sendMessageToStrategy(_chainId, _strategy, payload);
+    }
+
     function feeForWithdrawRequestFromStrategy(
         uint16 _destChainId
     ) external view override returns (uint256) {
@@ -346,6 +346,26 @@ contract Vault is
             _getAdapterParams()
         );
         return nativeFee;
+    }
+
+    function updateStrategyDebtRatio(
+        uint16 _chainId,
+        address _strategy,
+        uint256 _debtRatio
+    ) external override onlyAuthorized {
+        require(
+            strategies[_chainId][_strategy].activation > 0,
+            "Vault::InactiveStrategy"
+        );
+
+        totalDebtRatio -= strategies[_chainId][_strategy].debtRatio;
+        strategies[_chainId][_strategy].debtRatio = _debtRatio;
+
+        require(
+            totalDebtRatio + _debtRatio <= MAX_BPS,
+            "Vault::DebtRatioExceeded"
+        );
+        totalDebtRatio += _debtRatio;
     }
 
     function _initiateDeposit(uint256 _amount, address _recipient) internal {
@@ -532,6 +552,8 @@ contract Vault is
             strategies[_chainId][_message.source].activation > 0,
             "Vault::InactiveStrategy"
         );
+        totalDebtRatio -= strategies[_chainId][_message.source].debtRatio;
+        strategies[_chainId][_message.source].debtRatio = 0;
 
         emit StrategyWithdrawnAll(
             _chainId,

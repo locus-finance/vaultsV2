@@ -12,3 +12,5 @@ cache_hardhat
 artifacts
 process.env
 deployments
+
+.DS_Store

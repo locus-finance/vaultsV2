@@ -1,0 +1,27 @@
+{
+    "mainnet": {
+        "chainId": 101,
+        "sgRouter": "0x8731d54E9D02c286767d56ac03e8037C07e01e98",
+        "lzEndpoint": "0x66A71Dcef29A0fFBDBE3c6a460a3B5BC225Cd675"
+    },
+    "bnb": {
+        "chainId": 102,
+        "sgRouter": "0x4a364f8c717cAAD9A442737Eb7b8A55cc6cf18D8",
+        "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62"
+    },
+    "polygon": {
+        "chainId": 109,
+        "sgRouter": "0x45A01E4e04F14f7A4a6702c74187c5F6222033cd",
+        "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62"
+    },
+    "arbitrum": {
+        "chainId": 110,
+        "sgRouter": "0x53Bf833A5d6c4ddA888F69c22C88C9f356a41614",
+        "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62"
+    },
+    "optimism": {
+        "chainId": 111,
+        "sgRouter": "0xB0D502E938ed5f4df2E681fE6E419ff29631d62b",
+        "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62"
+    }
+}

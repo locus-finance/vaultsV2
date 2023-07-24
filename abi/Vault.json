@@ -78,6 +78,7 @@
   "function transferFrom(address,address,uint256) returns (bool)",
   "function transferOwnership(address)",
   "function trustedRemoteLookup(uint16) view returns (bytes)",
+  "function updateStrategyDebtRatio(uint16,address,uint256)",
   "function withdraw()",
   "function withdraw(uint256,uint256)",
   "function withdraw(uint256,address,uint256)"

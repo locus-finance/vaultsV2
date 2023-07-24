@@ -1,7 +1,6 @@
 const { utils } = require("ethers");
 
 const bridgeConfig = require("../constants/bridgeConfig.json");
-const stargateRouters = require("../constants/stargateRouters.json");
 
 const TOKEN = "USDC";
 const IERC20_SOURCE = "@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20";
@@ -23,7 +22,7 @@ module.exports = async function (taskArgs, hre) {
 
     const startgateRouter = await ethers.getContractAt(
         "IStargateRouter",
-        stargateRouters[networkName]
+        bridgeConfig[networkName].sgRouter
     );
     const dstGasForCall = await sgBridge.dstGasForCall();
     const [feeWei] = await startgateRouter.quoteLayerZeroFee(

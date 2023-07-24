@@ -123,7 +123,7 @@ module.exports = {
             chainId: 137,
             accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
         },
-        arbitrumOne: {
+        arbitrum: {
             url: `https://arb1.arbitrum.io/rpc`,
             chainId: 42161,
             accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],

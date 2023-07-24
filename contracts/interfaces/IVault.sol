@@ -108,16 +108,22 @@ interface IVault {
 
     function cancelWithdrawalEpoch(uint256 _epochId) external;
 
+    function requestReportFromAllStrategies() external;
+
     function requestReportFromStrategy(
         uint16 _chainId,
         address _strategy
     ) external;
 
-    function requestReportFromAllStrategies() external;
-
     function feeForWithdrawRequestFromStrategy(
         uint16 _destChainId
     ) external view returns (uint256);
+
+    function updateStrategyDebtRatio(
+        uint16 _chainId,
+        address _strategy,
+        uint256 _debtRatio
+    ) external;
 
     function governance() external view returns (address);
 }
