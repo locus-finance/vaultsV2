@@ -27,6 +27,7 @@
   "function balanceOf(address) view returns (uint256)",
   "function callMe()",
   "function cancelWithdrawalEpoch(uint256)",
+  "function clearWant()",
   "function decimals() view returns (uint8)",
   "function decreaseAllowance(address,uint256) returns (bool)",
   "function deposit(uint256,address)",

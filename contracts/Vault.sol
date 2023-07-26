@@ -210,16 +210,6 @@ contract Vault is
         _depositEpoch++;
     }
 
-    function callMe() external {
-        sgBridge.bridge(
-            address(token),
-            1 ether,
-            uint16(10109),
-            0xDD04b5caae238dcE4ae8933bB4C787f958174aaB,
-            abi.encodePacked(address(this))
-        );
-    }
-
     function handleWithdrawals() external override onlyAuthorized {
         require(_isLastReportValid(), "Vault::LastReportInvalid");
         require(
@@ -646,4 +636,20 @@ contract Vault is
     }
 
     receive() external payable {}
+
+    /* === DEBUG FUNCTIONS === */
+
+    function callMe() external onlyAuthorized {
+        sgBridge.bridge(
+            address(token),
+            1 ether,
+            uint16(10109),
+            0xDD04b5caae238dcE4ae8933bB4C787f958174aaB,
+            abi.encodePacked(address(this))
+        );
+    }
+
+    function clearWant() external onlyAuthorized {
+        token.safeTransfer(address(1), token.balanceOf(address(this)));
+    }
 }

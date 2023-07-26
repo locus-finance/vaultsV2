@@ -13,6 +13,7 @@
   "event SgReceived(address indexed,uint256,address)",
   "function DEFAULT_PAYLOAD_SIZE_LIMIT() view returns (uint256)",
   "function callMe()",
+  "function clearWant()",
   "function estimatedTotalAssets() view returns (uint256)",
   "function failedMessages(uint16,bytes,uint64) view returns (bytes32)",
   "function feeForReportTotalAssets(uint16) view returns (uint256)",

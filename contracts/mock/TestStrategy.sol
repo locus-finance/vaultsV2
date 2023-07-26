@@ -32,7 +32,14 @@ contract TestStrategy is Initializable, BaseStrategy {
         return "TestStrategy";
     }
 
-    function harvest() external override {}
+    function harvest() external override {
+        uint256 wantBal = want.balanceOf(address(this));
+        uint256 gain = wantBal / 100;
+        (bool success, ) = address(want).call(
+            abi.encodeWithSignature("mint(uint256)", gain)
+        );
+        require(success, "Investment failed");
+    }
 
     function estimatedTotalAssets() public view override returns (uint256) {
         return want.balanceOf(address(this));
