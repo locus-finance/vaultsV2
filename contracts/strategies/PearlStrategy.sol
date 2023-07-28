@@ -15,6 +15,8 @@ import {IPearlRouter, IPearlPair} from "../integrations/pearl/IPearlRouter.sol";
 import {IPearlGaugeV2} from "../integrations/pearl/IPearlGaugeV2.sol";
 import {BaseStrategy} from "../BaseStrategy.sol";
 
+import "hardhat/console.sol";
+
 contract PearlStrategy is Initializable, BaseStrategy {
     using SafeERC20 for IERC20;
     using FixedPointMathLib for uint256;
@@ -67,8 +69,10 @@ contract PearlStrategy is Initializable, BaseStrategy {
         want.safeApprove(PEARL_ROUTER, type(uint256).max);
 
         IERC20(USDR).safeApprove(PEARL_ROUTER, type(uint256).max);
+        IERC20(USDC_USDR_LP).safeApprove(PEARL_GAUGE_V2, type(uint256).max);
         IERC20(USDC_USDR_LP).safeApprove(PEARL_ROUTER, type(uint256).max);
         IERC20(DAI).safeApprove(USDR_EXCHANGE, type(uint256).max);
+        IERC20(PEARL).safeApprove(PEARL_ROUTER, type(uint256).max);
     }
 
     function name() external pure override returns (string memory) {
@@ -88,7 +92,7 @@ contract PearlStrategy is Initializable, BaseStrategy {
             PEARL,
             _pearlAmount
         );
-        return usdrAmount;
+        return usdrToWant(usdrAmount);
     }
 
     function daiToWant(uint256 _daiAmount) public view returns (uint256) {
@@ -116,17 +120,17 @@ contract PearlStrategy is Initializable, BaseStrategy {
     }
 
     function wantToUsdrLp(uint256 _wantAmount) public view returns (uint256) {
-        uint256 oneLp = usdrLpToWant(1 ether);
-        uint256 wantAmountScaled = Utils.scaleDecimals(
+        (, , uint256 liquidity) = IPearlRouter(PEARL_ROUTER).quoteAddLiquidity(
+            address(want),
+            USDR,
+            true,
             _wantAmount,
-            wantDecimals,
-            ERC20(USDC_USDR_LP).decimals()
+            type(uint256).max
         );
-
-        return wantAmountScaled.divWadDown(oneLp);
+        return usdrLpToWant(liquidity);
     }
 
-    function harvest() external override {
+    function harvest() external override onlyStrategist {
         IPearlGaugeV2(PEARL_GAUGE_V2).getReward();
         _sellPearl(ERC20(PEARL).balanceOf(address(this)));
 
@@ -240,6 +244,12 @@ contract PearlStrategy is Initializable, BaseStrategy {
             IPearlGaugeV2(PEARL_GAUGE_V2).getReward();
             _sellPearl(ERC20(PEARL).balanceOf(address(this)));
         } else {
+            console.log(
+                "want to lp: %s",
+                wantToUsdrLp(_amountNeeded - rewardsTotal)
+            );
+            console.log("want to lp: %s", balanceOfLpStaked());
+            console.log("price of lp: %s", usdrLpToWant(balanceOfLpStaked()));
             uint256 lpTokensToWithdraw = Math.min(
                 wantToUsdrLp(_amountNeeded - rewardsTotal),
                 balanceOfLpStaked()
@@ -249,6 +259,11 @@ contract PearlStrategy is Initializable, BaseStrategy {
     }
 
     function _exitPosition(uint256 _stakedLpTokens) internal {
+        console.log(
+            "exiting: %s, %s",
+            _stakedLpTokens,
+            usdrLpToWant(_stakedLpTokens)
+        );
         IPearlGaugeV2(PEARL_GAUGE_V2).getReward();
         _sellPearl(ERC20(PEARL).balanceOf(address(this)));
 
