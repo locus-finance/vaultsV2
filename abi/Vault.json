@@ -70,6 +70,7 @@
   "function sgBridge() view returns (address)",
   "function sgReceive(uint16,bytes,uint256,address,uint256,bytes)",
   "function strategies(uint16,address) view returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256)",
+  "function sweepToken(address)",
   "function symbol() view returns (string)",
   "function token() view returns (address)",
   "function totalAssets() view returns (uint256, uint256)",

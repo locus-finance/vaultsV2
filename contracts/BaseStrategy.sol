@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.18;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -44,7 +44,8 @@ abstract contract BaseStrategy is
         address _vault,
         uint16 _vaultChainId,
         address _sgBridge,
-        address _router
+        address _router,
+        uint256 _slippage
     ) internal onlyInitializing {
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
 
@@ -54,6 +55,8 @@ abstract contract BaseStrategy is
         vault = _vault;
         sgBridge = ISgBridge(_sgBridge);
         router = IStargateRouter(_router);
+        slippage = _slippage;
+        wantDecimals = ERC20(address(want)).decimals();
 
         want.approve(address(sgBridge), type(uint256).max);
     }
@@ -64,6 +67,8 @@ abstract contract BaseStrategy is
     uint16 public vaultChainId;
     ISgBridge public sgBridge;
     IStargateRouter public router;
+    uint8 public wantDecimals;
+    uint256 public slippage;
 
     function name() external view virtual returns (string memory);
 
@@ -73,6 +78,10 @@ abstract contract BaseStrategy is
 
     function revokeFunds() external onlyStrategist {
         payable(strategist).transfer(address(this).balance);
+    }
+
+    function sweepToken(IERC20 _token) external onlyStrategist {
+        _token.safeTransfer(msg.sender, _token.balanceOf(address(this)));
     }
 
     function reportTotalAssets() public virtual onlyStrategistOrSelf {
@@ -150,6 +159,10 @@ abstract contract BaseStrategy is
         return sgBridge.feeForBridge(_destChainId, vault, payload);
     }
 
+    function setSlippage(uint256 _slippage) external onlyStrategist {
+        slippage = _slippage;
+    }
+
     function _getAdapterParams() internal view virtual returns (bytes memory) {
         uint16 version = 1;
         uint256 gasForDestinationLzReceive = 500_000;
@@ -165,6 +178,17 @@ abstract contract BaseStrategy is
             msg.sender == strategist || msg.sender == address(this),
             "BaseStrategy::OnlyStrategistOrSelf"
         );
+    }
+
+    function _withSlippage(uint256 _amount) internal view returns (uint256) {
+        return (_amount * slippage) / 10_000;
+    }
+
+    function _withSlippage(
+        uint256 _amount,
+        uint256 _slippage
+    ) internal pure returns (uint256) {
+        return (_amount * _slippage) / 10_000;
     }
 
     function _liquidatePosition(

@@ -43,14 +43,18 @@
   "function setPrecrime(address)",
   "function setReceiveVersion(uint16)",
   "function setSendVersion(uint16)",
+  "function setSlippage(uint256)",
   "function setTrustedRemote(uint16,bytes)",
   "function setTrustedRemoteAddress(uint16,bytes)",
   "function sgBridge() view returns (address)",
   "function sgReceive(uint16,bytes,uint256,address,uint256,bytes)",
+  "function slippage() view returns (uint256)",
   "function strategist() view returns (address)",
+  "function sweepToken(address)",
   "function transferOwnership(address)",
   "function trustedRemoteLookup(uint16) view returns (bytes)",
   "function vault() view returns (address)",
   "function vaultChainId() view returns (uint16)",
-  "function want() view returns (address)"
+  "function want() view returns (address)",
+  "function wantDecimals() view returns (uint8)"
 ]

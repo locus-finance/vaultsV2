@@ -24,7 +24,8 @@ contract TestStrategy is Initializable, BaseStrategy {
             _vault,
             _vaultChainId,
             _sgBridge,
-            _router
+            _router,
+            0
         );
     }
 

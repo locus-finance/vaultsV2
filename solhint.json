@@ -7,7 +7,7 @@
         "max-states-count": ["warn", 15],
         "payable-fallback": "error",
         "reason-string": ["warn", { "maxLength": 150 }],
-        "comprehensive-interface": "warn",
+        "comprehensive-interface": "off",
         "quotes": ["error", "double"],
         "no-unused-vars": "error",
         "func-visibility": ["warn", { "ignoreConstructors": true }],

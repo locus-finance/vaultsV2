@@ -85,6 +85,10 @@ contract Vault is
         payable(owner()).transfer(address(this).balance);
     }
 
+    function sweepToken(IERC20 _token) external override onlyAuthorized {
+        _token.safeTransfer(msg.sender, _token.balanceOf(address(this)));
+    }
+
     function totalAssets() public view override returns (uint256, uint256) {
         uint256 freeFunds = token.balanceOf(address(this));
         uint256 investedFunds = 0;
