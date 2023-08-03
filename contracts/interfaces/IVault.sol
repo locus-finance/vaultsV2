@@ -15,11 +15,6 @@ struct StrategyParams {
     bool enabled;
 }
 
-struct DepositRequest {
-    address user;
-    uint256 amount;
-}
-
 struct WithdrawRequest {
     address author;
     address user;
@@ -29,16 +24,13 @@ struct WithdrawRequest {
     bool success;
 }
 
-struct DepositEpoch {
-    DepositRequest[] requests;
-}
-
 struct WithdrawEpoch {
     WithdrawRequest[] requests;
     bool inProgress;
     uint256 approveExpected;
     uint256 approveActual;
     mapping(uint16 => mapping(address => bool)) approved;
+    mapping(uint16 => mapping(address => uint256)) requestedAmount;
 }
 
 interface IVault {

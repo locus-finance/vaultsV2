@@ -70,6 +70,7 @@ abstract contract BaseStrategy is
     uint8 public wantDecimals;
     uint256 public slippage;
     bool public emergencyExit;
+    mapping(uint256 => bool) withdrawnInEpoch;
 
     function name() external view virtual returns (string memory);
 
@@ -284,6 +285,11 @@ abstract contract BaseStrategy is
     function _handleWithdrawSomeRequest(
         WithdrawSomeRequest memory _request
     ) internal {
+        require(
+            !withdrawnInEpoch[_request.id],
+            "BaseStrategy::AlreadyWithdrawn"
+        );
+
         (uint256 liquidatedAmount, uint256 loss) = _liquidatePosition(
             _request.amount
         );
@@ -309,6 +315,8 @@ abstract contract BaseStrategy is
         } else {
             _sendMessageToVault(payload);
         }
+
+        withdrawnInEpoch[_request.id] = true;
     }
 
     function _nonblockingLzReceive(

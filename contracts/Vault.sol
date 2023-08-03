@@ -16,7 +16,7 @@ import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
 import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
-import {StrategyParams, DepositRequest, WithdrawRequest, DepositEpoch, WithdrawEpoch, IVault} from "./interfaces/IVault.sol";
+import {StrategyParams, WithdrawRequest, WithdrawEpoch, IVault} from "./interfaces/IVault.sol";
 
 contract Vault is
     Initializable,
@@ -65,14 +65,10 @@ contract Vault is
     uint256 public totalDebt;
     bool public emergencyShutdown;
     mapping(uint16 => mapping(address => StrategyParams)) public strategies;
-
-    uint256 public depositEpoch;
     uint256 public withdrawEpoch;
 
     mapping(uint16 => EnumerableSet.AddressSet) internal _strategiesByChainId;
     EnumerableSet.UintSet internal _supportedChainIds;
-
-    mapping(uint256 => DepositEpoch) internal _depositEpochs;
     mapping(uint256 => WithdrawEpoch) internal _withdrawEpochs;
 
     modifier onlyAuthorized() {
@@ -177,6 +173,25 @@ contract Vault is
         return _creditAvailable(_chainId, _strategy);
     }
 
+    function retryWithdrawFromStrategyInEpoch(
+        uint16 _chainId,
+        address _strategy
+    ) external onlyAuthorized {
+        _sendMessageToStrategy(
+            _chainId,
+            _strategy,
+            abi.encode(
+                MessageType.WithdrawSomeRequest,
+                WithdrawSomeRequest({
+                    id: withdrawEpoch,
+                    amount: _withdrawEpochs[withdrawEpoch].requestedAmount[
+                        _chainId
+                    ][_strategy]
+                })
+            )
+        );
+    }
+
     function handleWithdrawals() external override onlyAuthorized {
         require(_isLastReportValid(), "Vault::InvalidLastReport");
 
@@ -224,6 +239,9 @@ contract Vault is
                     amountNeeded,
                     params.totalDebt
                 );
+                _withdrawEpochs[withdrawEpoch].requestedAmount[chainId][
+                    strategy
+                ] = strategyRequest;
                 amountNeeded -= strategyRequest;
 
                 _sendMessageToStrategy(
@@ -457,6 +475,11 @@ contract Vault is
         address _recipient,
         uint256 _maxLoss
     ) internal {
+        require(
+            !_withdrawEpochs[withdrawEpoch].inProgress,
+            "Vault::WithdrawalEpochInProgress"
+        );
+
         IERC20(address(this)).safeTransferFrom(
             msg.sender,
             address(this),
@@ -659,6 +682,7 @@ contract Vault is
         totalDebt -= _message.amount;
 
         _withdrawEpochs[_message.id].approveActual++;
+        _withdrawEpochs[_message.id].approved[_chainId][_message.source] = true;
         if (
             _withdrawEpochs[_message.id].approveExpected ==
             _withdrawEpochs[_message.id].approveActual
