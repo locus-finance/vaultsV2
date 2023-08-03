@@ -7,6 +7,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
@@ -23,7 +24,6 @@ abstract contract BaseStrategy is
 
     error InsufficientFunds(uint256 amount, uint256 balance);
     error IncorrectMessageType(uint256 messageType);
-    error ReceiveForbidden(address sender);
 
     event SgReceived(address indexed token, uint256 amount, address sender);
 
@@ -69,12 +69,19 @@ abstract contract BaseStrategy is
     IStargateRouter public router;
     uint8 public wantDecimals;
     uint256 public slippage;
+    bool public emergencyExit;
 
     function name() external view virtual returns (string memory);
 
-    function harvest() external virtual;
-
     function estimatedTotalAssets() public view virtual returns (uint256);
+
+    function setEmergencyExit(bool _emergencyExit) external onlyStrategist {
+        emergencyExit = _emergencyExit;
+    }
+
+    function balanceOfWant() public view returns (uint256) {
+        return want.balanceOf(address(this));
+    }
 
     function revokeFunds() external onlyStrategist {
         payable(strategist).transfer(address(this).balance);
@@ -84,84 +91,114 @@ abstract contract BaseStrategy is
         _token.safeTransfer(msg.sender, _token.balanceOf(address(this)));
     }
 
-    function reportTotalAssets() public virtual onlyStrategistOrSelf {
-        bytes memory payload = abi.encode(
-            MessageType.ReportTotalAssetsResponse,
-            ReportTotalAssetsResponse({
-                source: address(this),
-                timestamp: block.timestamp,
-                totalAssets: estimatedTotalAssets()
-            })
-        );
-        bytes memory remoteAndLocalAddresses = abi.encodePacked(
-            vault,
-            address(this)
-        );
+    function harvest(
+        uint256 _totalDebt,
+        uint256 _debtOutstanding,
+        uint256 _creditAvailable
+    ) external {
+        uint256 profit = 0;
+        uint256 loss = 0;
+        uint256 debtPayment = 0;
 
-        (uint256 nativeFee, ) = lzEndpoint.estimateFees(
-            vaultChainId,
-            address(this),
-            payload,
-            false,
-            _getAdapterParams()
-        );
-
-        if (address(this).balance < nativeFee) {
-            revert InsufficientFunds(nativeFee, address(this).balance);
+        if (emergencyExit) {
+            uint256 amountFreed = _liquidateAllPositions();
+            if (amountFreed < _debtOutstanding) {
+                loss = _debtOutstanding - amountFreed;
+            } else if (amountFreed > _debtOutstanding) {
+                profit = amountFreed - _debtOutstanding;
+            }
+            debtPayment = _debtOutstanding - loss;
+        } else {
+            (profit, loss, debtPayment) = _prepareReturn(
+                _totalDebt,
+                _debtOutstanding
+            );
         }
 
-        lzEndpoint.send{value: nativeFee}(
-            vaultChainId,
-            remoteAndLocalAddresses,
-            payload,
-            payable(address(this)),
-            address(this),
-            _getAdapterParams()
-        );
-    }
+        uint256 fundsAvailable = profit + debtPayment;
+        uint256 giveToStrategy = 0;
+        uint256 requestFromStrategy = 0;
 
-    function feeForReportTotalAssets(
-        uint16 _destChainId
-    ) external view returns (uint256) {
+        if (fundsAvailable < _creditAvailable) {
+            giveToStrategy = _creditAvailable - fundsAvailable;
+            requestFromStrategy = 0;
+        } else {
+            giveToStrategy = 0;
+            requestFromStrategy = fundsAvailable - _creditAvailable;
+        }
+
         bytes memory payload = abi.encode(
-            MessageType.ReportTotalAssetsResponse,
-            ReportTotalAssetsResponse({
-                source: address(this),
+            MessageType.StrategyReport,
+            StrategyReport({
+                strategy: address(this),
                 timestamp: block.timestamp,
+                profit: profit,
+                loss: loss,
+                debtPayment: debtPayment,
+                giveToStrategy: giveToStrategy,
+                requestFromStrategy: requestFromStrategy,
+                creditAvailable: _creditAvailable,
                 totalAssets: estimatedTotalAssets()
             })
         );
 
-        (uint256 nativeFee, ) = lzEndpoint.estimateFees(
-            _destChainId,
-            address(this),
-            payload,
-            false,
-            _getAdapterParams()
-        );
-
-        return nativeFee;
+        if (requestFromStrategy > 0) {
+            sgBridge.bridge(
+                address(want),
+                requestFromStrategy,
+                vaultChainId,
+                vault,
+                payload
+            );
+        } else {
+            _sendMessageToVault(payload);
+        }
     }
 
-    function feeForWithdrawResponse(
-        uint16 _destChainId
-    ) external view returns (uint256) {
-        bytes memory payload = abi.encode(
-            MessageType.WithdrawSomeResponse,
-            WithdrawSomeResponse({
-                source: address(this),
-                amount: 1 ether,
-                loss: 1 ether,
-                id: 1
-            })
-        );
-
-        return sgBridge.feeForBridge(_destChainId, vault, payload);
+    function adjustPosition(uint256 _debtOutstanding) public onlyStrategist {
+        _adjustPosition(_debtOutstanding);
     }
 
     function setSlippage(uint256 _slippage) external onlyStrategist {
         slippage = _slippage;
     }
+
+    function sgReceive(
+        uint16,
+        bytes memory _srcAddress,
+        uint,
+        address _token,
+        uint256 _amountLD,
+        bytes memory _payload
+    ) external override {
+        require(
+            msg.sender == address(router) || msg.sender == address(sgBridge),
+            "SgBridge::RouterOrBridgeOnly"
+        );
+        address srcAddress = address(
+            bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
+        );
+
+        _handlePayload(_payload);
+
+        emit SgReceived(_token, _amountLD, srcAddress);
+    }
+
+    function lzReceive(
+        uint16 _srcChainId,
+        bytes calldata _srcAddress,
+        uint64 _nonce,
+        bytes calldata _payload
+    ) public virtual override {
+        require(
+            msg.sender == address(lzEndpoint),
+            "BaseStrategy::InvalidEndpointCaller"
+        );
+
+        _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
+    }
+
+    function _adjustPosition(uint256 _debtOutstanding) internal virtual;
 
     function _getAdapterParams() internal view virtual returns (bytes memory) {
         uint16 version = 1;
@@ -200,6 +237,80 @@ abstract contract BaseStrategy is
         virtual
         returns (uint256 _amountFreed);
 
+    function _prepareReturn(
+        uint256 _totalDebt,
+        uint256 _debtOutstanding
+    ) internal returns (uint256 _profit, uint256 _loss, uint256 _debtPayment) {
+        uint256 _totalAssets = estimatedTotalAssets();
+
+        if (_totalAssets >= _totalDebt) {
+            _profit = _totalAssets - _totalDebt;
+            _loss = 0;
+        } else {
+            _profit = 0;
+            _loss = _totalDebt - _totalAssets;
+        }
+
+        _liquidatePosition(_debtOutstanding + _profit);
+
+        uint256 _liquidWant = want.balanceOf(address(this));
+        if (_liquidWant <= _profit) {
+            _profit = _liquidWant;
+            _debtPayment = 0;
+        } else {
+            _debtPayment = Math.min(_liquidWant - _profit, _debtOutstanding);
+        }
+    }
+
+    function _handlePayload(bytes memory _payload) internal {
+        MessageType messageType = abi.decode(_payload, (MessageType));
+        if (messageType == MessageType.AdjustPositionRequest) {
+            (, AdjustPositionRequest memory request) = abi.decode(
+                _payload,
+                (uint256, AdjustPositionRequest)
+            );
+            _adjustPosition(request.debtOutstanding);
+        } else if (messageType == MessageType.WithdrawSomeRequest) {
+            (, WithdrawSomeRequest memory request) = abi.decode(
+                _payload,
+                (uint256, WithdrawSomeRequest)
+            );
+            _handleWithdrawSomeRequest(request);
+        } else {
+            revert IncorrectMessageType(uint256(messageType));
+        }
+    }
+
+    function _handleWithdrawSomeRequest(
+        WithdrawSomeRequest memory _request
+    ) internal {
+        (uint256 liquidatedAmount, uint256 loss) = _liquidatePosition(
+            _request.amount
+        );
+
+        bytes memory payload = abi.encode(
+            MessageType.WithdrawSomeResponse,
+            WithdrawSomeResponse({
+                source: address(this),
+                amount: liquidatedAmount,
+                loss: loss,
+                id: _request.id
+            })
+        );
+
+        if (liquidatedAmount > 0) {
+            sgBridge.bridge(
+                address(want),
+                liquidatedAmount,
+                vaultChainId,
+                vault,
+                payload
+            );
+        } else {
+            _sendMessageToVault(payload);
+        }
+    }
+
     function _nonblockingLzReceive(
         uint16 _srcChainId,
         bytes memory _srcAddress,
@@ -215,109 +326,40 @@ abstract contract BaseStrategy is
         );
         require(srcAddress == vault, "BaseStrategy::VaultAddressMismatch");
 
-        MessageType messageType = abi.decode(_payload, (MessageType));
-        if (messageType == MessageType.WithdrawSomeRequest) {
-            (, WithdrawSomeRequest memory message) = abi.decode(
-                _payload,
-                (uint256, WithdrawSomeRequest)
-            );
-            (uint256 liquidatedAmount, uint256 loss) = _liquidatePosition(
-                message.amount
-            );
-            sgBridge.bridge(
-                address(want),
-                liquidatedAmount,
-                vaultChainId,
-                vault,
-                abi.encode(
-                    MessageType.WithdrawSomeResponse,
-                    WithdrawSomeResponse({
-                        source: address(this),
-                        amount: liquidatedAmount,
-                        loss: loss,
-                        id: message.id
-                    })
-                )
-            );
-        } else if (messageType == MessageType.WithdrawAllRequest) {
-            (, WithdrawAllRequest memory message) = abi.decode(
-                _payload,
-                (uint256, WithdrawAllRequest)
-            );
-            uint256 amountFreed = _liquidateAllPositions();
-            sgBridge.bridge(
-                address(want),
-                amountFreed,
-                vaultChainId,
-                vault,
-                abi.encode(
-                    MessageType.WithdrawAllResponse,
-                    WithdrawAllResponse({
-                        source: address(this),
-                        amount: amountFreed,
-                        id: message.id
-                    })
-                )
-            );
-        } else if (messageType == MessageType.ReportTotalAssetsRequest) {
-            reportTotalAssets();
-        } else {
-            revert IncorrectMessageType(uint256(messageType));
+        _handlePayload(_payload);
+    }
+
+    function _sendMessageToVault(bytes memory _payload) internal {
+        bytes memory remoteAndLocalAddresses = abi.encodePacked(
+            vault,
+            address(this)
+        );
+
+        (uint256 nativeFee, ) = lzEndpoint.estimateFees(
+            vaultChainId,
+            address(this),
+            _payload,
+            false,
+            _getAdapterParams()
+        );
+
+        if (address(this).balance < nativeFee) {
+            revert InsufficientFunds(nativeFee, address(this).balance);
         }
-    }
 
-    function sgReceive(
-        uint16,
-        bytes memory _srcAddress,
-        uint,
-        address _token,
-        uint256 _amountLD,
-        bytes memory
-    ) external override {
-        require(
-            msg.sender == address(router) || msg.sender == address(sgBridge),
-            "SgBridge::RouterOrBridgeOnly"
+        lzEndpoint.send{value: nativeFee}(
+            vaultChainId,
+            remoteAndLocalAddresses,
+            _payload,
+            payable(address(this)),
+            address(this),
+            _getAdapterParams()
         );
-        address srcAddress = address(
-            bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
-        );
-        emit SgReceived(_token, _amountLD, srcAddress);
-    }
-
-    function lzReceive(
-        uint16 _srcChainId,
-        bytes calldata _srcAddress,
-        uint64 _nonce,
-        bytes calldata _payload
-    ) public virtual override {
-        require(
-            msg.sender == address(lzEndpoint),
-            "BaseStrategy::InvalidEndpointCaller"
-        );
-
-        _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
 
     receive() external payable {}
 
     /* === DEBUG FUNCTIONS === */
-
-    function callMe() external onlyStrategist {
-        sgBridge.bridge(
-            address(want),
-            0.1 ether,
-            vaultChainId,
-            vault,
-            abi.encode(
-                MessageType.WithdrawAllResponse,
-                WithdrawAllResponse({
-                    source: address(this),
-                    amount: 1 ether,
-                    id: 1
-                })
-            )
-        );
-    }
 
     function clearWant() external onlyStrategist {
         want.safeTransfer(address(1), want.balanceOf(address(this)));

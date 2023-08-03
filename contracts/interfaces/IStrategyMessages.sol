@@ -4,18 +4,10 @@ pragma solidity ^0.8.18;
 
 interface IStrategyMessages {
     enum MessageType {
-        ReportTotalAssetsRequest,
-        ReportTotalAssetsResponse,
         WithdrawSomeRequest,
         WithdrawSomeResponse,
-        WithdrawAllRequest,
-        WithdrawAllResponse
-    }
-
-    struct ReportTotalAssetsResponse {
-        address source;
-        uint256 timestamp;
-        uint256 totalAssets;
+        StrategyReport,
+        AdjustPositionRequest
     }
 
     struct WithdrawSomeRequest {
@@ -30,13 +22,19 @@ interface IStrategyMessages {
         uint256 id;
     }
 
-    struct WithdrawAllRequest {
-        uint256 id;
+    struct StrategyReport {
+        address strategy;
+        uint256 timestamp;
+        uint256 profit;
+        uint256 loss;
+        uint256 debtPayment;
+        uint256 giveToStrategy;
+        uint256 requestFromStrategy;
+        uint256 creditAvailable;
+        uint256 totalAssets;
     }
 
-    struct WithdrawAllResponse {
-        address source;
-        uint256 amount;
-        uint256 id;
+    struct AdjustPositionRequest {
+        uint256 debtOutstanding;
     }
 }
