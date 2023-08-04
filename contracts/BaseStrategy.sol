@@ -35,6 +35,7 @@ abstract contract BaseStrategy is
         uint256 creditAvailable,
         uint256 totalAssets
     );
+    event AdjustedPosition(uint256 debtOutstanding);
 
     modifier onlyStrategist() {
         _onlyStrategist();
@@ -178,6 +179,7 @@ abstract contract BaseStrategy is
 
     function adjustPosition(uint256 _debtOutstanding) public onlyStrategist {
         _adjustPosition(_debtOutstanding);
+        emit AdjustedPosition(_debtOutstanding);
     }
 
     function setSlippage(uint256 _slippage) external onlyStrategist {
@@ -291,6 +293,7 @@ abstract contract BaseStrategy is
                 (uint256, AdjustPositionRequest)
             );
             _adjustPosition(request.debtOutstanding);
+            emit AdjustedPosition(request.debtOutstanding);
         } else if (messageType == MessageType.WithdrawSomeRequest) {
             (, WithdrawSomeRequest memory request) = abi.decode(
                 _payload,
