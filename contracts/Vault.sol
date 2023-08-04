@@ -484,11 +484,7 @@ contract Vault is
             "Vault::WithdrawalEpochInProgress"
         );
 
-        IERC20(address(this)).safeTransferFrom(
-            msg.sender,
-            address(this),
-            _shares
-        );
+        _transfer(msg.sender, address(this), _shares);
         _withdrawEpochs[withdrawEpoch].requests.push(
             WithdrawRequest({
                 author: msg.sender,
