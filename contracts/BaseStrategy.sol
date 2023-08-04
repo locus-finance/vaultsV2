@@ -26,6 +26,15 @@ abstract contract BaseStrategy is
     error IncorrectMessageType(uint256 messageType);
 
     event SgReceived(address indexed token, uint256 amount, address sender);
+    event StrategyReported(
+        uint256 profit,
+        uint256 loss,
+        uint256 debtPayment,
+        uint256 giveToStrategy,
+        uint256 requestFromStrategy,
+        uint256 creditAvailable,
+        uint256 totalAssets
+    );
 
     modifier onlyStrategist() {
         _onlyStrategist();
@@ -128,6 +137,7 @@ abstract contract BaseStrategy is
             requestFromStrategy = fundsAvailable - _creditAvailable;
         }
 
+        uint256 totalAssets = estimatedTotalAssets();
         bytes memory payload = abi.encode(
             MessageType.StrategyReport,
             StrategyReport({
@@ -139,7 +149,7 @@ abstract contract BaseStrategy is
                 giveToStrategy: giveToStrategy,
                 requestFromStrategy: requestFromStrategy,
                 creditAvailable: _creditAvailable,
-                totalAssets: estimatedTotalAssets()
+                totalAssets: totalAssets
             })
         );
 
@@ -154,6 +164,16 @@ abstract contract BaseStrategy is
         } else {
             _sendMessageToVault(payload);
         }
+
+        emit StrategyReported(
+            profit,
+            loss,
+            debtPayment,
+            giveToStrategy,
+            requestFromStrategy,
+            _creditAvailable,
+            totalAssets
+        );
     }
 
     function adjustPosition(uint256 _debtOutstanding) public onlyStrategist {
@@ -203,7 +223,7 @@ abstract contract BaseStrategy is
 
     function _getAdapterParams() internal view virtual returns (bytes memory) {
         uint16 version = 1;
-        uint256 gasForDestinationLzReceive = 500_000;
+        uint256 gasForDestinationLzReceive = 1_000_000;
         return abi.encodePacked(version, gasForDestinationLzReceive);
     }
 
@@ -277,8 +297,6 @@ abstract contract BaseStrategy is
                 (uint256, WithdrawSomeRequest)
             );
             _handleWithdrawSomeRequest(request);
-        } else {
-            revert IncorrectMessageType(uint256(messageType));
         }
     }
 
@@ -372,4 +390,6 @@ abstract contract BaseStrategy is
     function clearWant() external onlyStrategist {
         want.safeTransfer(address(1), want.balanceOf(address(this)));
     }
+
+    function callMe() external {}
 }

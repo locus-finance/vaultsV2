@@ -53,7 +53,7 @@ contract Vault is
 
     uint256 public constant VALID_REPORT_THRESHOLD = 6 hours;
     uint256 public constant MAX_BPS = 10_000;
-    uint256 public constant DEFAULT_MAX_LOSS = 100;
+    uint256 public constant DEFAULT_MAX_LOSS = 2_000;
 
     address public override governance;
     IERC20 public override token;
@@ -194,6 +194,10 @@ contract Vault is
 
     function handleWithdrawals() external override onlyAuthorized {
         require(_isLastReportValid(), "Vault::InvalidLastReport");
+        require(
+            !_withdrawEpochs[withdrawEpoch].inProgress,
+            "Vault::WithdrawalAlreadyInProgress"
+        );
 
         uint256 withdrawValue = 0;
         for (
@@ -635,7 +639,7 @@ contract Vault is
                 .requests[i];
             uint256 valueToTransfer = Math.min(
                 _shareValue(request.shares),
-                IERC20(token).balanceOf(address(this))
+                totalIdle()
             );
 
             if (valueToTransfer < request.expected) {
@@ -663,6 +667,7 @@ contract Vault is
 
         emit FulfilledWithdrawEpoch(withdrawEpoch, requestsLength);
 
+        _withdrawEpochs[withdrawEpoch].inProgress = false;
         withdrawEpoch++;
     }
 
@@ -723,4 +728,6 @@ contract Vault is
     function clearWant() external onlyAuthorized {
         token.safeTransfer(address(1), token.balanceOf(address(this)));
     }
+
+    function callMe() external {}
 }
