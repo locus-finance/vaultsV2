@@ -106,7 +106,7 @@ abstract contract BaseStrategy is
         uint256 _totalDebt,
         uint256 _debtOutstanding,
         uint256 _creditAvailable
-    ) external {
+    ) external onlyStrategist {
         uint256 profit = 0;
         uint256 loss = 0;
         uint256 debtPayment = 0;

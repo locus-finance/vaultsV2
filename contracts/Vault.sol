@@ -235,7 +235,7 @@ contract Vault is
                 address strategy = strategiesByChainId.at(j);
                 StrategyParams storage params = strategies[chainId][strategy];
 
-                if (!params.enabled) {
+                if (params.totalDebt > 0) {
                     continue;
                 }
 
@@ -530,7 +530,7 @@ contract Vault is
             for (uint256 j = 0; j < strategiesByChainId.length(); j++) {
                 address strategy = strategiesByChainId.at(j);
                 StrategyParams storage params = strategies[chainId][strategy];
-                if (params.enabled) {
+                if (params.totalDebt > 0) {
                     lastReport = Math.min(lastReport, params.lastReport);
                 }
             }
