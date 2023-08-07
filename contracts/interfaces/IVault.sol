@@ -12,7 +12,6 @@ struct StrategyParams {
     uint256 totalLoss;
     uint256 lastReport;
     uint256 performanceFee;
-    bool enabled;
 }
 
 struct WithdrawRequest {

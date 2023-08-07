@@ -36,6 +36,7 @@ abstract contract BaseStrategy is
         uint256 totalAssets
     );
     event AdjustedPosition(uint256 debtOutstanding);
+    event StrategyMigrated(address newStrategy);
 
     modifier onlyStrategist() {
         _onlyStrategist();
@@ -105,13 +106,16 @@ abstract contract BaseStrategy is
     function harvest(
         uint256 _totalDebt,
         uint256 _debtOutstanding,
-        uint256 _creditAvailable
+        uint256 _creditAvailable,
+        uint256 _debtRatio
     ) external onlyStrategist {
         uint256 profit = 0;
         uint256 loss = 0;
         uint256 debtPayment = 0;
 
         if (emergencyExit) {
+            require(_debtRatio == 0, "BaseStrategy::DebtRatioNotZero");
+
             uint256 amountFreed = _liquidateAllPositions();
             if (amountFreed < _debtOutstanding) {
                 loss = _debtOutstanding - amountFreed;
@@ -260,28 +264,30 @@ abstract contract BaseStrategy is
         virtual
         returns (uint256 _amountFreed);
 
+    function _prepareMigration(address _newStrategy) internal virtual;
+
     function _prepareReturn(
         uint256 _totalDebt,
         uint256 _debtOutstanding
-    ) internal returns (uint256 _profit, uint256 _loss, uint256 _debtPayment) {
-        uint256 _totalAssets = estimatedTotalAssets();
+    ) internal returns (uint256 profit, uint256 loss, uint256 debtPayment) {
+        uint256 totalAssets = estimatedTotalAssets();
 
-        if (_totalAssets >= _totalDebt) {
-            _profit = _totalAssets - _totalDebt;
-            _loss = 0;
+        if (totalAssets >= _totalDebt) {
+            profit = totalAssets - _totalDebt;
+            loss = 0;
         } else {
-            _profit = 0;
-            _loss = _totalDebt - _totalAssets;
+            profit = 0;
+            loss = _totalDebt - totalAssets;
         }
 
-        _liquidatePosition(_debtOutstanding + _profit);
+        _liquidatePosition(_debtOutstanding + profit);
 
-        uint256 _liquidWant = want.balanceOf(address(this));
-        if (_liquidWant <= _profit) {
-            _profit = _liquidWant;
-            _debtPayment = 0;
+        uint256 liquidWant = want.balanceOf(address(this));
+        if (liquidWant <= profit) {
+            profit = liquidWant;
+            debtPayment = 0;
         } else {
-            _debtPayment = Math.min(_liquidWant - _profit, _debtOutstanding);
+            debtPayment = Math.min(liquidWant - profit, _debtOutstanding);
         }
     }
 
@@ -293,6 +299,7 @@ abstract contract BaseStrategy is
                 (uint256, AdjustPositionRequest)
             );
             _adjustPosition(request.debtOutstanding);
+
             emit AdjustedPosition(request.debtOutstanding);
         } else if (messageType == MessageType.WithdrawSomeRequest) {
             (, WithdrawSomeRequest memory request) = abi.decode(
@@ -300,6 +307,14 @@ abstract contract BaseStrategy is
                 (uint256, WithdrawSomeRequest)
             );
             _handleWithdrawSomeRequest(request);
+        } else if (messageType == MessageType.MigrateStrategyRequest) {
+            (, MigrateStrategyRequest memory request) = abi.decode(
+                _payload,
+                (uint256, MigrateStrategyRequest)
+            );
+            _prepareMigration(request.newStrategy);
+
+            emit StrategyMigrated(request.newStrategy);
         }
     }
 

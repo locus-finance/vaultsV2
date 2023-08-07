@@ -150,8 +150,7 @@ contract Vault is
             totalGain: 0,
             totalLoss: 0,
             lastReport: 0,
-            performanceFee: _performanceFee,
-            enabled: true
+            performanceFee: _performanceFee
         });
 
         _strategiesByChainId[_chainId].add(_strategy);
@@ -193,7 +192,6 @@ contract Vault is
     }
 
     function handleWithdrawals() external override onlyAuthorized {
-        require(_isLastReportValid(), "Vault::InvalidLastReport");
         require(
             !_withdrawEpochs[withdrawEpoch].inProgress,
             "Vault::WithdrawalAlreadyInProgress"
@@ -312,7 +310,28 @@ contract Vault is
             strategies[_chainId][_newStrategy].activation == 0,
             "Vault::AlreadyActivated"
         );
-        _revokeStrategy(_chainId, _oldStrategy);
+
+        StrategyParams memory params = strategies[_chainId][_oldStrategy];
+        strategies[_chainId][_newStrategy] = StrategyParams({
+            activation: params.lastReport,
+            debtRatio: params.debtRatio,
+            totalDebt: params.totalDebt,
+            totalGain: 0,
+            totalLoss: 0,
+            lastReport: params.lastReport,
+            performanceFee: params.performanceFee
+        });
+        strategies[_chainId][_oldStrategy].debtRatio = 0;
+        strategies[_chainId][_oldStrategy].totalDebt = 0;
+
+        _sendMessageToStrategy(
+            _chainId,
+            _oldStrategy,
+            abi.encode(
+                MessageType.MigrateStrategyRequest,
+                MigrateStrategyRequest({newStrategy: _newStrategy})
+            )
+        );
     }
 
     function sgReceive(

@@ -7,7 +7,8 @@ interface IStrategyMessages {
         WithdrawSomeRequest,
         WithdrawSomeResponse,
         StrategyReport,
-        AdjustPositionRequest
+        AdjustPositionRequest,
+        MigrateStrategyRequest
     }
 
     struct WithdrawSomeRequest {
@@ -36,5 +37,9 @@ interface IStrategyMessages {
 
     struct AdjustPositionRequest {
         uint256 debtOutstanding;
+    }
+
+    struct MigrateStrategyRequest {
+        address newStrategy;
     }
 }

@@ -64,4 +64,6 @@ contract TestStrategy is Initializable, BaseStrategy {
     {
         return want.balanceOf(address(this));
     }
+
+    function _prepareMigration(address _newStrategy) internal override {}
 }
