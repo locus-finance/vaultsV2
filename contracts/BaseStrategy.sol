@@ -312,7 +312,7 @@ abstract contract BaseStrategy is
                 _payload,
                 (uint256, MigrateStrategyRequest)
             );
-            _prepareMigration(request.newStrategy);
+            _handleMigrationRequest(request.newStrategy);
 
             emit StrategyMigrated(request.newStrategy);
         }
@@ -353,6 +353,11 @@ abstract contract BaseStrategy is
         }
 
         withdrawnInEpoch[_request.id] = true;
+    }
+
+    function _handleMigrationRequest(address _newStrategy) internal {
+        _prepareMigration(_newStrategy);
+        want.safeTransfer(_newStrategy, want.balanceOf(address(this)));
     }
 
     function _nonblockingLzReceive(
