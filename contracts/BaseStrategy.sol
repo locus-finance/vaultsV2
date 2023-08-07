@@ -142,7 +142,7 @@ abstract contract BaseStrategy is
             requestFromStrategy = fundsAvailable - _creditAvailable;
         }
 
-        uint256 totalAssets = estimatedTotalAssets();
+        uint256 totalAssets = estimatedTotalAssets() - requestFromStrategy;
         bytes memory payload = abi.encode(
             MessageType.StrategyReport,
             StrategyReport({

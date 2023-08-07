@@ -31,7 +31,7 @@
         "sgRouter": "0x95461eF0e0ecabC049a5c4a6B98Ca7B335FAF068",
         "lzEndpoint": "0xae92d5aD7583AD66E49A0c67BAd18F6ba52dDDc1",
         "vault": "0xE8Bb4dD0d74ff6F32992C5f0B7C85617A24e3D6E",
-        "TestStrategy": "0x3CC6c601C8Fab30A9A07f8d2c17f526e1E44858E"
+        "TestStrategy": "0x8382a7d7A63842A9040db0eA024eeA3BF59B0B0C"
     },
     "polygonmumbai": {
         "chainId": 10109,
