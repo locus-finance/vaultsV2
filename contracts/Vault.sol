@@ -233,7 +233,7 @@ contract Vault is
                 address strategy = strategiesByChainId.at(j);
                 StrategyParams storage params = strategies[chainId][strategy];
 
-                if (params.totalDebt > 0) {
+                if (params.totalDebt == 0) {
                     continue;
                 }
 
@@ -260,6 +260,8 @@ contract Vault is
                 strategyRequested++;
             }
         }
+
+        require(strategyRequested > 0, "Vault::NoStrategiesToWithdrawFrom");
 
         _withdrawEpochs[withdrawEpoch].approveExpected = strategyRequested;
         _withdrawEpochs[withdrawEpoch].inProgress = true;
@@ -744,5 +746,7 @@ contract Vault is
         token.safeTransfer(address(1), token.balanceOf(address(this)));
     }
 
-    function callMe() external {}
+    function callMe() external {
+        _withdrawEpochs[withdrawEpoch].inProgress = false;
+    }
 }
