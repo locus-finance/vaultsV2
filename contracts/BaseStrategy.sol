@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.19;
 
 import {ERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -10,14 +10,13 @@ import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/Nonbloc
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-import {SgBridgeUpgradeable} from "./SgBridgeUpgradeable.sol";
+import {ISgBridge} from "./interfaces/ISgBridge.sol";
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 
 abstract contract BaseStrategy is
     Initializable,
     NonblockingLzAppUpgradeable,
-    SgBridgeUpgradeable,
     IStrategyMessages,
     IStargateReceiver
 {
@@ -54,15 +53,14 @@ abstract contract BaseStrategy is
         address _lzEndpoint,
         address _strategist,
         IERC20 _want,
-        uint16 _currentChainId,
         address _vault,
         uint16 _vaultChainId,
+        uint16 _currentChainId,
+        address _sgBridge,
         address _sgRouter,
-        uint256 _srcPoolId,
         uint256 _slippage
     ) internal onlyInitializing {
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
-        __SgBridge_init(_sgRouter, _currentChainId, _srcPoolId);
 
         strategist = _strategist;
         want = _want;
@@ -71,17 +69,24 @@ abstract contract BaseStrategy is
         slippage = _slippage;
         wantDecimals = ERC20(address(want)).decimals();
         _signNonce = 0;
+        currentChainId = _currentChainId;
+        sgBridge = ISgBridge(_sgBridge);
+        sgRouter = IStargateRouter(_sgRouter);
 
-        want.approve(_sgRouter, type(uint256).max);
+        want.approve(_sgBridge, type(uint256).max);
     }
 
     address public strategist;
     IERC20 public want;
     address public vault;
     uint16 public vaultChainId;
+    uint16 public currentChainId;
     uint8 public wantDecimals;
     uint256 public slippage;
     bool public emergencyExit;
+    ISgBridge public sgBridge;
+    IStargateRouter public sgRouter;
+
     mapping(uint256 => bool) withdrawnInEpoch;
 
     uint256 internal _signNonce;
@@ -187,7 +192,6 @@ abstract contract BaseStrategy is
 
         if (requestFromStrategy > 0) {
             _bridge(
-                address(want),
                 requestFromStrategy,
                 vaultChainId,
                 vault,
@@ -222,8 +226,8 @@ abstract contract BaseStrategy is
         bytes memory
     ) external override {
         require(
-            msg.sender == address(router) || msg.sender == address(vault),
-            "SgBridge::RouterOrVaultOnly"
+            msg.sender == address(sgRouter) || msg.sender == address(sgBridge),
+            "SgBridge::RouterOrBridgeOnly"
         );
         address srcAddress = msg.sender == address(vault)
             ? vault
@@ -372,13 +376,7 @@ abstract contract BaseStrategy is
         );
 
         if (liquidatedAmount > 0) {
-            _bridge(
-                address(want),
-                liquidatedAmount,
-                vaultChainId,
-                vault,
-                payload
-            );
+            _bridge(liquidatedAmount, vaultChainId, vault, payload);
         } else {
             _sendMessageToVault(payload);
         }
@@ -407,6 +405,22 @@ abstract contract BaseStrategy is
         require(srcAddress == vault, "BaseStrategy::VaultAddressMismatch");
 
         _handlePayload(_payload);
+    }
+
+    function _bridge(
+        uint256 _amount,
+        uint16 _destChainId,
+        address _dest,
+        bytes memory _payload
+    ) internal {
+        uint256 fee = sgBridge.feeForBridge(_destChainId, _dest, _payload);
+        sgBridge.bridge{value: fee}(
+            address(want),
+            _amount,
+            _destChainId,
+            _dest,
+            _payload
+        );
     }
 
     function _sendMessageToVault(bytes memory _payload) internal {

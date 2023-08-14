@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -63,9 +63,7 @@ interface IVault {
         address _governance,
         address _lzEndpoint,
         IERC20 _token,
-        uint16 _currentChainId,
-        uint256 _srcPoolId,
-        address _sgRouter
+        address _sgBridge
     ) external;
 
     function token() external view returns (IERC20);
@@ -76,16 +74,10 @@ interface IVault {
 
     function totalAssets() external view returns (uint256);
 
-    function deposit(uint256 _amount) external returns (uint256);
-
     function deposit(
         uint256 _amount,
         address _recipient
     ) external returns (uint256);
-
-    function withdraw() external;
-
-    function withdraw(uint256 _maxShares, uint256 _maxLoss) external;
 
     function withdraw(
         uint256 _maxShares,

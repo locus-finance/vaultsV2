@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -12,22 +12,22 @@ contract TestStrategy is Initializable, BaseStrategy {
         address _lzEndpoint,
         address _strategist,
         IERC20 _want,
-        uint16 _currentChainId,
         address _vault,
         uint16 _vaultChainId,
+        uint16 _currentChainId,
+        address _sgBridge,
         address _sgRouter,
-        uint256 _srcPoolId,
         uint256 _slippage
     ) external initializer {
         __BaseStrategy_init(
             _lzEndpoint,
             _strategist,
             _want,
-            _currentChainId,
             _vault,
             _vaultChainId,
+            _currentChainId,
+            _sgBridge,
             _sgRouter,
-            _srcPoolId,
             _slippage
         );
     }

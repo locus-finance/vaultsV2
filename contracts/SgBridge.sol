@@ -7,77 +7,84 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
+import {ISgBridge} from "./interfaces/ISgBridge.sol";
 
-contract SgBridgeUpgradeable is Initializable, OwnableUpgradeable {
-    event Bridge(uint16 destChainId, uint256 amount);
-
-    error UnknownDestChainId(uint16 destChainId);
-
+contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge {
     using SafeERC20 for IERC20;
 
     IStargateRouter public router;
 
-    uint256 public bridgeSlippage;
+    uint256 public slippage;
     uint256 public dstGasForCall;
-    uint256 public currentChainId;
-    uint256 public srcPoolId;
+    uint16 public currentChainId;
 
-    mapping(uint16 => uint256) public destPoolIds;
+    mapping(address => mapping(uint16 => uint256)) public poolIds;
 
-    uint256[10] private __gap;
-
-    function __SgBridge_init(
+    function initialize(
         address _router,
-        uint256 _currentChainId,
-        uint256 _srcPoolId
-    ) internal onlyInitializing {
+        uint16 _currentChainId
+    ) public override initializer {
         __Ownable_init();
 
         router = IStargateRouter(_router);
         currentChainId = _currentChainId;
-        srcPoolId = _srcPoolId;
-
-        bridgeSlippage = 9_900;
+        slippage = 9_900;
         dstGasForCall = 500_000;
     }
 
-    function setRouter(address _router) external onlyOwner {
+    function setRouter(address _router) external override onlyOwner {
         router = IStargateRouter(_router);
     }
 
-    function setBridgeSlippage(uint256 _bridgeSlippage) external onlyOwner {
-        bridgeSlippage = _bridgeSlippage;
+    function setSlippage(uint256 _slippage) external override onlyOwner {
+        slippage = _slippage;
     }
 
-    function setDstGasForCall(uint256 _dstGasForCall) external onlyOwner {
+    function setDstGasForCall(
+        uint256 _dstGasForCall
+    ) external override onlyOwner {
         dstGasForCall = _dstGasForCall;
     }
 
-    function setCurrentChainId(uint16 _currentChainId) external onlyOwner {
+    function setCurrentChainId(
+        uint16 _currentChainId
+    ) external override onlyOwner {
         currentChainId = _currentChainId;
     }
 
-    function setDestPoolId(
-        uint16 _destChainId,
-        uint256 _destPoolId
-    ) external onlyOwner {
-        destPoolIds[_destChainId] = _destPoolId;
+    function setStargatePoolId(
+        address _token,
+        uint16 _chainId,
+        uint256 _poolId
+    ) external override onlyOwner {
+        IERC20(_token).forceApprove(address(router), type(uint256).max);
+        poolIds[_token][_chainId] = _poolId;
     }
 
-    function _bridge(
+    function revokeFunds() external override onlyOwner {
+        payable(owner()).transfer(address(this).balance);
+    }
+
+    function bridge(
         address _token,
         uint256 _amount,
         uint16 _destChainId,
         address _destinationAddress,
         bytes memory _message
-    ) internal {
-        if (destPoolIds[_destChainId] == 0) {
-            revert UnknownDestChainId(_destChainId);
+    ) external payable override {
+        uint256 destinationPool = poolIds[_token][_destChainId];
+        if (destinationPool == 0) {
+            revert TokenNotSupported(_token, _destChainId);
+        }
+
+        uint256 sourcePool = poolIds[_token][currentChainId];
+        if (sourcePool == 0) {
+            revert TokenNotSupported(_token, currentChainId);
         }
 
         if (_destChainId == currentChainId) {
             IERC20(_token).safeTransferFrom(
-                address(this),
+                msg.sender,
                 _destinationAddress,
                 _amount
             );
@@ -92,14 +99,35 @@ contract SgBridgeUpgradeable is Initializable, OwnableUpgradeable {
             return;
         }
 
+        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
         _bridgeInternal(
             _amount,
-            srcPoolId,
+            sourcePool,
             _destChainId,
-            destPoolIds[_destChainId],
+            destinationPool,
             _destinationAddress,
             _message
         );
+    }
+
+    function feeForBridge(
+        uint16 _destChainId,
+        address _destinationContract,
+        bytes memory _payload
+    ) external view override returns (uint256) {
+        if (_destChainId == currentChainId) {
+            return 0;
+        }
+
+        (uint256 fee, ) = router.quoteLayerZeroFee(
+            _destChainId,
+            /* _functionType */ 1,
+            abi.encodePacked(_destinationContract),
+            _payload,
+            _getLzParams()
+        );
+
+        return fee;
     }
 
     function _bridgeInternal(
@@ -110,7 +138,7 @@ contract SgBridgeUpgradeable is Initializable, OwnableUpgradeable {
         address _destinationContract,
         bytes memory _payload
     ) internal {
-        uint256 withSlippage = (_amount * bridgeSlippage) / 10_000;
+        uint256 withSlippage = (_amount * slippage) / 10_000;
 
         (uint256 fee, ) = router.quoteLayerZeroFee(
             _destChainId,
@@ -147,4 +175,6 @@ contract SgBridgeUpgradeable is Initializable, OwnableUpgradeable {
                 dstNativeAddr: abi.encode(address(this))
             });
     }
+
+    receive() external payable {}
 }

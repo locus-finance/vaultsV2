@@ -7,11 +7,11 @@ require("@nomiclabs/hardhat-ethers");
 require("hardhat-gas-reporter");
 require("hardhat-log-remover");
 require("hardhat-abi-exporter");
-require("hardhat-tracer");
 require("dotenv").config();
 require("solidity-coverage");
 require("hardhat-deploy");
 require("hardhat-deploy-ethers");
+
 require("./tasks");
 
 const fs = require("fs");
@@ -37,11 +37,11 @@ module.exports = {
     solidity: {
         compilers: [
             {
-                version: "0.8.18",
+                version: "0.8.19",
                 settings: {
                     optimizer: {
                         enabled: true,
-                        runs: 50,
+                        runs: 10,
                     },
                     outputSelection: {
                         "*": {
