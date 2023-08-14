@@ -12,20 +12,23 @@ contract TestStrategy is Initializable, BaseStrategy {
         address _lzEndpoint,
         address _strategist,
         IERC20 _want,
+        uint16 _currentChainId,
         address _vault,
         uint16 _vaultChainId,
-        address _sgBridge,
-        address _router
+        address _sgRouter,
+        uint256 _srcPoolId,
+        uint256 _slippage
     ) external initializer {
         __BaseStrategy_init(
             _lzEndpoint,
             _strategist,
             _want,
+            _currentChainId,
             _vault,
             _vaultChainId,
-            _sgBridge,
-            _router,
-            0
+            _sgRouter,
+            _srcPoolId,
+            _slippage
         );
     }
 

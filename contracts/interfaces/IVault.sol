@@ -12,6 +12,7 @@ struct StrategyParams {
     uint256 totalLoss;
     uint256 lastReport;
     uint256 performanceFee;
+    address strategist;
 }
 
 struct WithdrawRequest {
@@ -62,8 +63,9 @@ interface IVault {
         address _governance,
         address _lzEndpoint,
         IERC20 _token,
-        address _sgBridge,
-        address _router
+        uint16 _currentChainId,
+        uint256 _srcPoolId,
+        address _sgRouter
     ) external;
 
     function token() external view returns (IERC20);
@@ -95,7 +97,8 @@ interface IVault {
         uint16 _chainId,
         address _strategy,
         uint256 _debtRatio,
-        uint256 _performanceFee
+        uint256 _performanceFee,
+        address _strategist
     ) external;
 
     function handleWithdrawals() external;

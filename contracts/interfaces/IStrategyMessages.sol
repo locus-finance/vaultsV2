@@ -33,6 +33,8 @@ interface IStrategyMessages {
         uint256 requestFromStrategy;
         uint256 creditAvailable;
         uint256 totalAssets;
+        uint256 nonce;
+        bytes signature;
     }
 
     struct AdjustPositionRequest {

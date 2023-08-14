@@ -8,14 +8,16 @@ import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/cont
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
+import {SgBridgeUpgradeable} from "./SgBridgeUpgradeable.sol";
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
-import {ISgBridge} from "./interfaces/ISgBridge.sol";
 import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 
 abstract contract BaseStrategy is
     Initializable,
     NonblockingLzAppUpgradeable,
+    SgBridgeUpgradeable,
     IStrategyMessages,
     IStargateReceiver
 {
@@ -52,36 +54,37 @@ abstract contract BaseStrategy is
         address _lzEndpoint,
         address _strategist,
         IERC20 _want,
+        uint16 _currentChainId,
         address _vault,
         uint16 _vaultChainId,
-        address _sgBridge,
-        address _router,
+        address _sgRouter,
+        uint256 _srcPoolId,
         uint256 _slippage
     ) internal onlyInitializing {
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
+        __SgBridge_init(_sgRouter, _currentChainId, _srcPoolId);
 
         strategist = _strategist;
         want = _want;
         vaultChainId = _vaultChainId;
         vault = _vault;
-        sgBridge = ISgBridge(_sgBridge);
-        router = IStargateRouter(_router);
         slippage = _slippage;
         wantDecimals = ERC20(address(want)).decimals();
+        _signNonce = 0;
 
-        want.approve(address(sgBridge), type(uint256).max);
+        want.approve(_sgRouter, type(uint256).max);
     }
 
     address public strategist;
     IERC20 public want;
     address public vault;
     uint16 public vaultChainId;
-    ISgBridge public sgBridge;
-    IStargateRouter public router;
     uint8 public wantDecimals;
     uint256 public slippage;
     bool public emergencyExit;
     mapping(uint256 => bool) withdrawnInEpoch;
+
+    uint256 internal _signNonce;
 
     function name() external view virtual returns (string memory);
 
@@ -89,6 +92,10 @@ abstract contract BaseStrategy is
 
     function setEmergencyExit(bool _emergencyExit) external onlyStrategist {
         emergencyExit = _emergencyExit;
+    }
+
+    function setSlippage(uint256 _slippage) external onlyStrategist {
+        slippage = _slippage;
     }
 
     function balanceOfWant() public view returns (uint256) {
@@ -103,12 +110,34 @@ abstract contract BaseStrategy is
         _token.safeTransfer(msg.sender, _token.balanceOf(address(this)));
     }
 
+    function getEthSignedMessageHash(
+        bytes32 _messageHash
+    ) public pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    _messageHash
+                )
+            );
+    }
+
+    function strategistSignMessageHash() public view returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(address(this), _signNonce, currentChainId)
+            );
+    }
+
     function harvest(
         uint256 _totalDebt,
         uint256 _debtOutstanding,
         uint256 _creditAvailable,
-        uint256 _debtRatio
+        uint256 _debtRatio,
+        bytes memory _signature
     ) external onlyStrategist {
+        _verifySignature(_signature);
+
         uint256 profit = 0;
         uint256 loss = 0;
         uint256 debtPayment = 0;
@@ -142,42 +171,40 @@ abstract contract BaseStrategy is
             requestFromStrategy = fundsAvailable - _creditAvailable;
         }
 
-        uint256 totalAssets = estimatedTotalAssets() - requestFromStrategy;
-        bytes memory payload = abi.encode(
-            MessageType.StrategyReport,
-            StrategyReport({
-                strategy: address(this),
-                timestamp: block.timestamp,
-                profit: profit,
-                loss: loss,
-                debtPayment: debtPayment,
-                giveToStrategy: giveToStrategy,
-                requestFromStrategy: requestFromStrategy,
-                creditAvailable: _creditAvailable,
-                totalAssets: totalAssets
-            })
-        );
+        StrategyReport memory report = StrategyReport({
+            strategy: address(this),
+            timestamp: block.timestamp,
+            profit: profit,
+            loss: loss,
+            debtPayment: debtPayment,
+            giveToStrategy: giveToStrategy,
+            requestFromStrategy: requestFromStrategy,
+            creditAvailable: _creditAvailable,
+            totalAssets: estimatedTotalAssets() - requestFromStrategy,
+            nonce: _signNonce++,
+            signature: _signature
+        });
 
         if (requestFromStrategy > 0) {
-            sgBridge.bridge(
+            _bridge(
                 address(want),
                 requestFromStrategy,
                 vaultChainId,
                 vault,
-                payload
+                abi.encode(MessageType.StrategyReport, report)
             );
         } else {
-            _sendMessageToVault(payload);
+            _sendMessageToVault(abi.encode(MessageType.StrategyReport, report));
         }
 
         emit StrategyReported(
-            profit,
-            loss,
-            debtPayment,
-            giveToStrategy,
-            requestFromStrategy,
-            _creditAvailable,
-            totalAssets
+            report.profit,
+            report.loss,
+            report.debtPayment,
+            report.giveToStrategy,
+            report.requestFromStrategy,
+            report.creditAvailable,
+            report.totalAssets
         );
     }
 
@@ -186,27 +213,21 @@ abstract contract BaseStrategy is
         emit AdjustedPosition(_debtOutstanding);
     }
 
-    function setSlippage(uint256 _slippage) external onlyStrategist {
-        slippage = _slippage;
-    }
-
     function sgReceive(
         uint16,
         bytes memory _srcAddress,
         uint,
         address _token,
         uint256 _amountLD,
-        bytes memory _payload
+        bytes memory
     ) external override {
         require(
-            msg.sender == address(router) || msg.sender == address(sgBridge),
-            "SgBridge::RouterOrBridgeOnly"
+            msg.sender == address(router) || msg.sender == address(vault),
+            "SgBridge::RouterOrVaultOnly"
         );
-        address srcAddress = address(
-            bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
-        );
-
-        _handlePayload(_payload);
+        address srcAddress = msg.sender == address(vault)
+            ? vault
+            : address(bytes20(abi.encodePacked(_srcAddress.slice(0, 20))));
 
         emit SgReceived(_token, _amountLD, srcAddress);
     }
@@ -223,6 +244,16 @@ abstract contract BaseStrategy is
         );
 
         _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
+    }
+
+    function _verifySignature(bytes memory _signature) internal view {
+        bytes32 messageHash = strategistSignMessageHash();
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
+
+        require(
+            ECDSA.recover(ethSignedMessageHash, _signature) == strategist,
+            "BaseStrategy::InvalidSignature"
+        );
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal virtual;
@@ -341,7 +372,7 @@ abstract contract BaseStrategy is
         );
 
         if (liquidatedAmount > 0) {
-            sgBridge.bridge(
+            _bridge(
                 address(want),
                 liquidatedAmount,
                 vaultChainId,
