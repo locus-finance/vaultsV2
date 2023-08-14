@@ -13,4 +13,8 @@ interface IPikaPerpV4 {
     }
 
     function getStake(address stakeOwner) external view returns (Stake memory);
+
+    function redeem(address user, uint256 shares, address receiver) external;
+
+    function stake(uint256 amount, address user) external;
 }
