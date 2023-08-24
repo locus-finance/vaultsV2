@@ -4,7 +4,7 @@ pragma solidity ^0.8.18;
 
 import {PearlStrategy} from "../strategies/PearlStrategy.sol";
 
-contract MockPearlStrategy is PearlStrategy {
+abstract contract MockPearlStrategy is PearlStrategy {
     function sellUsdr(uint256 _usdrAmount) external {
         _sellUsdr(_usdrAmount);
     }

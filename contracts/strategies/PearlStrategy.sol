@@ -51,6 +51,7 @@ contract PearlStrategy is Initializable, BaseStrategy {
         IERC20 _want,
         address _vault,
         uint16 _vaultChainId,
+        uint16 _currentChainId,
         address _sgBridge,
         address _router
     ) external initializer {
@@ -60,6 +61,7 @@ contract PearlStrategy is Initializable, BaseStrategy {
             _want,
             _vault,
             _vaultChainId,
+            _currentChainId,
             _sgBridge,
             _router,
             DEFAULT_SLIPPAGE
@@ -130,7 +132,7 @@ contract PearlStrategy is Initializable, BaseStrategy {
         return usdrLpToWant(liquidity);
     }
 
-    function harvest() external override onlyStrategist {
+    function harvest() external onlyStrategist {
         IPearlGaugeV2(PEARL_GAUGE_V2).getReward();
         _sellPearl(ERC20(PEARL).balanceOf(address(this)));
 
@@ -315,4 +317,10 @@ contract PearlStrategy is Initializable, BaseStrategy {
         _exitPosition(balanceOfLpStaked());
         _amountFreed = want.balanceOf(address(this));
     }
+
+
+    function _adjustPosition(uint256 _debtOutstanding) internal override {
+    }
+
+    function _prepareMigration(address _newStrategy) internal override {}
 }
