@@ -1,16 +1,9 @@
-const TIMEOUT_MS = 3000;
-
 module.exports = {
-    pt: (tx) => {
-        return new Promise((resolve) => {
-            tx.then((result) => result.wait()).then((receipt) => {
-                setTimeout(() => resolve(receipt), TIMEOUT_MS);
-            });
-        });
-    },
-    oppositeChain: (networkName) => {
-        return networkName === "optimismgoerli"
-            ? "polygonmumbai"
-            : "optimismgoerli";
+    getEnv(name) {
+        const value = process.env[name];
+        if (!value) {
+            throw new Error(`Missing environment variable ${name}`);
+        }
+        return value;
     },
 };
