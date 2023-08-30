@@ -15,18 +15,17 @@ import {IPearlRouter, IPearlPair} from "../integrations/pearl/IPearlRouter.sol";
 import {IPearlGaugeV2} from "../integrations/pearl/IPearlGaugeV2.sol";
 import {BaseStrategy} from "../BaseStrategy.sol";
 
-import "hardhat/console.sol";
-
 contract PearlStrategy is Initializable, BaseStrategy {
     using SafeERC20 for IERC20;
     using FixedPointMathLib for uint256;
 
-    uint256 public constant DEFAULT_SLIPPAGE = 9_700;
+    uint256 public constant DEFAULT_SLIPPAGE = 9_800;
 
-    address internal constant USDR = 0xb5DFABd7fF7F83BAB83995E72A52B97ABb7bcf63;
+    address internal constant USDR = 0x40379a439D4F6795B6fc9aa5687dB461677A2dBa;
     address internal constant DAI = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
     address internal constant PEARL =
         0x7238390d5f6F64e67c3211C343A410E2A3DEc142;
+
     address internal constant DAI_USDC_V3_POOL =
         0x5645dCB64c059aa11212707fbf4E7F984440a8Cf;
     uint24 internal constant DAI_USDC_UNI_V3_FEE = 100;
@@ -36,14 +35,14 @@ contract PearlStrategy is Initializable, BaseStrategy {
     address internal constant USDR_EXCHANGE =
         0x195F7B233947d51F4C3b756ad41a5Ddb34cEBCe0;
     address internal constant PEARL_ROUTER =
-        0xda822340F5E8216C277DBF66627648Ff5D57b527;
+        0xcC25C0FD84737F44a7d38649b69491BBf0c7f083;
 
     address internal constant PEARL_USDR_LP =
-        0x74ee7376Ac31628a66b2Bb0eb2D14b549AB37275;
+        0xf68c20d6C50706f6C6bd8eE184382518C93B368c;
     address internal constant USDC_USDR_LP =
-        0xf6A72Bd46F53Cd5103812ea1f4B5CF38099aB797;
+        0xD17cb0f162f133e339C0BbFc18c36c357E681D6b;
     address internal constant PEARL_GAUGE_V2 =
-        0xf4d40A328CB2320c94F009E936f840D2d8931721;
+        0x97Bd59A8202F8263C2eC39cf6cF6B438D0B45876;
 
     function initialize(
         address _lzEndpoint,
@@ -121,6 +120,17 @@ contract PearlStrategy is Initializable, BaseStrategy {
         return amountA + usdrToWant(amountB);
     }
 
+    function usdrToUsdcRate() public view returns (uint256) {
+        (uint256 reserve0, uint256 reserve1, ) = IPearlPair(USDC_USDR_LP)
+            .getReserves();
+        uint256 scaledReserve1 = Utils.scaleDecimals(
+            reserve1,
+            ERC20(USDR),
+            ERC20(address(want))
+        );
+        return (reserve0 * (10 ** wantDecimals)) / scaledReserve1;
+    }
+
     function wantToUsdrLp(uint256 _wantAmount) public view returns (uint256) {
         (, , uint256 liquidity) = IPearlRouter(PEARL_ROUTER).quoteAddLiquidity(
             address(want),
@@ -132,67 +142,12 @@ contract PearlStrategy is Initializable, BaseStrategy {
         return usdrLpToWant(liquidity);
     }
 
-    function harvest() external onlyStrategist {
-        IPearlGaugeV2(PEARL_GAUGE_V2).getReward();
-        _sellPearl(ERC20(PEARL).balanceOf(address(this)));
-
-        uint256 wantBal = want.balanceOf(address(this));
-
-        if (wantBal > 0) {
-            uint256 halfWant = wantBal / 2;
-            uint256 scaledHalfWant = Utils.scaleDecimals(
-                halfWant,
-                wantDecimals,
-                ERC20(DAI).decimals()
-            );
-            IV3SwapRouter.ExactInputParams memory params = IV3SwapRouter
-                .ExactInputParams({
-                    path: abi.encodePacked(
-                        address(want),
-                        DAI_USDC_UNI_V3_FEE,
-                        DAI
-                    ),
-                    recipient: address(this),
-                    amountIn: halfWant,
-                    amountOutMinimum: _withSlippage(scaledHalfWant)
-                });
-            IV3SwapRouter(UNISWAP_V3_ROUTER).exactInput(params);
-        }
-
-        uint256 daiBal = IERC20(DAI).balanceOf(address(this));
-        if (daiBal > 0) {
-            IExchange(USDR_EXCHANGE).swapFromUnderlying(daiBal, address(this));
-        }
-
-        uint256 usdrBal = IERC20(USDR).balanceOf(address(this));
-        wantBal = want.balanceOf(address(this));
-
-        if (usdrBal > 0 && wantBal > 0) {
-            (uint256 amountA, uint256 amountB, ) = IPearlRouter(PEARL_ROUTER)
-                .quoteAddLiquidity(address(want), USDR, true, wantBal, usdrBal);
-            IPearlRouter(PEARL_ROUTER).addLiquidity(
-                address(want),
-                USDR,
-                true,
-                amountA,
-                amountB,
-                1,
-                1,
-                address(this),
-                block.timestamp
-            );
-        }
-
-        uint256 usdrLpBal = IERC20(USDC_USDR_LP).balanceOf(address(this));
-        if (usdrLpBal > 0) {
-            IPearlGaugeV2(PEARL_GAUGE_V2).deposit(usdrLpBal);
-        }
-    }
-
     function estimatedTotalAssets() public view override returns (uint256) {
         return
             want.balanceOf(address(this)) +
-            pearlToWant(balanceOfPearlRewards()) +
+            pearlToWant(
+                balanceOfPearlRewards() + ERC20(PEARL).balanceOf(address(this))
+            ) +
             usdrLpToWant(balanceOfLpStaked());
     }
 
@@ -246,12 +201,6 @@ contract PearlStrategy is Initializable, BaseStrategy {
             IPearlGaugeV2(PEARL_GAUGE_V2).getReward();
             _sellPearl(ERC20(PEARL).balanceOf(address(this)));
         } else {
-            console.log(
-                "want to lp: %s",
-                wantToUsdrLp(_amountNeeded - rewardsTotal)
-            );
-            console.log("want to lp: %s", balanceOfLpStaked());
-            console.log("price of lp: %s", usdrLpToWant(balanceOfLpStaked()));
             uint256 lpTokensToWithdraw = Math.min(
                 wantToUsdrLp(_amountNeeded - rewardsTotal),
                 balanceOfLpStaked()
@@ -261,11 +210,6 @@ contract PearlStrategy is Initializable, BaseStrategy {
     }
 
     function _exitPosition(uint256 _stakedLpTokens) internal {
-        console.log(
-            "exiting: %s, %s",
-            _stakedLpTokens,
-            usdrLpToWant(_stakedLpTokens)
-        );
         IPearlGaugeV2(PEARL_GAUGE_V2).getReward();
         _sellPearl(ERC20(PEARL).balanceOf(address(this)));
 
@@ -318,9 +262,79 @@ contract PearlStrategy is Initializable, BaseStrategy {
         _amountFreed = want.balanceOf(address(this));
     }
 
-
     function _adjustPosition(uint256 _debtOutstanding) internal override {
+        IPearlGaugeV2(PEARL_GAUGE_V2).getReward();
+        _sellPearl(ERC20(PEARL).balanceOf(address(this)));
+
+        uint256 wantBal = want.balanceOf(address(this));
+
+        if (wantBal > _debtOutstanding) {
+            uint256 excessWant = wantBal - _debtOutstanding;
+            uint256 halfWant = excessWant / 2;
+            uint256 scaledHalfWant = Utils.scaleDecimals(
+                halfWant,
+                wantDecimals,
+                ERC20(DAI).decimals()
+            );
+
+            IV3SwapRouter.ExactInputParams memory params = IV3SwapRouter
+                .ExactInputParams({
+                    path: abi.encodePacked(
+                        address(want),
+                        DAI_USDC_UNI_V3_FEE,
+                        DAI
+                    ),
+                    recipient: address(this),
+                    amountIn: halfWant,
+                    amountOutMinimum: _withSlippage(scaledHalfWant)
+                });
+
+            IV3SwapRouter(UNISWAP_V3_ROUTER).exactInput(params);
+        }
+
+        uint256 daiBal = IERC20(DAI).balanceOf(address(this));
+        if (daiBal > 0) {
+            IExchange(USDR_EXCHANGE).swapFromUnderlying(daiBal, address(this));
+        }
+
+        uint256 usdrBal = IERC20(USDR).balanceOf(address(this));
+        wantBal = want.balanceOf(address(this));
+        if (usdrBal > 0 && wantBal > 0) {
+            (uint256 amountA, uint256 amountB, ) = IPearlRouter(PEARL_ROUTER)
+                .quoteAddLiquidity(address(want), USDR, true, wantBal, usdrBal);
+            IPearlRouter(PEARL_ROUTER).addLiquidity(
+                address(want),
+                USDR,
+                true,
+                amountA,
+                amountB,
+                1,
+                1,
+                address(this),
+                block.timestamp
+            );
+        }
+
+        uint256 usdrLpBal = IERC20(USDC_USDR_LP).balanceOf(address(this));
+        if (usdrLpBal > 0) {
+            IPearlGaugeV2(PEARL_GAUGE_V2).deposit(usdrLpBal);
+        }
     }
 
-    function _prepareMigration(address _newStrategy) internal override {}
+    function _prepareMigration(address _newStrategy) internal override {
+        IPearlGaugeV2(PEARL_GAUGE_V2).withdraw(balanceOfLpStaked());
+
+        IERC20(USDC_USDR_LP).safeTransfer(
+            _newStrategy,
+            IERC20(USDC_USDR_LP).balanceOf(address(this))
+        );
+        IERC20(USDR).safeTransfer(
+            _newStrategy,
+            IERC20(USDR).balanceOf(address(this))
+        );
+        IERC20(PEARL).safeTransfer(
+            _newStrategy,
+            IERC20(PEARL).balanceOf(address(this))
+        );
+    }
 }
