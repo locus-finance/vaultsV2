@@ -684,8 +684,4 @@ contract Vault is
     }
 
     receive() external payable {}
-
-    function callMe() external {
-        token.safeTransfer(msg.sender, token.balanceOf(address(this)));
-    }
 }
