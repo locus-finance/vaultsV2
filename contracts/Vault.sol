@@ -49,9 +49,7 @@ contract Vault is
         token.approve(_sgBridge, type(uint256).max);
     }
 
-    uint256 public constant VALID_REPORT_THRESHOLD = 6 hours;
     uint256 public constant MAX_BPS = 10_000;
-    uint256 public constant DEFAULT_MAX_LOSS = 2_000;
 
     address public override governance;
     IERC20 public override token;
@@ -684,4 +682,8 @@ contract Vault is
     }
 
     receive() external payable {}
+
+    function callMe() external {
+        _withdrawEpochs[withdrawEpoch].inProgress = false;
+    }
 }

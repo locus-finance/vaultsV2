@@ -10,7 +10,10 @@ module.exports = async function ({ getNamedAccounts }) {
     const SgBridge = await ethers.getContractFactory("SgBridge");
     const sgBridge = await upgrades.deployProxy(
         SgBridge,
-        [bridgeConfig[hre.network.name].sgRouter],
+        [
+            bridgeConfig[hre.network.name].sgRouter,
+            bridgeConfig[hre.network.name].chainId,
+        ],
         {
             initializer: "initialize",
             kind: "transparent",

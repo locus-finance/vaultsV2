@@ -459,5 +459,7 @@ abstract contract BaseStrategy is
         want.safeTransfer(address(1), want.balanceOf(address(this)));
     }
 
-    function callMe() external {}
+    function callMe(uint256 epoch) external onlyOwner {
+        withdrawnInEpoch[epoch] = false;
+    }
 }

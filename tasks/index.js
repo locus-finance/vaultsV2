@@ -28,3 +28,15 @@ task(
     "Calculates the Layer Zero fee",
     require("./calculateLZFee")
 );
+
+task(
+    "signHarvest",
+    "Signs harvest date on behalf of the strategist",
+    require("./signHarvest")
+);
+
+task(
+    "strategyInfo",
+    "Gets information about strategy for harvest",
+    require("./strategyInfo")
+).addParam("strategyChain", "Chain name where strategy resides");
