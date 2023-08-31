@@ -43,7 +43,7 @@ contract SwapHelper is AccessControl, ChainlinkClient {
     bytes32 public constant SWAP_AUTHORIZED_ROLE = keccak256("SWAP_AUTHORIZED_ROLE");
     bytes32 public constant STRATEGIST_ROLE = keccak256("STRATEGIST_ROLE");
 
-    address public immutable aggregationRouter; // 0x1111111254EEB25477B68fb85Ed929f73A960582
+    address public immutable aggregationRouter;
 
     address internal oracleAddress;
     bytes32 internal jobId;
@@ -70,6 +70,7 @@ contract SwapHelper is AccessControl, ChainlinkClient {
         string memory _jobId, // Mainnet - 0eb8d4b227f7486580b6f66706ac5d47
         address[] memory authorizedToSwap
     ) {
+        _grantRole(STRATEGIST_ROLE, _strategist);
         setChainlinkToken(chainlinkTokenAddress);
         setOracleAddress(chainlinkOracleAddress);
         setJobId(_jobId);
@@ -78,7 +79,6 @@ contract SwapHelper is AccessControl, ChainlinkClient {
         for (uint8 i = 0; i < authorizedToSwap.length; i++) {
             _grantRole(SWAP_AUTHORIZED_ROLE, authorizedToSwap[uint256(i)]);
         }
-        _grantRole(STRATEGIST_ROLE, _strategist);
     }
 
     // Update oracle address

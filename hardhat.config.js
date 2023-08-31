@@ -63,7 +63,7 @@ module.exports = {
         localhost: {},
         hardhat: {
             forking: {
-                url: polygonMumbaiUrl
+                url: ETH_NODE
             }
         },
         mainnet: {
