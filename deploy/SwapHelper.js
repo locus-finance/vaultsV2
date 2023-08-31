@@ -2,9 +2,6 @@ const hre = require("hardhat");
 
 module.exports = async function ({ getNamedAccounts, deployments }) {
     const { deployer } = await getNamedAccounts();
-
-    console.log(`Your address: ${deployer}. Network: ${hre.network.name}`);
-
     await deployments.deploy(
         "SwapHelper",
         {

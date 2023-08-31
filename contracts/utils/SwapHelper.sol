@@ -28,20 +28,22 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
     error SwapOperationIsNotReady();
 
     event QuoteReceived(
-        address indexed src, 
-        address indexed dst, 
-        uint256 indexed amountOut, 
+        address indexed src,
+        address indexed dst,
+        uint256 indexed amountOut,
         uint256 amountIn
     );
     event SwapPerformed(
-        address indexed src, 
-        address indexed dst, 
+        address indexed src,
+        address indexed dst,
         uint256 indexed amountIn
     );
     event SwapRegistered(bytes indexed swapCalldata);
 
-    address public constant ONE_INCH_ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-    bytes32 public constant SWAP_AUTHORIZED_ROLE = keccak256("SWAP_AUTHORIZED_ROLE");
+    address public constant ONE_INCH_ETH_ADDRESS =
+        0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    bytes32 public constant SWAP_AUTHORIZED_ROLE =
+        keccak256("SWAP_AUTHORIZED_ROLE");
     bytes32 public constant STRATEGIST_ROLE = keccak256("STRATEGIST_ROLE");
 
     address public immutable aggregationRouter;
@@ -61,7 +63,7 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
     bytes internal _lastSwapCalldata;
 
     EnumerableSet.AddressSet internal _subscribers;
-    
+
     constructor(
         uint256 _jobFee, // Mainnet- 140 == 1.4 LINK
         address _strategist,
@@ -83,11 +85,19 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
     }
 
     // Update oracle address
-    function setOracleAddress(address _oracleAddress) public onlyRole(STRATEGIST_ROLE) {
+    function setOracleAddress(
+        address _oracleAddress
+    ) public onlyRole(STRATEGIST_ROLE) {
         oracleAddress = _oracleAddress;
         setChainlinkOracle(_oracleAddress);
     }
-    function getOracleAddress() public view onlyRole(STRATEGIST_ROLE) returns (address) {
+
+    function getOracleAddress()
+        public
+        view
+        onlyRole(STRATEGIST_ROLE)
+        returns (address)
+    {
         return oracleAddress;
     }
 
@@ -95,34 +105,57 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
     function setJobId(string memory _jobId) public onlyRole(STRATEGIST_ROLE) {
         jobId = bytes32(bytes(_jobId));
     }
-    function getJobId() public view onlyRole(STRATEGIST_ROLE) returns (string memory) {
+
+    function getJobId()
+        public
+        view
+        onlyRole(STRATEGIST_ROLE)
+        returns (string memory)
+    {
         return string(abi.encodePacked(jobId));
     }
-    
+
     // Update fees
-    function setFeeInJuels(uint256 _feeInJuels) public onlyRole(STRATEGIST_ROLE) {
+    function setFeeInJuels(
+        uint256 _feeInJuels
+    ) public onlyRole(STRATEGIST_ROLE) {
         fee = _feeInJuels;
     }
-    function setFeeInHundredthsOfLink(uint256 _feeInHundredthsOfLink) public onlyRole(STRATEGIST_ROLE) {
+
+    function setFeeInHundredthsOfLink(
+        uint256 _feeInHundredthsOfLink
+    ) public onlyRole(STRATEGIST_ROLE) {
         setFeeInJuels((_feeInHundredthsOfLink * LINK_DIVISIBILITY) / 100);
     }
-    function getFeeInHundredthsOfLink() public view onlyRole(STRATEGIST_ROLE) returns (uint256) {
+
+    function getFeeInHundredthsOfLink()
+        public
+        view
+        onlyRole(STRATEGIST_ROLE)
+        returns (uint256)
+    {
         return (fee * 100) / LINK_DIVISIBILITY;
     }
 
-    function addSubscriber(address subscriber) external onlyRole(STRATEGIST_ROLE) {
+    function addSubscriber(
+        address subscriber
+    ) external onlyRole(STRATEGIST_ROLE) {
         if (!_subscribers.add(subscriber)) {
             revert CannotAddSubscriber();
         }
     }
 
-    function removeSubscriber(address subscriber) external onlyRole(STRATEGIST_ROLE) {
+    function removeSubscriber(
+        address subscriber
+    ) external onlyRole(STRATEGIST_ROLE) {
         if (!_subscribers.remove(subscriber)) {
             revert CannotRemoveSubscriber();
         }
     }
 
-    function subscriberAt(uint256 subscriberIdx) external view returns (address) {
+    function subscriberAt(
+        uint256 subscriberIdx
+    ) external view returns (address) {
         return _subscribers.at(subscriberIdx);
     }
 
@@ -139,12 +172,12 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
             jobId,
             this.fulfillQuoteRequest.selector
         );
-        req.add('method', 'GET');
+        req.add("method", "GET");
         req.add(
-            'url', 
+            "url",
             string(
                 abi.encodePacked(
-                    'https://api.1inch.dev/swap/v5.2/1/quote?src=', 
+                    "https://api.1inch.dev/swap/v5.2/1/quote?src=",
                     Strings.toHexString(src),
                     "&dst=",
                     Strings.toHexString(dst),
@@ -153,10 +186,13 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
                 )
             )
         );
-        req.add('headers', '["accept", "application/json", "authorization", "Bearer ${SECRET_01}"]');
-        req.add('body', '');
-        req.add('contact', 'locus-finance');
-        req.add('path', "toAmount");
+        req.add(
+            "headers",
+            '["accept", "application/json", "Authorization", "Bearer ${SECRET_01}"]'
+        );
+        req.add("body", "");
+        req.add("contact", "locus-finance");
+        req.add("path", "toAmount");
         lastQuotedSrcToken = src;
         lastQuotedDstToken = dst;
         lastQuotedSrcTokenAmount = amount;
@@ -167,8 +203,8 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
     function fulfillQuoteRequest(
         bytes32 requestId,
         uint256 toAmount
-    ) public recordChainlinkFulfillment(requestId)  {
-        uint256 length = _subscribers.length(); 
+    ) public recordChainlinkFulfillment(requestId) {
+        uint256 length = _subscribers.length();
         for (uint256 i = 0; i < length; i++) {
             ISwapHelperSubscriber(_subscribers.at(i)).notify(
                 lastQuotedSrcToken,
@@ -178,9 +214,9 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
             );
         }
         emit QuoteReceived(
-            lastQuotedSrcToken, 
-            lastQuotedDstToken, 
-            toAmount, 
+            lastQuotedSrcToken,
+            lastQuotedDstToken,
+            toAmount,
             lastQuotedSrcTokenAmount
         );
     }
@@ -190,55 +226,58 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         address dst,
         uint256 amount,
         uint8 slippage
-    ) external override payable onlyRole(SWAP_AUTHORIZED_ROLE) {
+    ) external payable override onlyRole(SWAP_AUTHORIZED_ROLE) {
         if (slippage > 50) {
             revert SlippageIsTooBig(); // A constraint dictated by 1inch Aggregation Protocol
-        }
-        if (src == ONE_INCH_ETH_ADDRESS && amount < msg.value) {
-            revert NotEnoughNativeTokensSent();
         }
         isReadyToFulfillSwap = false; // double check if the flag is down
 
         address sender = _msgSender();
         IERC20 srcErc20 = IERC20(src);
-        srcErc20.safeTransferFrom(sender, address(this), amount);
-
-        // make sure if allowances are at max so we would make cheaper future txs
-        if (srcErc20.allowance(address(this), aggregationRouter) < amount) {
-            srcErc20.approve(aggregationRouter, type(uint256).max);
-        }
-        IERC20 dstErc20 = IERC20(src);
-        if (dstErc20.allowance(address(this), aggregationRouter) < amount) {
-            dstErc20.approve(aggregationRouter, type(uint256).max);
+        if (src == ONE_INCH_ETH_ADDRESS) {
+            if (amount < msg.value) {
+                revert NotEnoughNativeTokensSent();
+            }
+        } else {
+            srcErc20.safeTransferFrom(sender, address(this), amount);
+            // make sure if allowances are at max so we would make cheaper future txs
+            if (srcErc20.allowance(address(this), aggregationRouter) < amount) {
+                srcErc20.approve(aggregationRouter, type(uint256).max);
+            }
         }
 
         Chainlink.Request memory req = buildOperatorRequest(
             jobId,
             this.registerSwapCalldata.selector
         );
-        req.add('method', 'GET');
+        req.add("method", "GET");
         req.add(
-            'url', 
+            "url",
             string(
                 abi.encodePacked(
-                    'https://api.1inch.dev/swap/v5.2/1/swap?src=', 
+                    "https://api.1inch.dev/swap/v5.2/1/swap?src=",
                     Strings.toHexString(src),
                     "&dst=",
                     Strings.toHexString(dst),
                     "&amount=",
                     Strings.toString(amount),
                     "&from=",
-                    Strings.toHexString(_msgSender()),
+                    Strings.toHexString(address(this)),
                     "&slippage=",
                     Strings.toString(slippage),
+                    "&receiver=",
+                    Strings.toHexString(sender),
                     "&disableEstimate=true"
                 )
             )
         );
-        req.add('headers', '["accept", "application/json", "authorization", "Bearer ${SECRET_01}"]');
-        req.add('body', '');
-        req.add('contact', 'locus-finance');
-        req.add('path', "tx,data");
+        req.add(
+            "headers",
+            '["accept", "application/json", "Authorization", "Bearer ${SECRET_01}"]'
+        );
+        req.add("body", "");
+        req.add("contact", "locus-finance");
+        req.add("path", "tx,data");
         lastSwapSrcToken = src;
         lastSwapDstToken = dst;
         lastSwapSrcTokenAmount = amount;
