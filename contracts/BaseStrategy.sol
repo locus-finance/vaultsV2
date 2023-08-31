@@ -233,9 +233,9 @@ abstract contract BaseStrategy is
             msg.sender == address(sgRouter) || msg.sender == address(sgBridge),
             "SgBridge::RouterOrBridgeOnly"
         );
-        address srcAddress = msg.sender == address(vault)
-            ? vault
-            : address(bytes20(abi.encodePacked(_srcAddress.slice(0, 20))));
+        address srcAddress = address(
+            bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
+        );
 
         emit SgReceived(_token, _amountLD, srcAddress);
     }

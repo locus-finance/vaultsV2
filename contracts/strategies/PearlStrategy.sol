@@ -182,13 +182,16 @@ contract PearlStrategy is Initializable, BaseStrategy {
         });
 
         uint256 wantAmountExpected = pearlToWant(_pearlAmount);
-        IPearlRouter(PEARL_ROUTER).swapExactTokensForTokens(
-            _pearlAmount,
-            _withSlippage(wantAmountExpected),
-            routes,
-            address(this),
-            block.timestamp
-        );
+
+        try
+            IPearlRouter(PEARL_ROUTER).swapExactTokensForTokens(
+                _pearlAmount,
+                _withSlippage(wantAmountExpected),
+                routes,
+                address(this),
+                block.timestamp
+            )
+        returns (uint256[] memory) {} catch {}
     }
 
     function _withdrawSome(uint256 _amountNeeded) internal {

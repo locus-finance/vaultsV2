@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.19;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {ERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ERC4626} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -35,7 +35,8 @@ contract Vault is
         address _governance,
         address _lzEndpoint,
         IERC20 _token,
-        address _sgBridge
+        address _sgBridge,
+        address _sgRouter
     ) external override initializer {
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
         __Ownable_init();
@@ -44,6 +45,7 @@ contract Vault is
         governance = _governance;
         token = _token;
         sgBridge = ISgBridge(_sgBridge);
+        sgRouter = _sgRouter;
 
         token.approve(_sgBridge, type(uint256).max);
     }
@@ -66,17 +68,19 @@ contract Vault is
     mapping(uint16 => mapping(address => mapping(uint256 => bool)))
         internal _usedNonces;
 
+    address public sgRouter;
+
     modifier onlyAuthorized() {
         require(msg.sender == governance || msg.sender == owner(), "V1");
         _;
     }
 
-    function revokeFunds() external override onlyAuthorized {
-        payable(msg.sender).transfer(address(this).balance);
+    function decimals() public view virtual override returns (uint8) {
+        return ERC20(address(token)).decimals();
     }
 
-    function sweepToken(IERC20 _token) external override onlyAuthorized {
-        _token.safeTransfer(msg.sender, _token.balanceOf(address(this)));
+    function revokeFunds() external override onlyAuthorized {
+        payable(msg.sender).transfer(address(this).balance);
     }
 
     function setEmergencyShutdown(
@@ -292,14 +296,15 @@ contract Vault is
     ) external override {
         require(_token == address(token), "V10");
         require(
-            strategies[_srcChainId][msg.sender].activation > 0 ||
-                msg.sender == address(0),
+            msg.sender == address(sgRouter) ||
+                msg.sender == address(sgBridge) ||
+                msg.sender == owner(),
             "V11"
         );
 
-        address srcAddress = strategies[_srcChainId][msg.sender].activation > 0
-            ? msg.sender
-            : address(bytes20(abi.encodePacked(_srcAddress.slice(0, 20))));
+        address srcAddress = address(
+            bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
+        );
 
         _handlePayload(_srcChainId, _payload, _amountLD);
 
@@ -681,8 +686,4 @@ contract Vault is
     }
 
     receive() external payable {}
-
-    function callMe() external {
-        _withdrawEpochs[withdrawEpoch].inProgress = false;
-    }
 }

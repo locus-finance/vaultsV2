@@ -13,7 +13,13 @@ module.exports = async function ({ getNamedAccounts }) {
     const Vault = await ethers.getContractFactory("Vault");
     const vault = await upgrades.deployProxy(
         Vault,
-        [deployer, config.lzEndpoint, config[TOKEN].address, config.sgBridge],
+        [
+            deployer,
+            config.lzEndpoint,
+            config[TOKEN].address,
+            config.sgBridge,
+            config.sgRouter,
+        ],
         {
             initializer: "initialize",
             kind: "transparent",

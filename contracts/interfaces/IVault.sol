@@ -63,12 +63,11 @@ interface IVault {
         address _governance,
         address _lzEndpoint,
         IERC20 _token,
-        address _sgBridge
+        address _sgBridge,
+        address _sgRouter
     ) external;
 
     function token() external view returns (IERC20);
-
-    function sweepToken(IERC20 _token) external;
 
     function revokeFunds() external;
 
