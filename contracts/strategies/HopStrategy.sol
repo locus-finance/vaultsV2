@@ -2,14 +2,14 @@
 
 pragma solidity ^0.8.18;
 
-import { BaseStrategy } from "../BaseStrategy.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { OracleLibrary } from "@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol";
-import { IUniswapV3Factory } from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
-import { ISwapRouter } from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
-import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {BaseStrategy} from "../BaseStrategy.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {OracleLibrary} from "@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol";
+import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
+import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../integrations/hop/IStakingRewards.sol";
 import "../integrations/hop/IRouter.sol";
@@ -73,7 +73,7 @@ contract HopStrategy is Initializable, BaseStrategy {
     function estimatedTotalAssets() public view override returns (uint256) {
         return
             LpToWant(balanceOfStaked()) +
-            balanceOfUnstaked() +
+            balanceOfWant() +
             HopToWant(rewards());
     }
 
@@ -81,20 +81,28 @@ contract HopStrategy is Initializable, BaseStrategy {
         if (emergencyExit) {
             return;
         }
-        uint256 unstakedBalance =balanceOfUnstaked(); 
+        uint256 unstakedBalance = balanceOfWant();
         _claimAndSellRewards();
-        if(unstakedBalance > _debtOutstanding ){
-            //logic
+        uint256 excessWant;
+        if (unstakedBalance > _debtOutstanding) {
+            excessWant = unstakedBalance - _debtOutstanding;
         }
-        if (unstakedBalance > 0) {
-            uint256[] memory liqAmounts = new uint256[](2);
-            liqAmounts[0] = unstakedBalance;
-            liqAmounts[1] = 0;
-            uint256 minAmount = IRouter(HOP_ROUTER).calculateTokenAmount(address(this),liqAmounts, true) * slippage / 10000;
-            IRouter(HOP_ROUTER).addLiquidity(liqAmounts, minAmount, block.timestamp);
-            uint256 lpBalance = IERC20(LP).balanceOf(address(this));
-            IStakingRewards(STAKING_REWARD).stake(lpBalance);
-        }
+
+        uint256[] memory liqAmounts = new uint256[](2);
+        liqAmounts[0] = excessWant;
+        liqAmounts[1] = 0;
+        uint256 minAmount = (IRouter(HOP_ROUTER).calculateTokenAmount(
+            address(this),
+            liqAmounts,
+            true
+        ) * slippage) / 10000;
+        IRouter(HOP_ROUTER).addLiquidity(
+            liqAmounts,
+            minAmount,
+            block.timestamp
+        );
+        uint256 lpBalance = IERC20(LP).balanceOf(address(this));
+        IStakingRewards(STAKING_REWARD).stake(lpBalance);
     }
 
     function _liquidatePosition(
@@ -132,10 +140,6 @@ contract HopStrategy is Initializable, BaseStrategy {
 
     function balanceOfStaked() internal view returns (uint256 amount) {
         amount = IStakingRewards(STAKING_REWARD).balanceOf(address(this));
-    }
-
-    function balanceOfUnstaked() internal view returns (uint256 amount) {
-        amount = want.balanceOf(address(this));
     }
 
     function rewards() internal view returns (uint256 amount) {
