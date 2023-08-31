@@ -45,11 +45,9 @@ contract SwapHelper is AccessControl, ChainlinkClient {
 
     address public immutable aggregationRouter; // 0x1111111254EEB25477B68fb85Ed929f73A960582
 
-    bytes32 public immutable quoteJobId; // Mumbai - a8356f48569c434eaa4ac5fcb4db5cc0	
-    uint256 public immutable quoteJobFee;
-
-    bytes32 public immutable swapCalldataJobId; // Mumbai - 8ced832954544a3c98543c94a51d6a8d
-    uint256 public immutable swapCalldataJobFee;
+    address internal oracleAddress;
+    bytes32 internal jobId;
+    uint256 internal fee;
 
     address public lastQuotedSrcToken;
     address public lastQuotedDstToken;
@@ -61,33 +59,54 @@ contract SwapHelper is AccessControl, ChainlinkClient {
     bool public isReadyToFulfillSwap;
     bytes internal _lastSwapCalldata;
 
-    string public oneInchApiKey;
     EnumerableSet.AddressSet internal _subscribers;
     
     constructor(
-        uint256 _quoteJobFee,
-        uint256 _swapCalldataJobFee,
-        bytes32 _quoteJobId,
-        bytes32 _swapCalldataJobId,
+        uint256 _jobFee, // Mainnet- 140 == 1.4 LINK
         address _strategist,
-        address _aggregationRouter,
-        address chainlinkTokenAddress, // Mumbai - 0x326C977E6efc84E512bB9C30f76E30c160eD06FB
-        address chainlinkOracleAddress, // Mumbai - 0x12A3d7759F745f4cb8EE8a647038c040cB8862A5
-        string memory _oneInchApiKey, // sc2uJVR5JYtl05ddY2Iryp9tq89jVjnh
+        address _aggregationRouter, // Mainnet - 0x1111111254EEB25477B68fb85Ed929f73A960582
+        address chainlinkTokenAddress, // Mainnet - 0x514910771AF9Ca656af840dff83E8264EcF986CA
+        address chainlinkOracleAddress, // Mainnet - 0x0168B5FcB54F662998B0620b9365Ae027192621f
+        string memory _jobId, // Mainnet - 0eb8d4b227f7486580b6f66706ac5d47
         address[] memory authorizedToSwap
     ) {
         setChainlinkToken(chainlinkTokenAddress);
-        setChainlinkOracle(chainlinkOracleAddress);
-        quoteJobFee = _quoteJobFee; // SHOULD BE PART OF LINK_DIVISIBILITY CONSTANT
-        swapCalldataJobFee = _swapCalldataJobFee; // SHOULD BE PART OF LINK_DIVISIBILITY CONSTANT
-        quoteJobId = _quoteJobId;
-        swapCalldataJobId = _swapCalldataJobId;
-        oneInchApiKey = _oneInchApiKey;
+        setOracleAddress(chainlinkOracleAddress);
+        setJobId(_jobId);
+        setFeeInHundredthsOfLink(_jobFee);
         aggregationRouter = _aggregationRouter;
         for (uint8 i = 0; i < authorizedToSwap.length; i++) {
             _grantRole(SWAP_AUTHORIZED_ROLE, authorizedToSwap[uint256(i)]);
         }
         _grantRole(STRATEGIST_ROLE, _strategist);
+    }
+
+    // Update oracle address
+    function setOracleAddress(address _oracleAddress) public onlyRole(STRATEGIST_ROLE) {
+        oracleAddress = _oracleAddress;
+        setChainlinkOracle(_oracleAddress);
+    }
+    function getOracleAddress() public view onlyRole(STRATEGIST_ROLE) returns (address) {
+        return oracleAddress;
+    }
+
+    // Update jobId
+    function setJobId(string memory _jobId) public onlyRole(STRATEGIST_ROLE) {
+        jobId = bytes32(bytes(_jobId));
+    }
+    function getJobId() public view onlyRole(STRATEGIST_ROLE) returns (string memory) {
+        return string(abi.encodePacked(jobId));
+    }
+    
+    // Update fees
+    function setFeeInJuels(uint256 _feeInJuels) public onlyRole(STRATEGIST_ROLE) {
+        fee = _feeInJuels;
+    }
+    function setFeeInHundredthsOfLink(uint256 _feeInHundredthsOfLink) public onlyRole(STRATEGIST_ROLE) {
+        setFeeInJuels((_feeInHundredthsOfLink * LINK_DIVISIBILITY) / 100);
+    }
+    function getFeeInHundredthsOfLink() public view onlyRole(STRATEGIST_ROLE) returns (uint256) {
+        return (fee * 100) / LINK_DIVISIBILITY;
     }
 
     function addSubscriber(address subscriber) external onlyRole(STRATEGIST_ROLE) {
@@ -115,9 +134,8 @@ contract SwapHelper is AccessControl, ChainlinkClient {
         address dst,
         uint256 amount
     ) external onlyRole(SWAP_AUTHORIZED_ROLE) {
-        Chainlink.Request memory req = buildChainlinkRequest(
-            quoteJobId,
-            address(this),
+        Chainlink.Request memory req = buildOperatorRequest(
+            jobId,
             this.fulfillQuoteRequest.selector
         );
         req.add('method', 'GET');
@@ -134,29 +152,21 @@ contract SwapHelper is AccessControl, ChainlinkClient {
                 )
             )
         );
-        req.add('headers', string(abi.encodePacked(
-            '["accept", "application/json", "Authorization", "Bearer ',
-            oneInchApiKey,
-            '"]'
-        )));
-        req.add('contact', 'numert');
+        req.add('headers', '["accept", "application/json", "authorization", "Bearer ${SECRET_01}"]');
+        req.add('body', '');
+        req.add('contact', 'locus-finance');
         req.add('path', "toAmount");
         lastQuotedSrcToken = src;
         lastQuotedDstToken = dst;
         lastQuotedSrcTokenAmount = amount;
-        sendChainlinkRequest(req, quoteJobFee);
+        // Send the request to the Chainlink oracle
+        sendOperatorRequest(req, fee);
     }
 
     function fulfillQuoteRequest(
         bytes32 requestId,
         uint256 toAmount
     ) public recordChainlinkFulfillment(requestId)  {
-        emit QuoteReceived(
-            lastQuotedSrcToken, 
-            lastQuotedDstToken, 
-            toAmount, 
-            lastQuotedSrcTokenAmount
-        );
         uint256 length = _subscribers.length(); 
         for (uint256 i = 0; i < length; i++) {
             ISwapHelperSubscriber(_subscribers.at(i)).notify(
@@ -166,6 +176,12 @@ contract SwapHelper is AccessControl, ChainlinkClient {
                 lastQuotedSrcTokenAmount
             );
         }
+        emit QuoteReceived(
+            lastQuotedSrcToken, 
+            lastQuotedDstToken, 
+            toAmount, 
+            lastQuotedSrcTokenAmount
+        );
     }
 
     function requestSwap(
@@ -195,9 +211,8 @@ contract SwapHelper is AccessControl, ChainlinkClient {
             dstErc20.approve(aggregationRouter, type(uint256).max);
         }
 
-        Chainlink.Request memory req = buildChainlinkRequest(
-            swapCalldataJobId,
-            address(this),
+        Chainlink.Request memory req = buildOperatorRequest(
+            jobId,
             this.registerSwapCalldata.selector
         );
         req.add('method', 'GET');
@@ -219,17 +234,14 @@ contract SwapHelper is AccessControl, ChainlinkClient {
                 )
             )
         );
-        req.add('headers', string(abi.encodePacked(
-            '["accept", "application/json", "Authorization", "Bearer ',
-            oneInchApiKey,
-            '"]'
-        )));
-        req.add('contact', 'numert');
+        req.add('headers', '["accept", "application/json", "authorization", "Bearer ${SECRET_01}"]');
+        req.add('body', '');
+        req.add('contact', 'locus-finance');
         req.add('path', "tx,data");
         lastSwapSrcToken = src;
         lastSwapDstToken = dst;
         lastSwapSrcTokenAmount = amount;
-        sendChainlinkRequest(req, swapCalldataJobFee);
+        sendOperatorRequest(req, fee);
     }
 
     function registerSwapCalldata(
@@ -261,9 +273,9 @@ contract SwapHelper is AccessControl, ChainlinkClient {
         isReadyToFulfillSwap = false;
     }
 
-    function evacuateLinkTokens() external onlyRole(STRATEGIST_ROLE) {
+    function withdrawLink() public onlyRole(STRATEGIST_ROLE) {
         LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
-        if (!link.transfer(msg.sender, link.balanceOf(address(this)))) {
+        if (!link.transfer(_msgSender(), link.balanceOf(address(this)))) {
             revert TransferError();
         }
     }
