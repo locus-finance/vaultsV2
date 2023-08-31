@@ -185,11 +185,19 @@ contract SwapHelper is AccessControl, ChainlinkClient, ConfirmedOwner {
         }
         isReadyToFulfillSwap = false; // double check if the flag is down
 
+        address sender = _msgSender();
         IERC20 srcErc20 = IERC20(src);
+        srcErc20.safeTransferFrom(sender, address(this), amount);
+
+        // make sure if allowances are at max so we would make cheaper future txs
         if (srcErc20.allowance(address(this), aggregationRouter) < amount) {
             srcErc20.approve(aggregationRouter, type(uint256).max);
         }
-        
+        IERC20 dstErc20 = IERC20(src);
+        if (dstErc20.allowance(address(this), aggregationRouter) < amount) {
+            dstErc20.approve(aggregationRouter, type(uint256).max);
+        }
+
         Chainlink.Request memory req = buildChainlinkRequest(
             swapCalldataJobId,
             address(this),
