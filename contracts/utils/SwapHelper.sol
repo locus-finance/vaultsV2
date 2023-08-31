@@ -75,9 +75,7 @@ contract SwapHelper is AccessControl, ChainlinkClient {
         address chainlinkOracleAddress, // Mumbai - 0x12A3d7759F745f4cb8EE8a647038c040cB8862A5
         string memory _oneInchApiKey, // sc2uJVR5JYtl05ddY2Iryp9tq89jVjnh
         address[] memory authorizedToSwap
-    )
-        ConfirmedOwner(_msgSender())
-    {
+    ) {
         setChainlinkToken(chainlinkTokenAddress);
         setChainlinkOracle(chainlinkOracleAddress);
         quoteJobFee = _quoteJobFee; // SHOULD BE PART OF LINK_DIVISIBILITY CONSTANT
