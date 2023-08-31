@@ -235,7 +235,7 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         address sender = _msgSender();
         IERC20 srcErc20 = IERC20(src);
         if (src == ONE_INCH_ETH_ADDRESS) {
-            if (amount < msg.value) {
+            if (msg.value != amount) {
                 revert NotEnoughNativeTokensSent();
             }
         } else {
