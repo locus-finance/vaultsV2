@@ -120,26 +120,22 @@ contract PearlStrategy is Initializable, BaseStrategy {
         return amountA + usdrToWant(amountB);
     }
 
-    function usdrToUsdcRate() public view returns (uint256) {
-        (uint256 reserve0, uint256 reserve1, ) = IPearlPair(USDC_USDR_LP)
-            .getReserves();
-        uint256 scaledReserve1 = Utils.scaleDecimals(
-            reserve1,
-            ERC20(USDR),
-            ERC20(address(want))
-        );
-        return (reserve0 * (10 ** wantDecimals)) / scaledReserve1;
-    }
-
     function wantToUsdrLp(uint256 _wantAmount) public view returns (uint256) {
-        (, , uint256 liquidity) = IPearlRouter(PEARL_ROUTER).quoteAddLiquidity(
-            address(want),
-            USDR,
-            true,
+        uint256 oneLp = usdrLpToWant(10 ** ERC20(USDC_USDR_LP).decimals());
+        uint256 scaledWantAmount = Utils.scaleDecimals(
             _wantAmount,
-            type(uint256).max
+            wantDecimals,
+            ERC20(USDC_USDR_LP).decimals()
         );
-        return usdrLpToWant(liquidity);
+        uint256 scaledLp = Utils.scaleDecimals(
+            oneLp,
+            wantDecimals,
+            ERC20(USDC_USDR_LP).decimals()
+        );
+
+        return
+            (scaledWantAmount * (10 ** ERC20(USDC_USDR_LP).decimals())) /
+            scaledLp;
     }
 
     function estimatedTotalAssets() public view override returns (uint256) {

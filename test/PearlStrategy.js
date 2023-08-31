@@ -190,4 +190,23 @@ describe("PearlStrategy", function () {
             Number(await want.balanceOf(strategy.address))
         ).to.be.greaterThan(Number(balanceBefore));
     });
+
+    it("should liquidate position", async function () {
+        const { strategy, want } = await loadFixture(
+            deployContractAndSetVariables
+        );
+
+        await dealTokensToAddress(strategy.address, TOKENS.USDC, "1000");
+        await strategy.adjustPosition(0);
+
+        await mine(300, { interval: 20 });
+
+        const balanceBefore = await want.balanceOf(strategy.address);
+        expect(Number(balanceBefore)).to.be.closeTo(
+            ethers.utils.parseUnits("0", 6),
+            ethers.utils.parseUnits("50", 6)
+        );
+
+        await strategy.liquidatePosition(ethers.utils.parseUnits("100", 6));
+    });
 });

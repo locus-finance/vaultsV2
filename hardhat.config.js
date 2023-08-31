@@ -86,7 +86,7 @@ module.exports = {
             accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
         },
         optimism: {
-            url: `https://rpc.ankr.com/optimism`,
+            url: `https://opt-mainnet.g.alchemy.com/v2/8tXOq0E32WeNg82-kk9bMToe3NBImRWV`,
             accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
         },
         bsctestnet: {
