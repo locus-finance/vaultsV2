@@ -11,9 +11,10 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
+import "../interfaces/ISwapHelper.sol";
 import "../interfaces/ISwapHelperSubscriber.sol";
 
-contract SwapHelper is AccessControl, ChainlinkClient {
+contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
     using Address for address;
     using SafeERC20 for IERC20;
     using Chainlink for Chainlink.Request;
@@ -133,7 +134,7 @@ contract SwapHelper is AccessControl, ChainlinkClient {
         address src,
         address dst,
         uint256 amount
-    ) external onlyRole(SWAP_AUTHORIZED_ROLE) {
+    ) external override onlyRole(SWAP_AUTHORIZED_ROLE) {
         Chainlink.Request memory req = buildOperatorRequest(
             jobId,
             this.fulfillQuoteRequest.selector
@@ -189,7 +190,7 @@ contract SwapHelper is AccessControl, ChainlinkClient {
         address dst,
         uint256 amount,
         uint8 slippage
-    ) external payable onlyRole(SWAP_AUTHORIZED_ROLE) {
+    ) external override payable onlyRole(SWAP_AUTHORIZED_ROLE) {
         if (slippage > 50) {
             revert SlippageIsTooBig(); // A constraint dictated by 1inch Aggregation Protocol
         }
@@ -253,7 +254,7 @@ contract SwapHelper is AccessControl, ChainlinkClient {
         emit SwapRegistered(swapCalldata);
     }
 
-    function fulfillSwap() external onlyRole(STRATEGIST_ROLE) {
+    function fulfillSwap() external override onlyRole(STRATEGIST_ROLE) {
         if (!isReadyToFulfillSwap) {
             revert SwapOperationIsNotReady();
         }
