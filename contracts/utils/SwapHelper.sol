@@ -3,7 +3,6 @@
 pragma solidity ^0.8.18;
 
 import "@chainlink/contracts/src/v0.8/ChainlinkClient.sol";
-import "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -14,7 +13,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 
 import "../interfaces/ISwapHelperSubscriber.sol";
 
-contract SwapHelper is AccessControl, ChainlinkClient, ConfirmedOwner {
+contract SwapHelper is AccessControl, ChainlinkClient {
     using Address for address;
     using SafeERC20 for IERC20;
     using Chainlink for Chainlink.Request;
