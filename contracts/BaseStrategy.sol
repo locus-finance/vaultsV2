@@ -95,6 +95,10 @@ abstract contract BaseStrategy is
 
     function estimatedTotalAssets() public view virtual returns (uint256);
 
+    function setStrategist(address _strategist) external onlyOwner {
+        strategist = _strategist;
+    }
+
     function setEmergencyExit(bool _emergencyExit) external onlyStrategist {
         emergencyExit = _emergencyExit;
     }

@@ -47,6 +47,7 @@
   "function setReceiveVersion(uint16)",
   "function setSendVersion(uint16)",
   "function setSlippage(uint256)",
+  "function setStrategist(address)",
   "function setTrustedRemote(uint16,bytes)",
   "function setTrustedRemoteAddress(uint16,bytes)",
   "function sgBridge() view returns (address)",
