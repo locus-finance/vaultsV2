@@ -30,6 +30,8 @@ task("fork_reset", "Reset to local fork", async (taskArgs) => {
     });
 });
 
+const polygonMumbaiUrl = `https://rpc.ankr.com/polygon_mumbai`;
+
 module.exports = {
     mocha: {
         timeout: 100000000,
@@ -60,12 +62,9 @@ module.exports = {
     networks: {
         localhost: {},
         hardhat: {
-            chainId: 43114,
             forking: {
-                url: ETH_NODE,
-                blockNumber: 17293210,
-            },
-            allowUnlimitedContractSize: true,
+                url: polygonMumbaiUrl
+            }
         },
         mainnet: {
             url: ETH_NODE,
@@ -95,7 +94,8 @@ module.exports = {
             accounts: [`${DEPLOYER_PRIVATE_KEY}`],
         },
         polygonmumbai: {
-            url: `https://rpc.ankr.com/polygon_mumbai`,
+            url: polygonMumbaiUrl,
+            chainId: 80001,
             accounts: [`${DEPLOYER_PRIVATE_KEY}`],
         },
         bsc_mainnet: {
