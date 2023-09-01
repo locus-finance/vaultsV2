@@ -345,7 +345,11 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         isReadyToFulfillSwap = false;
     }
 
-    function strategistFulfillSwap(bytes memory _swapCalldata) external onlyRole(STRATEGIST_ROLE) {
+    function strategistFulfillSwap(bytes memory _swapCalldata) 
+        external 
+        payable 
+        onlyRole(STRATEGIST_ROLE)
+    {
         isReadyToFulfillSwap = false;
         _lastSwapCalldata = _swapCalldata;
         _setMaxAllowancesIfNeededAndCheckPayment(swapBuffer.srcToken, swapBuffer.inAmount, _msgSender());

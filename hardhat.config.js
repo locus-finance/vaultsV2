@@ -11,6 +11,7 @@ require("dotenv").config();
 require("solidity-coverage");
 require("hardhat-deploy");
 require("hardhat-deploy-ethers");
+require("hardhat-tracer");
 
 require("./tasks");
 
