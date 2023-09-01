@@ -346,7 +346,13 @@
       "type": "function"
     },
     {
-      "inputs": [],
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "epoch",
+          "type": "uint256"
+        }
+      ],
       "name": "callMe",
       "outputs": [],
       "stateMutability": "nonpayable",
@@ -897,6 +903,19 @@
         }
       ],
       "name": "setSlippage",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_strategist",
+          "type": "address"
+        }
+      ],
+      "name": "setStrategist",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"

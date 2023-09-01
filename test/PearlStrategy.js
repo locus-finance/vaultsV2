@@ -2,7 +2,6 @@ const {
     loadFixture,
     mine,
     reset,
-    time,
 } = require("@nomicfoundation/hardhat-network-helpers");
 const { expect } = require("chai");
 const { utils } = require("ethers");
@@ -27,7 +26,7 @@ describe("PearlStrategy", function () {
         },
         PEARL: {
             address: "0x7238390d5f6f64e67c3211c343a410e2a3dec142",
-            whale: "0x24f5ee0991f95328bf74b682f6fad54cff9c832a",
+            whale: "0xaebb8fdbd5e52f99630cebb80d0a1c19892eb4c2",
             decimals: 18,
         },
         ETH: {
@@ -50,6 +49,7 @@ describe("PearlStrategy", function () {
                 deployer.address,
                 TOKENS.USDC.address,
                 ADDRESS_ONE,
+                0,
                 0,
                 ADDRESS_ONE,
                 networksConfig[TARGET_NETWORK].sgRouter,
@@ -141,7 +141,8 @@ describe("PearlStrategy", function () {
             ethers.utils.parseUnits("1000", 6)
         );
 
-        await strategy.harvest();
+        await strategy.adjustPosition(0);
+
         expect(await strategy.estimatedTotalAssets()).to.be.closeTo(
             ethers.utils.parseUnits("1000", 6),
             ethers.utils.parseUnits("100", 6)
@@ -167,23 +168,45 @@ describe("PearlStrategy", function () {
         );
     });
 
-    it.only("should withdraw funds after harvest", async function () {
+    it("should withdraw funds after harvest", async function () {
         const { strategy, want } = await loadFixture(
             deployContractAndSetVariables
         );
 
         await dealTokensToAddress(strategy.address, TOKENS.USDC, "1000");
-        await strategy.harvest();
+        await strategy.adjustPosition(0);
 
-        expect(Number(await want.balanceOf(strategy.address))).to.be.closeTo(
-            ethers.utils.parseUnits("0", 6),
-            ethers.utils.parseUnits("100", 6)
-        );
+        await mine(300, { interval: 20 });
 
         const balanceBefore = await want.balanceOf(strategy.address);
-        await strategy.withdrawSome(ethers.utils.parseUnits("100", 6));
-        const balanceAfter = await want.balanceOf(strategy.address);
+        expect(Number(balanceBefore)).to.be.closeTo(
+            ethers.utils.parseUnits("0", 6),
+            ethers.utils.parseUnits("50", 6)
+        );
 
-        console.log(balanceAfter.sub(balanceBefore));
+        await strategy.withdrawSome(ethers.utils.parseUnits("100", 6));
+
+        expect(
+            Number(await want.balanceOf(strategy.address))
+        ).to.be.greaterThan(Number(balanceBefore));
+    });
+
+    it("should liquidate position", async function () {
+        const { strategy, want } = await loadFixture(
+            deployContractAndSetVariables
+        );
+
+        await dealTokensToAddress(strategy.address, TOKENS.USDC, "1000");
+        await strategy.adjustPosition(0);
+
+        await mine(300, { interval: 20 });
+
+        const balanceBefore = await want.balanceOf(strategy.address);
+        expect(Number(balanceBefore)).to.be.closeTo(
+            ethers.utils.parseUnits("0", 6),
+            ethers.utils.parseUnits("50", 6)
+        );
+
+        await strategy.liquidatePosition(ethers.utils.parseUnits("100", 6));
     });
 });

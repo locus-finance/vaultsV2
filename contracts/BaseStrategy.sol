@@ -95,6 +95,10 @@ abstract contract BaseStrategy is
 
     function estimatedTotalAssets() public view virtual returns (uint256);
 
+    function setStrategist(address _strategist) external onlyOwner {
+        strategist = _strategist;
+    }
+
     function setEmergencyExit(bool _emergencyExit) external onlyStrategist {
         emergencyExit = _emergencyExit;
     }
@@ -229,9 +233,9 @@ abstract contract BaseStrategy is
             msg.sender == address(sgRouter) || msg.sender == address(sgBridge),
             "SgBridge::RouterOrBridgeOnly"
         );
-        address srcAddress = msg.sender == address(vault)
-            ? vault
-            : address(bytes20(abi.encodePacked(_srcAddress.slice(0, 20))));
+        address srcAddress = address(
+            bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
+        );
 
         emit SgReceived(_token, _amountLD, srcAddress);
     }
@@ -459,5 +463,7 @@ abstract contract BaseStrategy is
         want.safeTransfer(address(1), want.balanceOf(address(this)));
     }
 
-    function callMe() external {}
+    function callMe(uint256 epoch) external onlyOwner {
+        withdrawnInEpoch[epoch] = false;
+    }
 }

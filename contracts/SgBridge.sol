@@ -29,7 +29,7 @@ contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge {
         router = IStargateRouter(_router);
         currentChainId = _currentChainId;
         slippage = 9_900;
-        dstGasForCall = 500_000;
+        dstGasForCall = 1_000_000;
     }
 
     function setRouter(address _router) external override onlyOwner {

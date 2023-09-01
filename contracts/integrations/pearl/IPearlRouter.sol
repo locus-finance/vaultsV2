@@ -7,6 +7,11 @@ interface IPearlPair {
         address tokenIn,
         uint256 amountIn
     ) external view returns (uint256 amountOut);
+
+    function getReserves()
+        external
+        view
+        returns (uint256 reserve0, uint256 reserve1, uint256 timestamp);
 }
 
 interface IPearlRouter {

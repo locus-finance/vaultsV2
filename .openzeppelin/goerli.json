@@ -1,0 +1,495 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0x0252077FA81d4403a8D5ab5F7C124d431eEf4996",
+    "txHash": "0x6f41374b0fa4e7a4b2ea296a194c7adc3228e91d4d70c82c54477c5c5bf9aa9e"
+  },
+  "proxies": [
+    {
+      "address": "0xf089AC4929E769C7446C591C2455Fb9181990004",
+      "txHash": "0x051371b1d2d2d6947ca10e76995608e3c8f30d1673bdd51b7ff5bb79324c1b5a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xF6EC0c7f20440630854B5685b43a15eb3E156673",
+      "txHash": "0x48cc7528c10ed117e81310fe727d9516fc738a7edb6046aa92b0e567f82402f5",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xCF198766e51BFdD844E700488e65Fb22F27ee6d9",
+      "txHash": "0x306311a8379c593480306b9d2c103d3c928e4db7ad0798753ddf75002011e2c9",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xe5bb8e93E2d7C1670F35B5Ee7929D5964ACF5F3b",
+      "txHash": "0xffe9b37a829b8d8ea7e08fdc1e89f31619bf1e19141276fc365622db9ac31eda",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x7DE25B0201cdA4451413e21395752DD95C4192CD",
+      "txHash": "0x6585db74b1f8c7620ac782285dcb01e2592da7bde13e5e031d978f0cf486a4d0",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x05C9D358DEbd5C13d7Ef56374c2F4cdCc3Ea1376",
+      "txHash": "0x659a4f301db18c901558f1917d64de443f21ff18fab2cc58c73dca3c76ee900a",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xE8F686B3b585262ADCEf84113d83b3E69E73DdB6",
+      "txHash": "0x7a8d79bf1801672993acba293c8bc42fe46da4f25375379ee5071d2f32d6124f",
+      "kind": "transparent"
+    },
+    {
+      "address": "0xFf05295fC24bD6d5787fBa217f6C900fb6e3eDa6",
+      "txHash": "0xc0158b2c4615fcdbfeb35dc538d6a3a82260d9d07cfdc93238e3a6de4858717a",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "3181e9a5573291de3665b1dd28cd6ac4ff3be6e0eeeaf54c71b1208c286f1fbb": {
+      "address": "0xDCd060D5F5b558443D1880e2a49fDbD22D65026E",
+      "txHash": "0x21f8700a3e2e986b327712442bb4589013f631fc3eb7bf045c8e7f34f9392fe0",
+      "layout": {
+        "solcVersion": "0.8.18",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "router",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_contract(IStargateRouter)3341",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:14"
+          },
+          {
+            "label": "slippage",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_uint256",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:16"
+          },
+          {
+            "label": "dstGasForCall",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_uint256",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:17"
+          },
+          {
+            "label": "currentChainId",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_uint16",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:18"
+          },
+          {
+            "label": "poolIds",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_mapping(t_address,t_mapping(t_uint16,t_uint256))",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:20"
+          },
+          {
+            "label": "supportedDestinations",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_mapping(t_uint16,t_address)",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:21"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IStargateRouter)3341": {
+            "label": "contract IStargateRouter",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_mapping(t_uint16,t_uint256))": {
+            "label": "mapping(address => mapping(uint16 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_address)": {
+            "label": "mapping(uint16 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_uint256)": {
+            "label": "mapping(uint16 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "e8cb10425f0f0c5c8df3ffb860c4745fa486cf45951b9c535ff4cee1e59818af": {
+      "address": "0x3F37FDfC555f2a5b284f08f964db9dF08feAaD82",
+      "txHash": "0x3a86f39aab8fe2bc4f2a4581022602cdd635f4ebf869b65b06011f15d500d861",
+      "layout": {
+        "solcVersion": "0.8.18",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "router",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_contract(IStargateRouter)2192",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:14"
+          },
+          {
+            "label": "slippage",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_uint256",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:16"
+          },
+          {
+            "label": "dstGasForCall",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_uint256",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:17"
+          },
+          {
+            "label": "currentChainId",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_uint16",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:18"
+          },
+          {
+            "label": "poolIds",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_mapping(t_address,t_mapping(t_uint16,t_uint256))",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:20"
+          },
+          {
+            "label": "supportedDestinations",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_mapping(t_uint16,t_address)",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:21"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IStargateRouter)2192": {
+            "label": "contract IStargateRouter",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_mapping(t_uint16,t_uint256))": {
+            "label": "mapping(address => mapping(uint16 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_address)": {
+            "label": "mapping(uint16 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_uint256)": {
+            "label": "mapping(uint16 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "ad9771f9e02434e7f1af4396157cc20979283f2fc855deb114611447edc144e1": {
+      "address": "0xB294e571F60176b01454a729cc382e39d1a1FF83",
+      "txHash": "0x486d7366bcc37708364540bcb8a7f0ff55c3a3e3305c0167dc089d6f999fe090",
+      "layout": {
+        "solcVersion": "0.8.18",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "router",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_contract(IStargateRouter)6603",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:14"
+          },
+          {
+            "label": "slippage",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_uint256",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:16"
+          },
+          {
+            "label": "dstGasForCall",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_uint256",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:17"
+          },
+          {
+            "label": "currentChainId",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_uint16",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:18"
+          },
+          {
+            "label": "poolIds",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_mapping(t_address,t_mapping(t_uint16,t_uint256))",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:20"
+          },
+          {
+            "label": "supportedDestinations",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_mapping(t_uint16,t_address)",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:21"
+          },
+          {
+            "label": "whitelisted",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "SgBridge",
+            "src": "contracts/SgBridge.sol:22"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IStargateRouter)6603": {
+            "label": "contract IStargateRouter",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_uint16,t_uint256))": {
+            "label": "mapping(address => mapping(uint16 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_address)": {
+            "label": "mapping(uint16 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_uint256)": {
+            "label": "mapping(uint16 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    }
+  }
+}

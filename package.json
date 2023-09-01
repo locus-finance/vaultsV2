@@ -37,7 +37,7 @@
     "@layerzerolabs/solidity-examples": "^0.0.10",
     "@nomiclabs/hardhat-truffle5": "^2.0.7",
     "@openzeppelin/contracts-upgradeable": "^4.8.2",
-    "@openzeppelin/hardhat-upgrades": "^1.22.1",
+    "@openzeppelin/hardhat-upgrades": "^1.28.0",
     "@openzeppelin/test-helpers": "^0.5.16",
     "@uniswap/v3-periphery": "github:Uniswap/v3-periphery#0.8",
     "axios": "^1.5.0",
