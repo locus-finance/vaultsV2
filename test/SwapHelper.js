@@ -66,7 +66,7 @@ describe("SwapHelper", () => {
                     "accept": "application/json",
                     "Authorization": `Bearer ${getEnv("ONE_INCH_API_KEY")}`
                 },
-                params: {src, dst, amount, slippage, from, receiver},
+                params: {src, dst, amount, slippage, from, receiver, disableEstimate: true},
                 responseType: 'json'
             });
         } catch (error) {
@@ -87,21 +87,7 @@ describe("SwapHelper", () => {
         );
     });
 
-    // it('should perform a quote use case', async () => {
-
-    // });
-
-    it('should perform a swap use case', async () => {
-        console.log(
-            await mockOracleSwapCalldata(
-                ONE_INCH_ETH_ADDRESS,
-                ONE_INCH_TOKEN_ADDRESS,
-                ETH_WHALE,
-                MOCKED_AMOUNT,
-                MOCKED_SLIPPAGE,
-                deployer
-            )
-        );
+    it('should perform a quote use case', async () => {
         console.log(
             await mockOracleQuote(
                 ONE_INCH_ETH_ADDRESS,
@@ -109,5 +95,22 @@ describe("SwapHelper", () => {
                 MOCKED_AMOUNT
             )
         );
+    });
+
+    it('should perform a swap use case', async () => {
+        await mintNativeTokens(
+            (await get("SwapHelper")).address, 
+            MOCKED_AMOUNT.toHexString()
+        );
+        // console.log(
+        //     await mockOracleSwapCalldata(
+        //         ONE_INCH_ETH_ADDRESS,
+        //         ONE_INCH_TOKEN_ADDRESS,
+        //         ETH_WHALE,
+        //         MOCKED_AMOUNT,
+        //         MOCKED_SLIPPAGE,
+        //         deployer
+        //     )
+        // );
     });
 });

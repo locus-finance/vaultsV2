@@ -5,6 +5,13 @@
   "abi": [
     {
       "inputs": [],
+      "name": "fulfillQuote",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "fulfillSwap",
       "outputs": [],
       "stateMutability": "nonpayable",

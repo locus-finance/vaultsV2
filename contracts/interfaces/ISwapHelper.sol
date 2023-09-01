@@ -15,4 +15,5 @@ interface ISwapHelper {
         uint8 slippage
     ) external payable;
     function fulfillSwap() external;
+    function fulfillQuote() external;
 }
