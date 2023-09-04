@@ -133,7 +133,16 @@ contract HopStrategy is Initializable, BaseStrategy {
         override
         returns (uint256 _amountFreed)
     {
-        _exitPosition(balanceOfStaked());
+        _claimAndSellRewards();
+
+        uint256 stakingAmount = balanceOfWant();
+        IStakingRewards(STAKING_REWARD).withdraw(stakingAmount);
+        IRouter(HOP_ROUTER).removeLiquidityOneToken(
+            stakingAmount,
+            0,
+            0,
+            block.timestamp
+        );
         _amountFreed = want.balanceOf(address(this));
     }
 
@@ -221,6 +230,10 @@ contract HopStrategy is Initializable, BaseStrategy {
             amountsToWithdraw,
             false
         );
+
+        if (amountLpToWithdraw > balanceOfWant()) {
+            amountLpToWithdraw = balanceOfWant();
+        }
 
         IStakingRewards(STAKING_REWARD).withdraw(amountLpToWithdraw);
         uint256 minAmount = (_stakedAmount * slippage) / 10000;
