@@ -17,13 +17,11 @@ import "../integrations/hop/IRouter.sol";
 contract HopStrategy is Initializable, BaseStrategy {
     using SafeERC20 for IERC20;
 
-    uint8 internal constant USDCindex = 0;
-    uint8 internal constant USDCLPindex = 1;
     address internal constant HOP_ROUTER =
         0x10541b07d8Ad2647Dc6cD67abd4c03575dade261;
     address internal constant STAKING_REWARD =
         0xb0CabFE930642AD3E7DECdc741884d8C3F7EbC70;
-    address internal constant USDC = 0xaf88d065e77c8cC2239327C5EDb3A432268e5831;
+    address internal constant USDC = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
     address internal constant LP = 0xB67c014FA700E69681a673876eb8BAFAA36BFf71;
     address internal constant HOP = 0xc5102fE9359FD9a28f877a67E36B0F050d81a3CC;
 
@@ -31,13 +29,16 @@ contract HopStrategy is Initializable, BaseStrategy {
     address internal constant HOP_WETH_UNI_POOL =
         0x44ca2BE2Bd6a7203CCDBb63EED8382274f737A15;
     address internal constant WETH_USDC_UNI_POOL =
-        0xC6962004f452bE9203591991D15f6b388e09E8D0;
+        0xC31E54c7a869B9FcBEcc14363CF510d1c41fa443;
     uint256 internal constant HOP_WETH_POOL_FEE = 3000;
     uint256 internal constant USDC_WETH_POOL_FEE = 500;
     address internal constant UNISWAP_V3_ROUTER =
         0xE592427A0AEce92De3Edee1F18E0157C05861564;
 
     uint32 internal constant TWAP_RANGE_SECS = 1800;
+
+    address internal constant ETH_USDC_UNI_V3_POOL =
+        0xC6962004f452bE9203591991D15f6b388e09E8D0;
 
     function initialize(
         address _lzEndpoint,
@@ -46,7 +47,7 @@ contract HopStrategy is Initializable, BaseStrategy {
         address _vault,
         uint16 _vaultChainId,
         address _sgBridge,
-        address _router,
+        address _sgRouter,
         uint256 _slippage
     ) external initializer {
         __BaseStrategy_init(
@@ -57,11 +58,11 @@ contract HopStrategy is Initializable, BaseStrategy {
             _vaultChainId,
             uint16(block.chainid),
             _sgBridge,
-            _router,
+            _sgRouter,
             _slippage
         );
-
         IERC20(LP).safeApprove(STAKING_REWARD, type(uint256).max);
+        IERC20(LP).safeApprove(HOP_ROUTER, type(uint256).max);
         IERC20(HOP).safeApprove(UNISWAP_V3_ROUTER, type(uint256).max);
         want.safeApprove(HOP_ROUTER, type(uint256).max);
     }
@@ -74,35 +75,38 @@ contract HopStrategy is Initializable, BaseStrategy {
         return
             LpToWant(balanceOfStaked()) +
             balanceOfWant() +
-            HopToWant(rewards());
+            HopToWant(rewardss());
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal override {
         if (emergencyExit) {
             return;
         }
-        uint256 unstakedBalance = balanceOfWant();
         _claimAndSellRewards();
+        uint256 unstakedBalance = balanceOfWant();
+
         uint256 excessWant;
         if (unstakedBalance > _debtOutstanding) {
             excessWant = unstakedBalance - _debtOutstanding;
         }
+        if (excessWant > 0) {
+            uint256[] memory liqAmounts = new uint256[](2);
+            liqAmounts[0] = excessWant;
+            liqAmounts[1] = 0;
+            uint256 minAmount = (IRouter(HOP_ROUTER).calculateTokenAmount(
+                address(this),
+                liqAmounts,
+                true
+            ) * slippage) / 10000;
 
-        uint256[] memory liqAmounts = new uint256[](2);
-        liqAmounts[0] = excessWant;
-        liqAmounts[1] = 0;
-        uint256 minAmount = (IRouter(HOP_ROUTER).calculateTokenAmount(
-            address(this),
-            liqAmounts,
-            true
-        ) * slippage) / 10000;
-        IRouter(HOP_ROUTER).addLiquidity(
-            liqAmounts,
-            minAmount,
-            block.timestamp
-        );
-        uint256 lpBalance = IERC20(LP).balanceOf(address(this));
-        IStakingRewards(STAKING_REWARD).stake(lpBalance);
+            IRouter(HOP_ROUTER).addLiquidity(
+                liqAmounts,
+                minAmount,
+                block.timestamp
+            );
+            uint256 lpBalance = IERC20(LP).balanceOf(address(this));
+            IStakingRewards(STAKING_REWARD).stake(lpBalance);
+        }
     }
 
     function _liquidatePosition(
@@ -142,7 +146,7 @@ contract HopStrategy is Initializable, BaseStrategy {
         amount = IStakingRewards(STAKING_REWARD).balanceOf(address(this));
     }
 
-    function rewards() internal view returns (uint256 amount) {
+    function rewardss() internal view returns (uint256 amount) {
         amount = IStakingRewards(STAKING_REWARD).earned(address(this));
     }
 
@@ -165,6 +169,9 @@ contract HopStrategy is Initializable, BaseStrategy {
     function LpToWant(
         uint256 amountIn
     ) internal view returns (uint256 amountOut) {
+        if (amountIn == 0) {
+            return 0;
+        }
         amountOut = IRouter(HOP_ROUTER).calculateRemoveLiquidityOneToken(
             address(this),
             amountIn,
@@ -184,12 +191,15 @@ contract HopStrategy is Initializable, BaseStrategy {
     }
 
     function _withdrawSome(uint256 _amountNeeded) internal {
-        if (HopToWant(rewards()) >= _amountNeeded) {
+        if (_amountNeeded == 0) {
+            return;
+        }
+        if (HopToWant(rewardss()) >= _amountNeeded) {
             _claimAndSellRewards();
         } else {
             uint256 _usdcToUnstake = Math.min(
                 balanceOfStaked(),
-                _amountNeeded - HopToWant(rewards())
+                _amountNeeded - HopToWant(rewardss())
             );
             _exitPosition(_usdcToUnstake);
         }
@@ -224,12 +234,15 @@ contract HopStrategy is Initializable, BaseStrategy {
     }
 
     function _sellHopForWant(uint256 amountToSell) internal {
+        if (amountToSell == 0) {
+            return;
+        }
         ISwapRouter.ExactInputParams memory params;
         bytes memory swapPath = abi.encodePacked(
             HOP,
-            HOP_WETH_POOL_FEE,
+            uint24(HOP_WETH_POOL_FEE),
             WETH,
-            USDC_WETH_POOL_FEE,
+            uint24(USDC_WETH_POOL_FEE),
             USDC
         );
 
