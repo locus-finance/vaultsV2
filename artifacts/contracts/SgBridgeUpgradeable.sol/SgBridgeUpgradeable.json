@@ -1,0 +1,260 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "SgBridgeUpgradeable",
+  "sourceName": "contracts/SgBridgeUpgradeable.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "destChainId",
+          "type": "uint16"
+        }
+      ],
+      "name": "UnknownDestChainId",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint16",
+          "name": "destChainId",
+          "type": "uint16"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Bridge",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "version",
+          "type": "uint8"
+        }
+      ],
+      "name": "Initialized",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "bridgeSlippage",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "currentChainId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "",
+          "type": "uint16"
+        }
+      ],
+      "name": "destPoolIds",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "dstGasForCall",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "router",
+      "outputs": [
+        {
+          "internalType": "contract IStargateRouter",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_bridgeSlippage",
+          "type": "uint256"
+        }
+      ],
+      "name": "setBridgeSlippage",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_currentChainId",
+          "type": "uint16"
+        }
+      ],
+      "name": "setCurrentChainId",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint16",
+          "name": "_destChainId",
+          "type": "uint16"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_destPoolId",
+          "type": "uint256"
+        }
+      ],
+      "name": "setDestPoolId",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_dstGasForCall",
+          "type": "uint256"
+        }
+      ],
+      "name": "setDstGasForCall",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_router",
+          "type": "address"
+        }
+      ],
+      "name": "setRouter",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "srcPoolId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b50610466806100206000396000f3fe608060405234801561001057600080fd5b50600436106100ba5760003560e01c80630787f789146100bf5780632358370f146100f257806324bb7293146100fb5780632bb8e16914610110578063403a01e5146101195780636cbadbfa1461012c578063715018a61461013557806383af55501461013d5780638da5cb5b14610146578063991f218814610166578063c0d7865514610179578063dfbe05fd1461018c578063f2fde38b1461019f578063f887ea40146101b2575b600080fd5b6100df6100cd3660046103a2565b606a6020526000908152604090205481565b6040519081526020015b60405180910390f35b6100df60695481565b61010e6101093660046103a2565b6101c5565b005b6100df60675481565b61010e6101273660046103c4565b6101d6565b6100df60685481565b61010e6101e3565b6100df60665481565b61014e6101f7565b6040516001600160a01b0390911681526020016100e9565b61010e6101743660046103c4565b610206565b61010e6101873660046103dd565b610213565b61010e61019a366004610406565b61023d565b61010e6101ad3660046103dd565b61025c565b60655461014e906001600160a01b031681565b6101cd6102da565b61ffff16606855565b6101de6102da565b606655565b6101eb6102da565b6101f56000610339565b565b6033546001600160a01b031690565b61020e6102da565b606755565b61021b6102da565b606580546001600160a01b0319166001600160a01b0392909216919091179055565b6102456102da565b61ffff9091166000908152606a6020526040902055565b6102646102da565b6001600160a01b0381166102ce5760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b60648201526084015b60405180910390fd5b6102d781610339565b50565b336102e36101f7565b6001600160a01b0316146101f55760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016102c5565b603380546001600160a01b038381166001600160a01b0319831681179093556040519116919082907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e090600090a35050565b803561ffff8116811461039d57600080fd5b919050565b6000602082840312156103b457600080fd5b6103bd8261038b565b9392505050565b6000602082840312156103d657600080fd5b5035919050565b6000602082840312156103ef57600080fd5b81356001600160a01b03811681146103bd57600080fd5b6000806040838503121561041957600080fd5b6104228361038b565b94602093909301359350505056fea2646970667358221220c1801e2adc6adefb9add3165acd29bedef2afeb1d889a9673ed6c205d1e21ebd64736f6c63430008130033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100ba5760003560e01c80630787f789146100bf5780632358370f146100f257806324bb7293146100fb5780632bb8e16914610110578063403a01e5146101195780636cbadbfa1461012c578063715018a61461013557806383af55501461013d5780638da5cb5b14610146578063991f218814610166578063c0d7865514610179578063dfbe05fd1461018c578063f2fde38b1461019f578063f887ea40146101b2575b600080fd5b6100df6100cd3660046103a2565b606a6020526000908152604090205481565b6040519081526020015b60405180910390f35b6100df60695481565b61010e6101093660046103a2565b6101c5565b005b6100df60675481565b61010e6101273660046103c4565b6101d6565b6100df60685481565b61010e6101e3565b6100df60665481565b61014e6101f7565b6040516001600160a01b0390911681526020016100e9565b61010e6101743660046103c4565b610206565b61010e6101873660046103dd565b610213565b61010e61019a366004610406565b61023d565b61010e6101ad3660046103dd565b61025c565b60655461014e906001600160a01b031681565b6101cd6102da565b61ffff16606855565b6101de6102da565b606655565b6101eb6102da565b6101f56000610339565b565b6033546001600160a01b031690565b61020e6102da565b606755565b61021b6102da565b606580546001600160a01b0319166001600160a01b0392909216919091179055565b6102456102da565b61ffff9091166000908152606a6020526040902055565b6102646102da565b6001600160a01b0381166102ce5760405162461bcd60e51b815260206004820152602660248201527f4f776e61626c653a206e6577206f776e657220697320746865207a65726f206160448201526564647265737360d01b60648201526084015b60405180910390fd5b6102d781610339565b50565b336102e36101f7565b6001600160a01b0316146101f55760405162461bcd60e51b815260206004820181905260248201527f4f776e61626c653a2063616c6c6572206973206e6f7420746865206f776e657260448201526064016102c5565b603380546001600160a01b038381166001600160a01b0319831681179093556040519116919082907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e090600090a35050565b803561ffff8116811461039d57600080fd5b919050565b6000602082840312156103b457600080fd5b6103bd8261038b565b9392505050565b6000602082840312156103d657600080fd5b5035919050565b6000602082840312156103ef57600080fd5b81356001600160a01b03811681146103bd57600080fd5b6000806040838503121561041957600080fd5b6104228361038b565b94602093909301359350505056fea2646970667358221220c1801e2adc6adefb9add3165acd29bedef2afeb1d889a9673ed6c205d1e21ebd64736f6c63430008130033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

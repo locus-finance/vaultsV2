@@ -11,6 +11,7 @@ require("dotenv").config();
 require("solidity-coverage");
 require("hardhat-deploy");
 require("hardhat-deploy-ethers");
+require("hardhat-tracer");
 
 require("./tasks");
 
@@ -30,6 +31,8 @@ task("fork_reset", "Reset to local fork", async (taskArgs) => {
     params: [],
   });
 });
+
+const polygonMumbaiUrl = `https://rpc.ankr.com/polygon_mumbai`;
 
 module.exports = {
   mocha: {
@@ -61,12 +64,9 @@ module.exports = {
   networks: {
     localhost: {},
     hardhat: {
-      chainId: 42161,
-      forking: {
-        url: ARBITRUM_NODE,
-        blockNumber: 126369849,
-      },
-      allowUnlimitedContractSize: true,
+        forking: {
+            url: ETH_NODE
+        }
     },
     mainnet: {
       url: ETH_NODE,
