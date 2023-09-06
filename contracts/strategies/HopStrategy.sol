@@ -298,15 +298,6 @@ contract HopStrategy is Initializable, BaseStrategy, AccessControlUpgradeable, I
         } 
     }
 
-    function sgReceive(
-        uint16 _srcChainId,
-        bytes memory _srcAddress,
-        uint256 _nonce,
-        address _token,
-        uint256 amountLD,
-        bytes memory payload
-    ) external override {}
-
     function notifyCallback(
         address src,
         address dst,
