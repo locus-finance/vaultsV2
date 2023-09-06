@@ -50,6 +50,7 @@ contract HopStrategy is Initializable, BaseStrategy, AccessControlUpgradeable, I
     ISwapHelper public swapHelper;
 
     event EmergencySwapOnUniswapV3(bytes indexed lowLevelErrorData);
+    event Swap(address indexed src, address indexed dst, uint256 indexed amount);
 
     function initialize(
         address _lzEndpoint,
@@ -290,7 +291,7 @@ contract HopStrategy is Initializable, BaseStrategy, AccessControlUpgradeable, I
         try swapHelper.requestSwapAndFulfillOnOracleExpense(
             HOP, USDC, amountToSell, adjustedTo1InchSlippage
         ) {
-            return;
+            emit Swap(HOP, USDC, amountToSell);
         } catch (bytes memory lowLevelErrorData) {
             _emergencySellHopForWant(amountToSell);
             emit EmergencySwapOnUniswapV3(lowLevelErrorData);

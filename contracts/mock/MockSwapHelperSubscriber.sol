@@ -12,7 +12,7 @@ contract MockSwapHelperSubscriber is ISwapHelperSubscriber {
         uint256 amountIn
     );
 
-    function notify(
+    function notifyCallback(
         address src,
         address dst,
         uint256 amountOut,
