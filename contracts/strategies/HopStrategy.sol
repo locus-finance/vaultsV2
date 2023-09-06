@@ -10,11 +10,14 @@ import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRoute
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 import "../integrations/hop/IStakingRewards.sol";
 import "../integrations/hop/IRouter.sol";
+import "../interfaces/ISwapHelper.sol";
+import "../interfaces/ISwapHelperSubscriber.sol";
 
-contract HopStrategy is Initializable, BaseStrategy {
+contract HopStrategy is Initializable, BaseStrategy, AccessControlUpgradeable, ISwapHelperSubscriber {
     using SafeERC20 for IERC20;
 
     address internal constant HOP_ROUTER =
@@ -40,6 +43,14 @@ contract HopStrategy is Initializable, BaseStrategy {
     address internal constant ETH_USDC_UNI_V3_POOL =
         0xC6962004f452bE9203591991D15f6b388e09E8D0;
 
+    bytes32 public constant QUOTE_OPERATION_PROVIDER = keccak256("QUOTE_OPERATION_PROVIDER");
+
+    uint256 public constant MAX_BPS = 10000;
+
+    ISwapHelper public swapHelper;
+
+    event EmergencySwapOnUniswapV3(bytes indexed lowLevelErrorData);
+
     function initialize(
         address _lzEndpoint,
         address _strategist,
@@ -50,6 +61,7 @@ contract HopStrategy is Initializable, BaseStrategy {
         address _sgRouter,
         uint256 _slippage
     ) external initializer {
+        __AccessControl_init();
         __BaseStrategy_init(
             _lzEndpoint,
             _strategist,
@@ -97,7 +109,7 @@ contract HopStrategy is Initializable, BaseStrategy {
                 address(this),
                 liqAmounts,
                 true
-            ) * slippage) / 10000;
+            ) * slippage) / MAX_BPS;
 
             IRouter(HOP_ROUTER).addLiquidity(
                 liqAmounts,
@@ -236,7 +248,7 @@ contract HopStrategy is Initializable, BaseStrategy {
         }
 
         IStakingRewards(STAKING_REWARD).withdraw(amountLpToWithdraw);
-        uint256 minAmount = (_stakedAmount * slippage) / 10000;
+        uint256 minAmount = (_stakedAmount * slippage) / MAX_BPS;
 
         IRouter(HOP_ROUTER).removeLiquidityOneToken(
             amountLpToWithdraw,
@@ -246,10 +258,7 @@ contract HopStrategy is Initializable, BaseStrategy {
         );
     }
 
-    function _sellHopForWant(uint256 amountToSell) internal {
-        if (amountToSell == 0) {
-            return;
-        }
+    function _emergencySellHopForWant(uint256 amountToSell) internal {
         ISwapRouter.ExactInputParams memory params;
         bytes memory swapPath = abi.encodePacked(
             HOP,
@@ -264,7 +273,45 @@ contract HopStrategy is Initializable, BaseStrategy {
         params.recipient = address(this);
         params.deadline = block.timestamp;
         params.amountIn = amountToSell;
-        params.amountOutMinimum = (usdcExpected * slippage) / 10000;
+        params.amountOutMinimum = (usdcExpected * slippage) / MAX_BPS;
         ISwapRouter(UNISWAP_V3_ROUTER).exactInput(params);
+    }
+
+    function setSwapHelper(address _swapHelper) public onlyStrategistOrSelf {
+        swapHelper = ISwapHelper(_swapHelper);
+    }
+
+    function _sellHopForWant(uint256 amountToSell) internal {
+        if (amountToSell == 0) {
+            return;
+        }
+        // hop to usdc
+        uint8 adjustedTo1InchSlippage = uint8(slippage * 100 / MAX_BPS);
+        try swapHelper.requestSwap(
+            HOP, USDC, amountToSell, adjustedTo1InchSlippage
+        ) {
+            return;
+        } catch (bytes memory lowLevelErrorData) {
+            _emergencySellHopForWant(amountToSell);
+            emit EmergencySwapOnUniswapV3(lowLevelErrorData);
+        } 
+    }
+
+    function sgReceive(
+        uint16 _srcChainId,
+        bytes memory _srcAddress,
+        uint256 _nonce,
+        address _token,
+        uint256 amountLD,
+        bytes memory payload
+    ) external override {}
+
+    function notifyCallback(
+        address src,
+        address dst,
+        uint256 amountOut,
+        uint256 amountIn
+    ) external override onlyRole(QUOTE_OPERATION_PROVIDER) {
+        
     }
 }

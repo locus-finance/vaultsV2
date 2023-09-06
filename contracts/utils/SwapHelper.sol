@@ -218,7 +218,7 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
     function _fulfillQuoteRequest() internal {
         uint256 length = _subscribers.length();
         for (uint256 i = 0; i < length; i++) {
-            ISwapHelperSubscriber(_subscribers.at(i)).notify(
+            ISwapHelperSubscriber(_subscribers.at(i)).notifyCallback(
                 quoteBuffer.swapInfo.srcToken,
                 quoteBuffer.swapInfo.dstToken,
                 quoteBuffer.outAmount,
