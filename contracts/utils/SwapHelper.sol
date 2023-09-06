@@ -183,15 +183,15 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         return _subscribers.length();
     }
 
-    function requestQuote(
+    function _requestQuote(
         address src,
         address dst,
-        uint256 amount
-    ) external override onlyRole(QUOTE_AUTHORIZED_ROLE) {
-        isReadyToFulfillQuote = false; // double check the flag
+        uint256 amount,
+        bytes4 callbackSignature
+    ) internal {
         Chainlink.Request memory req = buildOperatorRequest(
             jobInfos[uint256(JobPurpose.QUOTE)].jobId,
-            this.registerQuoteRequest.selector
+            callbackSignature
         );
         req.add("method", "GET");
         req.add(
@@ -215,6 +215,28 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         sendOperatorRequest(req, jobInfos[uint256(JobPurpose.QUOTE)].jobFeeInJuels);
     }
 
+    function requestQuote(
+        address src,
+        address dst,
+        uint256 amount
+    ) external override onlyRole(QUOTE_AUTHORIZED_ROLE) {
+        isReadyToFulfillQuote = false; // double check the flag
+        _requestQuote(src, dst, amount, this.registerQuoteRequest.selector);
+    }
+
+    function requestQuoteAndFulfillOnOracleExpense(
+        address src,
+        address dst,
+        uint256 amount
+    ) external override onlyRole(QUOTE_AUTHORIZED_ROLE) {
+        _requestQuote(
+            src, 
+            dst, 
+            amount, 
+            this.registerQuoteAndFulfillRequestOnOracleExpense.selector
+        );
+    }
+
     function _fulfillQuoteRequest() internal {
         uint256 length = _subscribers.length();
         for (uint256 i = 0; i < length; i++) {
@@ -235,6 +257,15 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         quoteBuffer.outAmount = toAmount;
         isReadyToFulfillQuote = true;
         emit QuoteRegistered(toAmount);
+    }
+
+    function registerQuoteAndFulfillRequestOnOracleExpense(
+        bytes32 requestId,
+        uint256 toAmount
+    ) public recordChainlinkFulfillment(requestId) {
+        quoteBuffer.outAmount = toAmount;
+        emit QuoteRegistered(toAmount);
+        _fulfillQuoteRequest();
     }
 
     function fulfillQuote() external override onlyRole(QUOTE_AUTHORIZED_ROLE) {
@@ -268,23 +299,23 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         }
     }
 
-    function requestSwap(
+    function _requestSwap(
         address src,
         address dst,
         uint256 amount,
-        uint8 slippage
-    ) external payable override onlyRole(SWAP_AUTHORIZED_ROLE) {
+        uint8 slippage,
+        bytes4 callbackSignature
+    ) internal {
         if (slippage > 50) {
             revert SlippageIsTooBig(); // A constraint dictated by 1inch Aggregation Protocol
         }
-        isReadyToFulfillSwap = false; // double check if the flag is down
 
         address sender = _msgSender();
         _setMaxAllowancesIfNeededAndCheckPayment(src, amount, sender);
 
         Chainlink.Request memory req = buildOperatorRequest(
             jobInfos[uint256(JobPurpose.SWAP_CALLDATA)].jobId,
-            this.registerSwapCalldata.selector
+            callbackSignature
         );
         req.add("method", "GET");
         req.add(
@@ -316,6 +347,26 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         sendOperatorRequest(req, jobInfos[uint256(JobPurpose.SWAP_CALLDATA)].jobFeeInJuels);
     }
 
+    function requestSwap(
+        address src,
+        address dst,
+        uint256 amount,
+        uint8 slippage
+    ) external payable override onlyRole(SWAP_AUTHORIZED_ROLE) {
+        isReadyToFulfillSwap = false; // double check if the flag is down
+        _requestSwap(src, dst, amount, slippage, this.registerSwapCalldata.selector);
+    }
+
+    function requestSwapAndFulfillOnOracleExpense(
+        address src,
+        address dst,
+        uint256 amount,
+        uint8 slippage
+    ) external payable override onlyRole(SWAP_AUTHORIZED_ROLE) {
+        isReadyToFulfillSwap = false; // double check if the flag is down
+        _requestSwap(src, dst, amount, slippage, this.registerSwapCalldata.selector);
+    }
+
     function registerSwapCalldata(
         bytes32 requestId,
         bytes memory swapCalldata // KEEP IN MIND SHOULD BE LESS THAN OR EQUAL TO ~500 CHARS.
@@ -323,6 +374,16 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         _lastSwapCalldata = swapCalldata;
         isReadyToFulfillSwap = true;
         emit SwapRegistered(swapCalldata);
+    }
+
+    function registerSwapCalldataAndFulfillOnOracleExpense(
+        bytes32 requestId,
+        bytes memory swapCalldata // KEEP IN MIND SHOULD BE LESS THAN OR EQUAL TO ~500 CHARS.
+    ) public recordChainlinkFulfillment(requestId) {
+        _lastSwapCalldata = swapCalldata;
+        emit SwapRegistered(swapCalldata);
+        _setMaxAllowancesIfNeededAndCheckPayment(swapBuffer.srcToken, swapBuffer.inAmount, _msgSender());
+        _fulfillSwap();
     }
 
     function _fulfillSwap() internal {

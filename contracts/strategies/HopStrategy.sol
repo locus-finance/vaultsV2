@@ -287,7 +287,7 @@ contract HopStrategy is Initializable, BaseStrategy, AccessControlUpgradeable, I
         }
         // hop to usdc
         uint8 adjustedTo1InchSlippage = uint8(slippage * 100 / MAX_BPS);
-        try swapHelper.requestSwap(
+        try swapHelper.requestSwapAndFulfillOnOracleExpense(
             HOP, USDC, amountToSell, adjustedTo1InchSlippage
         ) {
             return;
@@ -312,6 +312,6 @@ contract HopStrategy is Initializable, BaseStrategy, AccessControlUpgradeable, I
         uint256 amountOut,
         uint256 amountIn
     ) external override onlyRole(QUOTE_OPERATION_PROVIDER) {
-        
+
     }
 }

@@ -16,4 +16,15 @@ interface ISwapHelper {
     ) external payable;
     function fulfillSwap() external;
     function fulfillQuote() external;
+    function requestQuoteAndFulfillOnOracleExpense(
+        address src,
+        address dst,
+        uint256 amount
+    ) external;
+    function requestSwapAndFulfillOnOracleExpense(
+        address src,
+        address dst,
+        uint256 amount,
+        uint8 slippage
+    ) external payable;
 }
