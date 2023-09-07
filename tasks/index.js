@@ -24,6 +24,13 @@ task(
     .addParam("targetAddr", "Address of the contract to upgrade");
 
 task(
+    "estimateSwap",
+    "Estimate swap price in LINK tokens for a given calldata.",
+    require("./estimateSwapOn1inch")
+)
+    .addParam("swapCalldata", "A string of swap calldata bytes");
+
+task(
     "calculateLZFee",
     "Calculates the Layer Zero fee",
     require("./calculateLZFee")

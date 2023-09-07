@@ -1,0 +1,118 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "HopStrategyLib",
+  "sourceName": "contracts/strategies/utils/HopStrategyLib.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "InitializeQuoteBufferWithHopToWantValue",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes",
+          "name": "lowLevelErrorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "EmergencyQuoteOnUniswapV3",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes",
+          "name": "lowLevelErrorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "EmergencySwapOnUniswapV3",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Quote",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Swap",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "MAX_BPS",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "QUOTE_OPERATION_PROVIDER",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x60b8610039600b82828239805160001a60731461002c57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe7300000000000000000000000000000000000000003014608060405260043610603d5760003560e01c8063237ea53f146042578063fd967f4714607a575b600080fd5b60687f6d1efadb607420c71e8f966ae6611a2b817ec83a98f82ae24284fd004cf9d40c81565b60405190815260200160405180910390f35b60686127108156fea2646970667358221220c4ab083699fdc179b7d0dc257501715cf9b2ec716d0a9288e7ff898a9668d82864736f6c63430008130033",
+  "deployedBytecode": "0x7300000000000000000000000000000000000000003014608060405260043610603d5760003560e01c8063237ea53f146042578063fd967f4714607a575b600080fd5b60687f6d1efadb607420c71e8f966ae6611a2b817ec83a98f82ae24284fd004cf9d40c81565b60405190815260200160405180910390f35b60686127108156fea2646970667358221220c4ab083699fdc179b7d0dc257501715cf9b2ec716d0a9288e7ff898a9668d82864736f6c63430008130033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
