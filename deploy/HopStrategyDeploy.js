@@ -3,7 +3,7 @@ const { ethers, upgrades } = require("hardhat");
 const bridgeConfig = require("../constants/bridgeConfig.json");
 const { vaultChain } = require("../utils");
 
-const TOKEN = "USDCe";
+const TOKEN = "USDC";
 
 //!Form config
 
@@ -12,8 +12,8 @@ async function deployHopStrategy() {
 
   console.log(`Your address: ${deployer}. Network: ${hre.network.name}`);
 
-  const config = bridgeConfig[hre.network.name];
-  const vaultConfig = bridgeConfig[vaultChain(hre.network.name)];
+  const config = bridgeConfig["arbitrumOne"];
+  const vaultConfig = bridgeConfig[vaultChain("arbitrumOne")];
   const HopStrategy = await ethers.getContractFactory("HopStrategy");
   const hopStrategy = await upgrades.deployProxy(
     HopStrategy,
