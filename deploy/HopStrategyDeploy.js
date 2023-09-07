@@ -1,7 +1,7 @@
 const { ethers, upgrades } = require("hardhat");
 
 const bridgeConfig = require("../constants/bridgeConfig.json");
-const { oppositeChain } = require("../utils");
+const { vaultChain } = require("../utils");
 
 const TOKEN = "USDCe";
 
@@ -12,8 +12,8 @@ async function deployHopStrategy() {
 
   console.log(`Your address: ${deployer}. Network: ${hre.network.name}`);
 
-  const config = bridgeConfig["arbitrum"];
-  // const vaultConfig = bridgeConfig[oppositeChain(hre.network.name)];
+  const config = bridgeConfig[hre.network.name];
+  const vaultConfig = bridgeConfig[vaultChain(hre.network.name)];
   const HopStrategy = await ethers.getContractFactory("HopStrategy");
   const hopStrategy = await upgrades.deployProxy(
     HopStrategy,
@@ -21,8 +21,8 @@ async function deployHopStrategy() {
       config.lzEndpoint,
       deployer,
       config[TOKEN].address,
-      config.vault,
-      config.vaultChainId,
+      vaultConfig.vault,
+      vaultConfig.chainId,
       config.sgBridge,
       config.sgRouter,
       config.slippage,
@@ -36,9 +36,9 @@ async function deployHopStrategy() {
 
   console.log("hopStrategy deployed to:", hopStrategy.address);
 
-    await hre.run("verify:verify", {
-      address: hopStrategy.address,
-    });
+  await hre.run("verify:verify", {
+    address: hopStrategy.address,
+  });
 }
 
 module.exports.tags = ["HopStrategy"];
@@ -48,4 +48,4 @@ deployHopStrategy()
     console.error(error);
     process.exitCode = 1;
   })
-  .then(() => {});
+  .then(() => { });

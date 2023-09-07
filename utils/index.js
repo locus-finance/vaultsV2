@@ -30,7 +30,7 @@ module.exports = {
             return "optimismgoerli";
         }
 
-        if (networkName === "optimism" || networkName === "polygon") {
+        if (networkName === "optimism" || networkName === "polygon" || networkName === "arbitrum") {
             return "optimism";
         }
 
