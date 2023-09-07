@@ -14,12 +14,12 @@
       "performanceFee": "5",
       "strategies": {
         "HopStrategy": {
-          "address": " ",
+          "address": "0xE3a4D90D197eA5B0aCD7829C070A532250AD7177",
           "network": "Arbitrum One",
           "chainId": "42161",
           "nativeToken": "ETH",
-          "wantTokenTicker": " ",
-          "wantTokenAddress": " ",
+          "wantTokenTicker": "USDC.e",
+          "wantTokenAddress": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
           "protocols": [
 
           ]
