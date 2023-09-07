@@ -66,7 +66,7 @@
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
         "TestStrategy": "0xa4e6a596d6df07e4c56c91695fE2F7Df1Ecc28c3"
     },
-    "arbitrum": {
+    "arbitrumOne": {
         "chainId": 110,
         "USDC": {
             "address": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
@@ -75,7 +75,6 @@
         "sgBridge": "0x352d8275AAE3e0c2404d9f68f6cEE084B5bEB3DD",
         "sgRouter": "0x53Bf833A5d6c4ddA888F69c22C88C9f356a41614",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
-        "vault": "",
         "slippage": 9500
     }
 }
