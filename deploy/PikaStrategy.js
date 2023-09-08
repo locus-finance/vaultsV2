@@ -1,6 +1,7 @@
 const { ethers, upgrades } = require("hardhat");
 
 const bridgeConfig = require("../constants/bridgeConfig.json");
+const { oppositeChain } = require("../utils");
 
 const TOKEN = "USDC";
 
@@ -10,13 +11,16 @@ module.exports = async function ({ getNamedAccounts }) {
   console.log(`Your address: ${deployer}. Network: ${hre.network.name}`);
 
   const config = bridgeConfig[hre.network.name];
-  const Vault = await ethers.getContractFactory("Vault");
-  const vault = await upgrades.deployProxy(
-    Vault,
+  const vaultConfig = bridgeConfig[oppositeChain(hre.network.name)];
+  const PikaStrategy = await ethers.getContractFactory("PikaStrategy");
+  const pikaStrategy = await upgrades.deployProxy(
+    PikaStrategy,
     [
-      deployer,
       config.lzEndpoint,
+      deployer,
       config[TOKEN].address,
+      vaultConfig.vault,
+      vaultConfig.chainId,
       config.sgBridge,
       config.sgRouter,
     ],
@@ -25,13 +29,13 @@ module.exports = async function ({ getNamedAccounts }) {
       kind: "transparent",
     }
   );
-  await vault.deployed();
+  await pikaStrategy.deployed();
 
-  console.log("Vault deployed to:", vault.address);
+  console.log("TestStrategy deployed to:", pikaStrategy.address);
 
   await hre.run("verify:verify", {
-    address: vault.address,
+    address: pikaStrategy.address,
   });
 };
 
-module.exports.tags = ["Vault"];
+module.exports.tags = ["PikaStrategy"];
