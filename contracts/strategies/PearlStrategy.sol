@@ -19,7 +19,12 @@ import {BaseStrategy} from "../BaseStrategy.sol";
 import "../interfaces/ISwapHelper.sol";
 import "../utils/SwapHelperSubscriber.sol";
 
-contract PearlStrategy is Initializable, BaseStrategy, AccessControlUpgradeable, SwapHelperSubscriber {
+contract PearlStrategy is
+    Initializable,
+    BaseStrategy,
+    AccessControlUpgradeable,
+    SwapHelperSubscriber
+{
     using SafeERC20 for IERC20;
     using FixedPointMathLib for uint256;
 
@@ -172,12 +177,14 @@ contract PearlStrategy is Initializable, BaseStrategy, AccessControlUpgradeable,
         if (_usdrAmount == 0) {
             return;
         }
-        try swapHelper.requestSwapAndFulfillOnOracleExpense(
-            USDR, 
-            address(want), 
-            _usdrAmount,
-            uint8(DEFAULT_SLIPPAGE * 100 / 10000) // converting into 1inch scaled slippage percent (10000 BPS -> 100%)
-        ) {
+        try
+            swapHelper.requestSwapAndFulfillOnOracleExpense(
+                USDR,
+                address(want),
+                _usdrAmount,
+                uint8((DEFAULT_SLIPPAGE * 100) / 10000) // converting into 1inch scaled slippage percent (10000 BPS -> 100%)
+            )
+        {
             emit Swap(USDR, address(want), _usdrAmount);
         } catch (bytes memory lowLevelErrorData) {
             _emergencySellUsdr(_usdrAmount);
@@ -211,12 +218,14 @@ contract PearlStrategy is Initializable, BaseStrategy, AccessControlUpgradeable,
         if (_pearlAmount == 0) {
             return;
         }
-        try swapHelper.requestSwapAndFulfillOnOracleExpense(
-            PEARL, 
-            address(want), 
-            _pearlAmount,
-            uint8(DEFAULT_SLIPPAGE * 100 / 10000) // converting into 1inch scaled slippage percent (10000 BPS -> 100%)
-        ) {
+        try
+            swapHelper.requestSwapAndFulfillOnOracleExpense(
+                PEARL,
+                address(want),
+                _pearlAmount,
+                uint8((DEFAULT_SLIPPAGE * 100) / 10000) // converting into 1inch scaled slippage percent (10000 BPS -> 100%)
+            )
+        {
             emit Swap(PEARL, address(want), _pearlAmount);
         } catch (bytes memory lowLevelErrorData) {
             _emergencySellPearl(_pearlAmount);
