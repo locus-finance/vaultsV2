@@ -1,0 +1,24 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "PearlStrategyLib",
+  "sourceName": "contracts/strategies/utils/PearlStrategyLib.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "DEFAULT_SLIPPAGE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608080604052346018576076908161001e823930815050f35b600080fdfe6080806040526004361015601257600080fd5b60003560e01c63a879851014602657600080fd5b6000366003190112603b578061264860209252f35b600080fdfea264697066735822122063007d44b03e44141cc9ab98e143ccdb3cf588098fbcc07ded82619a916fe8cd64736f6c63430008130033",
+  "deployedBytecode": "0x6080806040526004361015601257600080fd5b60003560e01c63a879851014602657600080fd5b6000366003190112603b578061264860209252f35b600080fdfea264697066735822122063007d44b03e44141cc9ab98e143ccdb3cf588098fbcc07ded82619a916fe8cd64736f6c63430008130033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
