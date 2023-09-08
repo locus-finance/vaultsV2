@@ -49,9 +49,6 @@ contract PearlStrategy is Initializable, BaseStrategy, AccessControlUpgradeable,
         0x97Bd59A8202F8263C2eC39cf6cF6B438D0B45876;
 
     ISwapHelper public swapHelper;
-    uint256 internal _quoteBuffer;
-
-    event EmergencySwapOnPearlRouter(bytes indexed lowLevelErrorData);
 
     function initialize(
         address _lzEndpoint,
@@ -376,14 +373,5 @@ contract PearlStrategy is Initializable, BaseStrategy, AccessControlUpgradeable,
 
     function setSwapHelper(address _swapHelper) public onlyStrategistOrSelf {
         swapHelper = ISwapHelper(_swapHelper);
-    }
-
-    function notifyCallback(
-        address,
-        address,
-        uint256 amountOut,
-        uint256
-    ) external override onlyRole(QUOTE_OPERATION_PROVIDER) {
-        _quoteBuffer = amountOut;
     }
 }
