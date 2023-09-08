@@ -1,7 +1,3 @@
-const {
-    sendLinkFromWhale
-} = require("../deploy/fixtures/utils/helpers");
-
 module.exports = async function (taskArgs, hre) {
     const { deployer } = await getNamedAccounts();
     const { 
