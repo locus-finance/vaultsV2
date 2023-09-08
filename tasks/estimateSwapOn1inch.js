@@ -17,6 +17,7 @@ module.exports = async function (taskArgs, hre) {
 
     console.log(`Your address: ${deployer}. Network: ${networkName}`);
     console.log(`Estimating LINK price for swap calldata (safety buffer: ${safetyBuffer}): ${swapCalldata}...`);
+    console.log(`SwapHelper address: ${swapHelperAddress}`);
 
     const swapHelperInstance = await hre.ethers.getContractAt(
         "SwapHelper",
