@@ -23,6 +23,7 @@ contract PikaStrategy is Initializable, BaseStrategy {
         IERC20 _want,
         address _vault,
         uint16 _vaultChainId,
+        uint16 _currentChainId,
         address _sgBridge,
         address _router,
         uint256 _slippage
@@ -33,6 +34,7 @@ contract PikaStrategy is Initializable, BaseStrategy {
             _want,
             _vault,
             _vaultChainId,
+            _currentChainId,
             _sgBridge,
             _router,
             _slippage
