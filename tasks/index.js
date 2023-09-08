@@ -25,7 +25,7 @@ task(
 
 task(
     "estimateSwap",
-    "Estimate swap price in LINK tokens for a given calldata",
+    "Estimate swap price in LINK tokens for a given calldata. WARNING: COULD ONLY BY UTILIZED IF THE REQUEST ON THE SWAP IS ONCHAIN. SO IT IS RECOMMENDED TO EMBED THIS TASK INTO SOME KIND OF A SERVER JOB WITH SUBSCRIPTION ON PLACING REQUESTS.",
     require("./estimateSwapOn1inch")
 )
     .addParam("swapCalldata", "A string of swap calldata bytes")
