@@ -16,19 +16,18 @@ import {BaseStrategy} from "../BaseStrategy.sol";
 import "../integrations/hop/IStakingRewards.sol";
 import "../integrations/hop/IRouter.sol";
 import "../interfaces/ISwapHelper.sol";
-import "../interfaces/ISwapHelperSubscriber.sol";
 import "./utils/HopStrategyLib.sol";
+import "../utils/SwapHelperSubscriber.sol";
 
 contract HopStrategy is
     Initializable,
     BaseStrategy,
     AccessControlUpgradeable,
-    ISwapHelperSubscriber
+    SwapHelperSubscriber
 {
     using SafeERC20 for IERC20;
 
     ISwapHelper public swapHelper;
-
     uint256 internal _quoteBuffer;
     bool internal _isQuoteBufferContainsHopToWantValue;
 
@@ -207,7 +206,7 @@ contract HopStrategy is
                 amount
             )
         {
-            emit HopStrategyLib.Quote(tokenFrom, tokenTo, amount);
+            emit Quote(tokenFrom, tokenTo, amount);
         } catch (bytes memory lowLevelErrorData) {
             uint256 amountOut = _emergencySmthToSmth(
                 poolForEmergencyQuote,
@@ -216,7 +215,7 @@ contract HopStrategy is
                 amount
             );
             _quoteBuffer = amountOut;
-            emit HopStrategyLib.EmergencyQuoteOnUniswapV3(lowLevelErrorData);
+            emit EmergencyQuoteOnAlternativeDEX(lowLevelErrorData);
         }
         return _quoteBuffer;
     }
@@ -313,10 +312,6 @@ contract HopStrategy is
         ISwapRouter(HopStrategyLib.UNISWAP_V3_ROUTER).exactInput(params);
     }
 
-    function setSwapHelper(address _swapHelper) public onlyStrategistOrSelf {
-        swapHelper = ISwapHelper(_swapHelper);
-    }
-
     function _sellHopForWant(uint256 amountToSell) internal {
         if (amountToSell == 0) {
             return;
@@ -333,15 +328,19 @@ contract HopStrategy is
                 adjustedTo1InchSlippage
             )
         {
-            emit HopStrategyLib.Swap(
+            emit Swap(
                 HopStrategyLib.HOP,
                 HopStrategyLib.USDC,
                 amountToSell
             );
         } catch (bytes memory lowLevelErrorData) {
             _emergencySellHopForWant(amountToSell);
-            emit HopStrategyLib.EmergencySwapOnUniswapV3(lowLevelErrorData);
+            emit EmergencySwapOnAlternativeDEX(lowLevelErrorData);
         }
+    }
+
+    function setSwapHelper(address _swapHelper) public onlyStrategistOrSelf {
+        swapHelper = ISwapHelper(_swapHelper);
     }
 
     function notifyCallback(
@@ -349,7 +348,7 @@ contract HopStrategy is
         address,
         uint256 amountOut,
         uint256
-    ) external override onlyRole(HopStrategyLib.QUOTE_OPERATION_PROVIDER) {
+    ) external override onlyRole(QUOTE_OPERATION_PROVIDER) {
         _quoteBuffer = amountOut;
     }
 }

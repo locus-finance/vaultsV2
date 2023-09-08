@@ -7,6 +7,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {FixedPointMathLib} from "solmate/src/utils/FixedPointMathLib.sol";
+import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 import {IExchange} from "../integrations/usdr/IExchange.sol";
 import {Utils} from "../utils/Utils.sol";
@@ -15,7 +16,10 @@ import {IPearlRouter, IPearlPair} from "../integrations/pearl/IPearlRouter.sol";
 import {IPearlGaugeV2} from "../integrations/pearl/IPearlGaugeV2.sol";
 import {BaseStrategy} from "../BaseStrategy.sol";
 
-contract PearlStrategy is Initializable, BaseStrategy {
+import "../interfaces/ISwapHelper.sol";
+import "../utils/SwapHelperSubscriber.sol";
+
+contract PearlStrategy is Initializable, BaseStrategy, AccessControlUpgradeable, SwapHelperSubscriber {
     using SafeERC20 for IERC20;
     using FixedPointMathLib for uint256;
 
@@ -44,6 +48,11 @@ contract PearlStrategy is Initializable, BaseStrategy {
     address internal constant PEARL_GAUGE_V2 =
         0x97Bd59A8202F8263C2eC39cf6cF6B438D0B45876;
 
+    ISwapHelper public swapHelper;
+    uint256 internal _quoteBuffer;
+
+    event EmergencySwapOnPearlRouter(bytes indexed lowLevelErrorData);
+
     function initialize(
         address _lzEndpoint,
         address _strategist,
@@ -54,6 +63,7 @@ contract PearlStrategy is Initializable, BaseStrategy {
         address _sgBridge,
         address _router
     ) external initializer {
+        __AccessControl_init();
         __BaseStrategy_init(
             _lzEndpoint,
             _strategist,
@@ -147,11 +157,8 @@ contract PearlStrategy is Initializable, BaseStrategy {
             usdrLpToWant(balanceOfLpStaked());
     }
 
-    function _sellUsdr(uint256 _usdrAmount) internal {
-        if (_usdrAmount == 0) {
-            return;
-        }
-
+    /// @dev here
+    function _emergencySellUsdr(uint256 _usdrAmount) internal {
         uint256 wantAmountExpected = usdrToWant(_usdrAmount);
         IPearlRouter(PEARL_ROUTER).swapExactTokensForTokensSimple(
             _usdrAmount,
@@ -164,11 +171,24 @@ contract PearlStrategy is Initializable, BaseStrategy {
         );
     }
 
-    function _sellPearl(uint256 _pearlAmount) internal {
-        if (_pearlAmount == 0) {
+    function _sellUsdr(uint256 _usdrAmount) internal {
+        if (_usdrAmount == 0) {
             return;
         }
+        try swapHelper.requestSwapAndFulfillOnOracleExpense(
+            USDR, 
+            address(want), 
+            _usdrAmount,
+            uint8(DEFAULT_SLIPPAGE * 100 / 10000) // converting into 1inch scaled slippage percent (10000 BPS -> 100%)
+        ) {
+            emit Swap(USDR, address(want), _usdrAmount);
+        } catch (bytes memory lowLevelErrorData) {
+            _emergencySellUsdr(_usdrAmount);
+            emit EmergencySwapOnAlternativeDEX(lowLevelErrorData);
+        }
+    }
 
+    function _emergencySellPearl(uint256 _pearlAmount) internal {
         IPearlRouter.Route[] memory routes = new IPearlRouter.Route[](2);
         routes[0] = IPearlRouter.Route({from: PEARL, to: USDR, stable: false});
         routes[1] = IPearlRouter.Route({
@@ -188,6 +208,23 @@ contract PearlStrategy is Initializable, BaseStrategy {
                 block.timestamp
             )
         returns (uint256[] memory) {} catch {}
+    }
+
+    function _sellPearl(uint256 _pearlAmount) internal {
+        if (_pearlAmount == 0) {
+            return;
+        }
+        try swapHelper.requestSwapAndFulfillOnOracleExpense(
+            PEARL, 
+            address(want), 
+            _pearlAmount,
+            uint8(DEFAULT_SLIPPAGE * 100 / 10000) // converting into 1inch scaled slippage percent (10000 BPS -> 100%)
+        ) {
+            emit Swap(PEARL, address(want), _pearlAmount);
+        } catch (bytes memory lowLevelErrorData) {
+            _emergencySellPearl(_pearlAmount);
+            emit EmergencySwapOnAlternativeDEX(lowLevelErrorData);
+        }
     }
 
     function _withdrawSome(uint256 _amountNeeded) internal {
@@ -335,5 +372,18 @@ contract PearlStrategy is Initializable, BaseStrategy {
             _newStrategy,
             IERC20(PEARL).balanceOf(address(this))
         );
+    }
+
+    function setSwapHelper(address _swapHelper) public onlyStrategistOrSelf {
+        swapHelper = ISwapHelper(_swapHelper);
+    }
+
+    function notifyCallback(
+        address,
+        address,
+        uint256 amountOut,
+        uint256
+    ) external override onlyRole(QUOTE_OPERATION_PROVIDER) {
+        _quoteBuffer = amountOut;
     }
 }

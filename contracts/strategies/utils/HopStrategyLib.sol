@@ -5,11 +5,6 @@ pragma solidity ^0.8.18;
 /// @notice The contract is built to avoid max size per contract file constraint.
 library HopStrategyLib 
 {
-    event EmergencySwapOnUniswapV3(bytes indexed lowLevelErrorData);
-    event Swap(address indexed src, address indexed dst, uint256 indexed amount);
-    event Quote(address indexed src, address indexed dst, uint256 indexed amount);
-    event EmergencyQuoteOnUniswapV3(bytes indexed lowLevelErrorData);
-
     error InitializeQuoteBufferWithHopToWantValue();
 
     address internal constant HOP_ROUTER =
@@ -35,7 +30,5 @@ library HopStrategyLib
     address internal constant ETH_USDC_UNI_V3_POOL =
         0xC6962004f452bE9203591991D15f6b388e09E8D0;
 
-    bytes32 public constant QUOTE_OPERATION_PROVIDER =
-        keccak256("QUOTE_OPERATION_PROVIDER");
     uint256 public constant MAX_BPS = 10000;
 }

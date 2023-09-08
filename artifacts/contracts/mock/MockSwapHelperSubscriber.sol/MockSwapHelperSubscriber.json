@@ -8,6 +8,63 @@
       "inputs": [
         {
           "indexed": true,
+          "internalType": "bytes",
+          "name": "lowLevelErrorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "EmergencyQuoteOnAlternativeDEX",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes",
+          "name": "lowLevelErrorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "EmergencySwapOnAlternativeDEX",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amountOut",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amountIn",
+          "type": "uint256"
+        }
+      ],
+      "name": "MockNotified",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
           "internalType": "address",
           "name": "src",
           "type": "address"
@@ -33,6 +90,69 @@
       ],
       "name": "Notified",
       "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Quote",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Swap",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "QUOTE_OPERATION_PROVIDER",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     },
     {
       "inputs": [
@@ -63,8 +183,8 @@
       "type": "function"
     }
   ],
-  "bytecode": "0x608060405234801561001057600080fd5b5061011f806100206000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063f056dffe14602d575b600080fd5b603c603836600460ac565b603e565b005b81836001600160a01b0316856001600160a01b03167f9b2db766e04dc7ee1cc19d1415531ad5b3fd566db4f745d9a8ad51e3d3fe1bd784604051608391815260200190565b60405180910390a450505050565b80356001600160a01b038116811460a757600080fd5b919050565b6000806000806080858703121560c157600080fd5b60c8856091565b935060d4602086016091565b9396939550505050604082013591606001359056fea26469706673582212201b05c95a2e2adaac02cd6be8e51118c63beecc88d9606657b4b628f054946c2164736f6c63430008130033",
-  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c8063f056dffe14602d575b600080fd5b603c603836600460ac565b603e565b005b81836001600160a01b0316856001600160a01b03167f9b2db766e04dc7ee1cc19d1415531ad5b3fd566db4f745d9a8ad51e3d3fe1bd784604051608391815260200190565b60405180910390a450505050565b80356001600160a01b038116811460a757600080fd5b919050565b6000806000806080858703121560c157600080fd5b60c8856091565b935060d4602086016091565b9396939550505050604082013591606001359056fea26469706673582212201b05c95a2e2adaac02cd6be8e51118c63beecc88d9606657b4b628f054946c2164736f6c63430008130033",
+  "bytecode": "0x608060405234801561001057600080fd5b50610171806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063237ea53f1461003b578063f056dffe14610074575b600080fd5b6100627f6d1efadb607420c71e8f966ae6611a2b817ec83a98f82ae24284fd004cf9d40c81565b60405190815260200160405180910390f35b6100876100823660046100f9565b610089565b005b81836001600160a01b0316856001600160a01b03167fa41fead51e95aa8ef7b9b8a86ce16608cc6288de4e973499e58730ab995bdb65846040516100cf91815260200190565b60405180910390a450505050565b80356001600160a01b03811681146100f457600080fd5b919050565b6000806000806080858703121561010f57600080fd5b610118856100dd565b9350610126602086016100dd565b9396939550505050604082013591606001359056fea2646970667358221220d0c90da37b5bb969404dbc11e0bfcc2415d87d91cb18c25cd5d8885dce5786c964736f6c63430008130033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c8063237ea53f1461003b578063f056dffe14610074575b600080fd5b6100627f6d1efadb607420c71e8f966ae6611a2b817ec83a98f82ae24284fd004cf9d40c81565b60405190815260200160405180910390f35b6100876100823660046100f9565b610089565b005b81836001600160a01b0316856001600160a01b03167fa41fead51e95aa8ef7b9b8a86ce16608cc6288de4e973499e58730ab995bdb65846040516100cf91815260200190565b60405180910390a450505050565b80356001600160a01b03811681146100f457600080fd5b919050565b6000806000806080858703121561010f57600080fd5b610118856100dd565b9350610126602086016100dd565b9396939550505050604082013591606001359056fea2646970667358221220d0c90da37b5bb969404dbc11e0bfcc2415d87d91cb18c25cd5d8885dce5786c964736f6c63430008130033",
   "linkReferences": {},
   "deployedLinkReferences": {}
 }

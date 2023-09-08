@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.18;
 
-import "../interfaces/ISwapHelperSubscriber.sol";
+import "../utils/SwapHelperSubscriber.sol";
 
-contract MockSwapHelperSubscriber is ISwapHelperSubscriber {
-    event Notified(
+contract MockSwapHelperSubscriber is SwapHelperSubscriber {
+    event MockNotified(
         address indexed src,
         address indexed dst,
         uint256 indexed amountOut,
@@ -18,6 +18,6 @@ contract MockSwapHelperSubscriber is ISwapHelperSubscriber {
         uint256 amountOut,
         uint256 amountIn
     ) external override {
-        emit Notified(src, dst, amountOut, amountIn);
+        emit MockNotified(src, dst, amountOut, amountIn);
     }
 }

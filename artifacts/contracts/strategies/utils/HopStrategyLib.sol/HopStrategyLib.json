@@ -9,82 +9,6 @@
       "type": "error"
     },
     {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "bytes",
-          "name": "lowLevelErrorData",
-          "type": "bytes"
-        }
-      ],
-      "name": "EmergencyQuoteOnUniswapV3",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "bytes",
-          "name": "lowLevelErrorData",
-          "type": "bytes"
-        }
-      ],
-      "name": "EmergencySwapOnUniswapV3",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "src",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "dst",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "Quote",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "src",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "dst",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "Swap",
-      "type": "event"
-    },
-    {
       "inputs": [],
       "name": "MAX_BPS",
       "outputs": [
@@ -96,23 +20,10 @@
       ],
       "stateMutability": "view",
       "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "QUOTE_OPERATION_PROVIDER",
-      "outputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
     }
   ],
-  "bytecode": "0x60b8610039600b82828239805160001a60731461002c57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe7300000000000000000000000000000000000000003014608060405260043610603d5760003560e01c8063237ea53f146042578063fd967f4714607a575b600080fd5b60687f6d1efadb607420c71e8f966ae6611a2b817ec83a98f82ae24284fd004cf9d40c81565b60405190815260200160405180910390f35b60686127108156fea2646970667358221220f4b714b2c055ededf0deae25f5bc3723c0382422cba7a8461f4e86a3819d80cf64736f6c63430008130033",
-  "deployedBytecode": "0x7300000000000000000000000000000000000000003014608060405260043610603d5760003560e01c8063237ea53f146042578063fd967f4714607a575b600080fd5b60687f6d1efadb607420c71e8f966ae6611a2b817ec83a98f82ae24284fd004cf9d40c81565b60405190815260200160405180910390f35b60686127108156fea2646970667358221220f4b714b2c055ededf0deae25f5bc3723c0382422cba7a8461f4e86a3819d80cf64736f6c63430008130033",
+  "bytecode": "0x6088610038600b82828239805160001a607314602b57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063fd967f47146038575b600080fd5b604061271081565b60405190815260200160405180910390f3fea2646970667358221220db02e760f2503ff924bfa1897a965a394bdb307c43860ecb7aca9e51e1a4a02c64736f6c63430008130033",
+  "deployedBytecode": "0x730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063fd967f47146038575b600080fd5b604061271081565b60405190815260200160405180910390f3fea2646970667358221220db02e760f2503ff924bfa1897a965a394bdb307c43860ecb7aca9e51e1a4a02c64736f6c63430008130033",
   "linkReferences": {},
   "deployedLinkReferences": {}
 }

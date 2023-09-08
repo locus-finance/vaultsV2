@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 import "../interfaces/ISwapHelper.sol";
-import "../interfaces/ISwapHelperSubscriber.sol";
+import "../utils/SwapHelperSubscriber.sol";
 
 contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
     using Address for address;
@@ -240,7 +240,7 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
     function _fulfillQuoteRequest() internal {
         uint256 length = _subscribers.length();
         for (uint256 i = 0; i < length; i++) {
-            ISwapHelperSubscriber(_subscribers.at(i)).notifyCallback(
+            SwapHelperSubscriber(_subscribers.at(i)).notifyCallback(
                 quoteBuffer.swapInfo.srcToken,
                 quoteBuffer.swapInfo.dstToken,
                 quoteBuffer.outAmount,
