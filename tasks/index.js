@@ -25,10 +25,19 @@ task(
 
 task(
     "estimateSwap",
-    "Estimate swap price in LINK tokens for a given calldata.",
+    "Estimate swap price in LINK tokens for a given calldata",
     require("./estimateSwapOn1inch")
 )
-    .addParam("swapCalldata", "A string of swap calldata bytes");
+    .addParam("swapCalldata", "A string of swap calldata bytes")
+    .addParam(
+        "swapHelperAddress", 
+        "An address of the 1inch Aggregation Protocol swap sender (SwapHelper.sol)"
+        )
+    .addParam("gasPrice", "A current gas price on the network of the router")
+    .addParam("priceUSDtoLINK", "A current price of the LINK in USD in wei")
+    .addParam("priceETHtoUSD", "A current price of the ETH in USD in wei")
+    .addParam("safetyBuffer", "A float multiplier of the output price in LINK (ex. 1.5)")
+    .addParam("value", "An amount of native currency if it is required by the calldata (swapCalldata), if none required: specify 0");
 
 task(
     "calculateLZFee",

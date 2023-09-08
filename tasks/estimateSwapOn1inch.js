@@ -1,50 +1,46 @@
-const axios = require("axios");
+const {
+    sendLinkFromWhale
+} = require("../deploy/fixtures/utils/helpers");
 
 module.exports = async function (taskArgs, hre) {
     const { deployer } = await getNamedAccounts();
-    const { swapCalldata } = taskArgs;
+    const { 
+        swapCalldata, 
+        safetyBuffer, 
+        swapHelperAddress,
+        gasPrice,
+        priceUSDtoLINK,
+        priceETHtoUSD,
+        value
+    } = taskArgs;
     const networkName = hre.network.name;
 
     console.log(`Your address: ${deployer}. Network: ${networkName}`);
-    console.log(`Estimating LINK price for swap calldata: ${swapCalldata}...`);
+    console.log(`Estimating LINK price for swap calldata (safety buffer: ${safetyBuffer}): ${swapCalldata}...`);
 
-    const getOracleQuote = async (src, dst, amount) => {
-        let rawResult;
-        try {
-            rawResult = await axios({
-                method: "get",
-                url: 'https://api.1inch.dev/swap/v5.2/1/quote',
-                headers: {
-                    "accept": "application/json",
-                    "Authorization": `Bearer ${getEnv("ONE_INCH_API_KEY")}`
-                },
-                params: {src, dst, amount},
-                responseType: 'json'
-            });
-        } catch (error) {
-            console.log(error);
-        }
-        return rawResult.data.toAmount;
-    }
-
-    const getOracleSwapCalldata = async (src, dst, from, amount, slippage, receiver) => {
-        let rawResult;
-        try {
-            rawResult = await axios({
-                method: "get",
-                url: 'https://api.1inch.dev/swap/v5.2/1/swap',
-                headers: {
-                    "accept": "application/json",
-                    "Authorization": `Bearer ${getEnv("ONE_INCH_API_KEY")}`
-                },
-                params: {src, dst, amount, slippage, from, receiver, disableEstimate: true},
-                responseType: 'json'
-            });
-        } catch (error) {
-            console.log(error);
-        }
-        return rawResult.data.tx.data;
-    }
-
+    const swapHelperInstance = await hre.ethers.getContractAt(
+        "SwapHelper",
+        swapHelperAddress
+    );
     
+    // Its somewhat equal to the oracle expense executed routine.
+    const estimatedGas = await swapHelperInstance.estimateGas.strategistFulfillSwap(
+        swapCalldata, 
+        value === "0" ? undefined : { value: hre.ethers.BigNumber.from(value) }
+    );
+
+    const PRECISION = 100;
+
+    const bnGasPriceInWei = hre.ethers.BigNumber.from(gasPrice);
+    const bnPriceUsdToLinkInWei = hre.ethers.BigNumber.from(priceUSDtoLINK);
+    const bnPriceUsdToETHInWei = hre.ethers.BigNumber.from(priceETHtoUSD);
+    const bnEstimatedGas = hre.ethers.BigNumber.from(estimatedGas);
+    const bnSafetyBuffer = hre.ethers.BigNumber.from(safetyBuffer * PRECISION);
+    
+    const txCostInEth = bnEstimatedGas.mul(bnGasPriceInWei);
+    const txCostInLink = txCostInEth.mul(bnPriceUsdToETHInWei).div(bnPriceUsdToLinkInWei);
+
+    const resultTxCostInLink = txCostInLink.mul(bnSafetyBuffer).div(PRECISION);
+
+    console.log(`An estimated cost of the swap is: ${hre.ethers.utils.formatUnits(resultTxCostInLink)} LINK`);
 };

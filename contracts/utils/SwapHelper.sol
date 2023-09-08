@@ -364,7 +364,7 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         uint8 slippage
     ) external payable override onlyRole(SWAP_AUTHORIZED_ROLE) {
         isReadyToFulfillSwap = false; // double check if the flag is down
-        _requestSwap(src, dst, amount, slippage, this.registerSwapCalldata.selector);
+        _requestSwap(src, dst, amount, slippage, this.registerSwapCalldataAndFulfillOnOracleExpense.selector);
     }
 
     function registerSwapCalldata(
