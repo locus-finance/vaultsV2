@@ -69,7 +69,7 @@ describe("SwapHelper", () => {
         });
     });
 
-    xit('should perform a quote use case', async () => {
+    it('should perform a quote use case', async () => {
         const mockedOutAmount = await getOracleQuote(
             getEnv,
             ONE_INCH_ETH_ADDRESS,
@@ -112,7 +112,7 @@ describe("SwapHelper", () => {
         );
     });
 
-    xit('should perform a swap use case', async () => {
+    it('should perform a swap use case', async () => {
         const mockedSwapCalldata = await getOracleSwapCalldata(
             getEnv,
             ONE_INCH_ETH_ADDRESS,
