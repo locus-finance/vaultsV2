@@ -11,34 +11,26 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "../integrations/hop/IStakingRewards.sol";
-import "../integrations/hop/IRouter.sol";
+import "../integrations/velo/IVeloRouter.sol";
+import "../integrations/velo/IVeloGauge.sol";
 
 contract HopStrategy is Initializable, BaseStrategy {
     using SafeERC20 for IERC20;
 
-    address internal constant HOP_ROUTER =
-        0x10541b07d8Ad2647Dc6cD67abd4c03575dade261;
-    address internal constant STAKING_REWARD =
-        0xb0CabFE930642AD3E7DECdc741884d8C3F7EbC70;
-    address internal constant USDC = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
-    address internal constant LP = 0xB67c014FA700E69681a673876eb8BAFAA36BFf71;
-    address internal constant HOP = 0xc5102fE9359FD9a28f877a67E36B0F050d81a3CC;
+    address internal constant VELO_ROUTER = 0xa062aE8A9c5e11aaA026fc2670B0D65cCc8B2858;
+    address internal constant VELO_GAUGE = 0xC263655114CdE848C73B899846FE7A2D219c10a8;
+    address internal constant USDC = 0x7F5c764cBc14f9669B88837ca1490cCa17c31607;
+    address internal constant USDPLUS = 0x73cb180bf0521828d8849bc8CF2B920918e23032;
+    address internal constant LP = 0xd95E98fc33670dC033424E7Aa0578D742D00f9C7;
+    address internal constant VELO = 0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db;
+    address internal constant DALA = 0x8aE125E8653821E851F12A49F7765db9a9ce7384;
 
-    address internal constant WETH = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
-    address internal constant HOP_WETH_UNI_POOL =
-        0x44ca2BE2Bd6a7203CCDBb63EED8382274f737A15;
-    address internal constant WETH_USDC_UNI_POOL =
-        0xC31E54c7a869B9FcBEcc14363CF510d1c41fa443;
-    uint256 internal constant HOP_WETH_POOL_FEE = 3000;
-    uint256 internal constant USDC_WETH_POOL_FEE = 500;
-    address internal constant UNISWAP_V3_ROUTER =
-        0xE592427A0AEce92De3Edee1F18E0157C05861564;
+    address internal constant WETH = 0x4200000000000000000000000000000000000006;
 
+    address internal constant POOL_FACTORY = 0xF1046053aa5682b4F9a81b5481394DA16BE5FF5a;
+    
     uint32 internal constant TWAP_RANGE_SECS = 1800;
 
-    address internal constant ETH_USDC_UNI_V3_POOL =
-        0xC6962004f452bE9203591991D15f6b388e09E8D0;
 
     function initialize(
         address _lzEndpoint,
@@ -61,23 +53,23 @@ contract HopStrategy is Initializable, BaseStrategy {
             _sgRouter,
             _slippage
         );
-        IERC20(LP).safeApprove(STAKING_REWARD, type(uint256).max);
-        IERC20(LP).safeApprove(HOP_ROUTER, type(uint256).max);
-        IERC20(HOP).safeApprove(UNISWAP_V3_ROUTER, type(uint256).max);
-        want.safeApprove(HOP_ROUTER, type(uint256).max);
+        // IERC20(LP).safeApprove(STAKING_REWARD, type(uint256).max);
+        // IERC20(LP).safeApprove(HOP_ROUTER, type(uint256).max);
+        // IERC20(HOP).safeApprove(UNISWAP_V3_ROUTER, type(uint256).max);
+        // want.safeApprove(HOP_ROUTER, type(uint256).max);
     }
 
     function name() external pure override returns (string memory) {
-        return "HopStrategy";
+        return "Velo USDC/USD+ Strategy";
     }
 
     function estimatedTotalAssets() public view override returns (uint256) {
         return
             LpToWant(balanceOfStaked()) +
             balanceOfWant() +
-            HopToWant(rewardss());
+            VeloToWant(rewardss());
     }
-
+    //to refactor due to amount of tokens changed
     function _adjustPosition(uint256 _debtOutstanding) internal override {
         if (emergencyExit) {
             return;
@@ -90,22 +82,29 @@ contract HopStrategy is Initializable, BaseStrategy {
             excessWant = unstakedBalance - _debtOutstanding;
         }
         if (excessWant > 0) {
-            uint256[] memory liqAmounts = new uint256[](2);
-            liqAmounts[0] = excessWant;
-            liqAmounts[1] = 0;
-            uint256 minAmount = (IRouter(HOP_ROUTER).calculateTokenAmount(
+            IVeloRouter.Route memory route;
+        route.from = USDC;
+        route.to = USDPLUS;
+        route.stable = false;
+        route.factory = POOL_FACTORY;
+        
+            
+            _swapWantToUsdplus(excessWant/2);
+            uint256 minAmountA = excessWant/2 * slippage / 10000;
+            uint256 minAmountB = IERC20(USDPLUS).balanceOf(address(this)) * slippage / 10000;
+            IVeloRouter(VELO_ROUTER).addLiquidity(
+                USDC,
+                USDPLUS,
+                true,
+                excessWant / 2,
+                IERC20(USDPLUS).balanceOf(address(this)),
+                minAmountA,
+                minAmountB,
                 address(this),
-                liqAmounts,
-                true
-            ) * slippage) / 10000;
-
-            IRouter(HOP_ROUTER).addLiquidity(
-                liqAmounts,
-                minAmount,
                 block.timestamp
             );
             uint256 lpBalance = IERC20(LP).balanceOf(address(this));
-            IStakingRewards(STAKING_REWARD).stake(lpBalance);
+            IVeloGauge(VELO_GAUGE).deposit(lpBalance);
         }
     }
 
@@ -135,14 +134,19 @@ contract HopStrategy is Initializable, BaseStrategy {
     {
         _claimAndSellRewards();
 
-        uint256 stakingAmount = balanceOfWant();
-        IStakingRewards(STAKING_REWARD).withdraw(stakingAmount);
-        IRouter(HOP_ROUTER).removeLiquidityOneToken(
-            stakingAmount,
+        uint256 stakedAmount = balanceOfStaked();
+        IVeloGauge(VELO_GAUGE).withdraw(stakedAmount);
+        IVeloRouter(VELO_ROUTER).removeLiquidity(
+            USDC,
+            USDPLUS,
+            true,
+            stakedAmount,
             0,
             0,
+            address(this),
             block.timestamp
         );
+        _swapUsdplusToWant(IERC20(USDPLUS).balanceOf(address(this)));
         _amountFreed = want.balanceOf(address(this));
     }
 
@@ -152,27 +156,11 @@ contract HopStrategy is Initializable, BaseStrategy {
     }
 
     function balanceOfStaked() internal view returns (uint256 amount) {
-        amount = IStakingRewards(STAKING_REWARD).balanceOf(address(this));
+        amount = IVeloGauge(VELO_GAUGE).balanceOf(address(this));
     }
 
     function rewardss() internal view returns (uint256 amount) {
-        amount = IStakingRewards(STAKING_REWARD).earned(address(this));
-    }
-
-    function smthToSmth(
-        address pool,
-        address tokenFrom,
-        address tokenTo,
-        uint256 amount
-    ) internal view returns (uint256) {
-        (int24 meanTick, ) = OracleLibrary.consult(pool, TWAP_RANGE_SECS);
-        return
-            OracleLibrary.getQuoteAtTick(
-                meanTick,
-                uint128(amount),
-                tokenFrom,
-                tokenTo
-            );
+        amount = IVeloGauge(VELO_GAUGE).earned(address(this));
     }
 
     function LpToWant(
@@ -181,90 +169,111 @@ contract HopStrategy is Initializable, BaseStrategy {
         if (amountIn == 0) {
             return 0;
         }
-        amountOut = IRouter(HOP_ROUTER).calculateRemoveLiquidityOneToken(
-            address(this),
-            amountIn,
-            0
+        (uint256 amountOutA, uint256 AmountOutB) = IVeloRouter(VELO_ROUTER).quoteRemoveLiquidity(
+            USDC,
+            USDPLUS,
+            true,
+            POOL_FACTORY,
+            amountIn
         );
+        amountOut = amountOutA + AmountOutB;
     }
 
-    function HopToWant(
+    function VeloToWant(
         uint256 amountIn
     ) internal view returns (uint256 amountOut) {
-        amountOut = smthToSmth(
-            WETH_USDC_UNI_POOL,
-            WETH,
-            address(want),
-            smthToSmth(HOP_WETH_UNI_POOL, HOP, WETH, amountIn)
-        );
+        IVeloRouter.Route[] memory route = new IVeloRouter.Route[](1);
+        route[0].from = VELO;
+        route[0].to = USDC;
+        route[0].stable = false;
+        route[0].factory = POOL_FACTORY;
+        amountOut = IVeloRouter(VELO_ROUTER).getAmountsOut(amountIn, route)[1];
+    }
+
+    function _swapWantToUsdplus(uint256 amountToSell) internal{
+        IVeloRouter.Route[] memory routes = new IVeloRouter.Route[](2);
+        routes[0].from = USDC;
+        routes[0].to = DALA;
+        routes[0].stable = true;
+        routes[0].factory = POOL_FACTORY;
+        routes[1].from = DALA;
+        routes[1].to = USDPLUS;
+        routes[1].stable = true;
+        routes[1].factory = POOL_FACTORY;
+        //bigger slippage need to provide
+        uint256 amountOutMinimum = (amountToSell * slippage) / 10000;
+        (IVeloRouter(VELO_ROUTER).swapExactTokensForTokens(amountToSell, amountOutMinimum, routes, address(this), block.timestamp));
+    }
+    function _swapUsdplusToWant(uint256 amountToSell) internal{
+        IVeloRouter.Route[] memory routes = new IVeloRouter.Route[](2);
+        routes[0].from = USDPLUS;
+        routes[0].to = DALA;
+        routes[0].stable = true;
+        routes[0].factory = POOL_FACTORY;
+        routes[1].from = DALA;
+        routes[1].to = USDC;
+        routes[1].stable = true;
+        routes[1].factory = POOL_FACTORY;
+        //bigger slippage need to provide
+        uint256 amountOutMinimum = (amountToSell * slippage) / 10000;
+        (IVeloRouter(VELO_ROUTER).swapExactTokensForTokens(amountToSell, amountOutMinimum, routes, address(this), block.timestamp));
     }
 
     function _withdrawSome(uint256 _amountNeeded) internal {
         if (_amountNeeded == 0) {
             return;
         }
-        if (HopToWant(rewardss()) >= _amountNeeded) {
+        if (VeloToWant(rewardss()) >= _amountNeeded) {
             _claimAndSellRewards();
         } else {
             uint256 _usdcToUnstake = Math.min(
-                balanceOfStaked(),
-                _amountNeeded - HopToWant(rewardss())
+                LpToWant(balanceOfStaked()),
+                _amountNeeded - VeloToWant(rewardss())
             );
             _exitPosition(_usdcToUnstake);
         }
     }
 
     function _claimAndSellRewards() internal {
-        IStakingRewards(STAKING_REWARD).getReward();
-        _sellHopForWant(IERC20(HOP).balanceOf(address(this)));
+        IVeloGauge(VELO_GAUGE).getReward(address(this));
+        _sellVeloForWant(IERC20(VELO).balanceOf(address(this)));
     }
 
     function _exitPosition(uint256 _stakedAmount) internal {
         _claimAndSellRewards();
-        uint256[] memory amountsToWithdraw = new uint256[](2);
-        amountsToWithdraw[0] = _stakedAmount;
-        amountsToWithdraw[1] = 0;
 
-        uint256 amountLpToWithdraw = IRouter(HOP_ROUTER).calculateTokenAmount(
-            address(this),
-            amountsToWithdraw,
-            false
-        );
+        uint256 amountLpToWithdraw = _stakedAmount * IERC20(LP).totalSupply() / IERC20(USDC).balanceOf(LP);
 
         if (amountLpToWithdraw > balanceOfWant()) {
             amountLpToWithdraw = balanceOfWant();
         }
 
-        IStakingRewards(STAKING_REWARD).withdraw(amountLpToWithdraw);
+        IVeloGauge(VELO_GAUGE).withdraw(amountLpToWithdraw);
         uint256 minAmount = (_stakedAmount * slippage) / 10000;
 
-        IRouter(HOP_ROUTER).removeLiquidityOneToken(
+        IVeloRouter(VELO_ROUTER).removeLiquidity(
+            USDC,
+            USDPLUS,
+            false,
             amountLpToWithdraw,
-            0,
             minAmount,
+            minAmount,
+            address(this),
             block.timestamp
         );
     }
 
-    function _sellHopForWant(uint256 amountToSell) internal {
+    function _sellVeloForWant(uint256 amountToSell) internal {
         if (amountToSell == 0) {
             return;
         }
-        ISwapRouter.ExactInputParams memory params;
-        bytes memory swapPath = abi.encodePacked(
-            HOP,
-            uint24(HOP_WETH_POOL_FEE),
-            WETH,
-            uint24(USDC_WETH_POOL_FEE),
-            USDC
-        );
-
-        uint256 usdcExpected = HopToWant(amountToSell);
-        params.path = swapPath;
-        params.recipient = address(this);
-        params.deadline = block.timestamp;
-        params.amountIn = amountToSell;
-        params.amountOutMinimum = (usdcExpected * slippage) / 10000;
-        ISwapRouter(UNISWAP_V3_ROUTER).exactInput(params);
+        IVeloRouter.Route[] memory route = new IVeloRouter.Route[](1);
+        route[0].from = VELO;
+        route[0].to = USDC;
+        route[0].stable = false;
+        route[0].factory = POOL_FACTORY;
+        
+        uint256 amountOutMinimum = (VeloToWant(amountToSell) * slippage) / 10000;
+        IVeloRouter(VELO_ROUTER).swapExactTokensForTokens(amountToSell, amountOutMinimum, route, address(this), block.timestamp);
     }
 }
