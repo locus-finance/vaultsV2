@@ -7,7 +7,6 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {FixedPointMathLib} from "solmate/src/utils/FixedPointMathLib.sol";
-import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 import {IExchange} from "../integrations/usdr/IExchange.sol";
 import {Utils} from "../utils/Utils.sol";
@@ -22,7 +21,6 @@ import "../utils/SwapHelperSubscriber.sol";
 contract PearlStrategy is
     Initializable,
     BaseStrategy,
-    AccessControlUpgradeable,
     SwapHelperSubscriber
 {
     using SafeERC20 for IERC20;

@@ -9,7 +9,6 @@ import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRoute
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 import {BaseStrategy} from "../BaseStrategy.sol";
 
@@ -22,7 +21,6 @@ import "../utils/SwapHelperSubscriber.sol";
 contract HopStrategy is
     Initializable,
     BaseStrategy,
-    AccessControlUpgradeable,
     SwapHelperSubscriber
 {
     using SafeERC20 for IERC20;
