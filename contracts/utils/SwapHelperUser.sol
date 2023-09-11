@@ -12,9 +12,9 @@ struct SwapHelperDTO {
     bool isQuoteBufferContainsHopToWantValue;
 }
 
-abstract contract SwapHelperUser is AccessControlUpgradeable {
-    SwapHelperDTO internal _swapHelperDTO;
-    
+abstract contract SwapHelperUser {
+    error SwapHelperOnly();
+
     event Swap(address indexed src, address indexed dst, uint256 indexed amount);
     event Quote(address indexed src, address indexed dst, uint256 indexed amount);
     event Notified(address indexed src, address indexed dst, uint256 indexed amountOut, uint256 amountIn);
@@ -22,10 +22,42 @@ abstract contract SwapHelperUser is AccessControlUpgradeable {
     event EmergencySwapOnAlternativeDEX(address indexed src, address indexed dst, uint256 indexed amount, bytes lowLevelErrorData);
     event EmergencyQuoteOnAlternativeDEX(address indexed src, address indexed dst, uint256 indexed amount, bytes lowLevelErrorData);
 
-    bytes32 public constant QUOTE_OPERATION_PROVIDER =
-        keccak256("QUOTE_OPERATION_PROVIDER");
+    modifier onlySwapHelper {
+        if (msg.sender != address(_swapHelperDTO.swapHelper)) {
+            revert SwapHelperOnly();
+        }
+        _;
+    }
+
+    SwapHelperDTO internal _swapHelperDTO;
     
-    function notifyCallback(address src, address dst, uint256 amountOut, uint256 amountIn) external virtual onlyRole(QUOTE_OPERATION_PROVIDER) {
+    function _quoteEventEmitter(
+        address tokenFrom, 
+        address tokenTo, 
+        uint256 amount, 
+        bytes memory errorData
+    ) internal {
+        if (errorData.length == 0) {
+            emit Quote(tokenFrom, tokenTo, amount);
+        } else {
+            emit EmergencyQuoteOnAlternativeDEX(tokenFrom, tokenTo, amount, errorData);
+        }
+    }
+
+    function _swapEventEmitter(
+        address tokenFrom, 
+        address tokenTo, 
+        uint256 amount, 
+        bytes memory errorData
+    ) internal {
+        if (errorData.length == 0) {
+            emit Swap(tokenFrom, tokenTo, amount);
+        } else {
+            emit EmergencySwapOnAlternativeDEX(tokenFrom, tokenTo, amount, errorData);
+        }
+    }
+
+    function notifyCallback(address src, address dst, uint256 amountOut, uint256 amountIn) external virtual onlySwapHelper {
         emit Notified(src, dst, amountOut, amountIn);
     }
 }

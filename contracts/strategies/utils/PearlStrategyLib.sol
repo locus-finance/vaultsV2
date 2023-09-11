@@ -2,6 +2,13 @@
 
 pragma solidity ^0.8.18;
 
+
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+
+import {Utils} from "../../utils/Utils.sol";
+import {SwapHelperDTO} from "../../utils/SwapHelperUser.sol";
+import {IPearlRouter, IPearlPair} from "../../integrations/pearl/IPearlRouter.sol";
+
 /// @notice The contract is built to avoid max size per contract file constraint.
 library PearlStrategyLib {
     uint256 public constant DEFAULT_SLIPPAGE = 9_800;
@@ -29,26 +36,123 @@ library PearlStrategyLib {
     address internal constant PEARL_GAUGE_V2 =
         0x97Bd59A8202F8263C2eC39cf6cF6B438D0B45876;
 
-    // function usdrToWant(uint256 _usdrAmount) public view returns (uint256) {
-    //     return
-    //         Utils.scaleDecimals(
-    //             _usdrAmount,
-    //             ERC20(PearlStrategyLib.USDR).decimals(),
-    //             wantDecimals
-    //         );
-    // }
+    function usdrToWant(uint256 _usdrAmount, uint256 _wantDecimals) internal view returns (uint256) {
+        return
+            Utils.scaleDecimals(
+                _usdrAmount,
+                IERC20Metadata(USDR).decimals(),
+                uint8(_wantDecimals)
+            );
+    }
 
-    // function _emergencySellUsdr(uint256 _usdrAmount) internal {
-    //     uint256 wantAmountExpected = usdrToWant(_usdrAmount);
-    //     IPearlRouter(PearlStrategyLib.PEARL_ROUTER)
-    //         .swapExactTokensForTokensSimple(
-    //             _usdrAmount,
-    //             _withSlippage(wantAmountExpected),
-    //             PearlStrategyLib.USDR,
-    //             address(want),
-    //             true,
-    //             address(this),
-    //             block.timestamp
-    //         );
-    // }
+    function _emergencySellUsdr(
+        uint256 _usdrAmount, 
+        uint256 _wantDecimals,
+        address _want,
+        function (uint256) internal view returns(uint256) _withSlippage
+    ) internal {
+        uint256 wantAmountExpected = usdrToWant(_usdrAmount, _wantDecimals);
+        IPearlRouter(PEARL_ROUTER)
+            .swapExactTokensForTokensSimple(
+                _usdrAmount,
+                _withSlippage(wantAmountExpected),
+                USDR,
+                _want,
+                true,
+                address(this),
+                block.timestamp
+            );
+    }
+
+    function sellUsdr(
+        uint256 _usdrAmount,
+        address _want,
+        uint256 _wantDecimals,
+        SwapHelperDTO storage _swapHelperDTO,
+        function (address, address, uint256, bytes memory) internal _emitEvent,
+        function (uint256) internal view returns (uint256) _withSlippage
+    ) internal {
+        if (_usdrAmount == 0) {
+            return;
+        }
+        try
+            _swapHelperDTO.swapHelper.requestSwapAndFulfillOnOracleExpense(
+                USDR,
+                _want,
+                _usdrAmount,
+                uint8((DEFAULT_SLIPPAGE * 100) / 10000) // converting into 1inch scaled slippage percent (10000 BPS -> 100%)
+            )
+        {
+            _emitEvent(USDR, _want, _usdrAmount, abi.encodePacked(uint256(0)));
+        } catch (bytes memory lowLevelErrorData) {
+            _emergencySellUsdr(_usdrAmount, _wantDecimals, _want, _withSlippage);
+            _emitEvent(USDR, _want, _usdrAmount, lowLevelErrorData);
+        }
+    }
+
+    function pearlToWant(uint256 _pearlAmount, uint256 _wantDecimals) internal view returns (uint256) {
+        uint256 usdrAmount = IPearlPair(PEARL_USDR_LP).current(
+            PEARL,
+            _pearlAmount
+        );
+        return usdrToWant(usdrAmount, _wantDecimals);
+    }
+
+    function _emergencySellPearl(
+        uint256 _pearlAmount, 
+        uint256 _wantDecimals, 
+        address _want,
+        function (uint256) internal view returns(uint256) _withSlippage
+    ) internal {
+        IPearlRouter.Route[] memory routes = new IPearlRouter.Route[](2);
+        routes[0] = IPearlRouter.Route({
+            from: PEARL,
+            to: USDR,
+            stable: false
+        });
+        routes[1] = IPearlRouter.Route({
+            from: USDR,
+            to: _want,
+            stable: true
+        });
+
+        uint256 wantAmountExpected = pearlToWant(_pearlAmount, _wantDecimals);
+
+        try
+            IPearlRouter(PearlStrategyLib.PEARL_ROUTER)
+                .swapExactTokensForTokens(
+                    _pearlAmount,
+                    _withSlippage(wantAmountExpected),
+                    routes,
+                    address(this),
+                    block.timestamp
+                )
+        returns (uint256[] memory) {} catch {}
+    }
+
+    function sellPearl(
+        uint256 _pearlAmount,
+        address _want,
+        uint256 _wantDecimals,
+        SwapHelperDTO storage _swapHelperDTO,
+        function (address, address, uint256, bytes memory) internal _emitEvent,
+        function (uint256) internal view returns(uint256) _withSlippage
+    ) internal {
+        if (_pearlAmount == 0) {
+            return;
+        }
+        try
+            _swapHelperDTO.swapHelper.requestSwapAndFulfillOnOracleExpense(
+                PEARL,
+                _want,
+                _pearlAmount,
+                uint8((DEFAULT_SLIPPAGE * 100) / 10000) // converting into 1inch scaled slippage percent (10000 BPS -> 100%)
+            )
+        {
+            _emitEvent(PEARL, _want, _pearlAmount, abi.encodePacked(uint256(0)));
+        } catch (bytes memory lowLevelErrorData) {
+            _emergencySellPearl(_pearlAmount, _wantDecimals, _want, _withSlippage);
+            _emitEvent(PEARL, _want, _pearlAmount, lowLevelErrorData);
+        }
+    }
 }

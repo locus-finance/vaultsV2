@@ -32,7 +32,7 @@ contract HopStrategy is
         address _sgRouter,
         uint256 _slippage
     ) external initializer {
-        __AccessControl_init();
+        // __AccessControl_init();
         __BaseStrategy_init(
             _lzEndpoint,
             _strategist,
@@ -61,39 +61,6 @@ contract HopStrategy is
 
     function name() external pure override returns (string memory) {
         return "HopStrategy";
-    }
-
-    function _quoteEventEmitter(
-        address tokenFrom, 
-        address tokenTo, 
-        uint256 amount, 
-        bytes memory errorData
-    ) internal {
-        if (errorData.length == 0) {
-            emit Quote(tokenFrom, tokenTo, amount);
-        } else {
-            emit EmergencyQuoteOnAlternativeDEX(tokenFrom, tokenTo, amount, errorData);
-        }
-    }
-
-    function _swapEventEmitter(
-        address tokenFrom, 
-        address tokenTo, 
-        uint256 amount, 
-        bytes memory errorData
-    ) internal {
-        if (errorData.length == 0) {
-            emit Swap(tokenFrom, tokenTo, amount);
-        } else {
-            emit EmergencySwapOnAlternativeDEX(tokenFrom, tokenTo, amount, errorData);
-        }
-    }
-
-    function initializeQuoteBufferWithHopToWantValue()
-        public
-        onlyStrategistOrSelf
-    {
-        HopStrategyLib.hopToWant(_swapHelperDTO, _quoteEventEmitter, rewardss(), address(want));
     }
 
     function estimatedTotalAssets() public view override returns (uint256) {
@@ -239,6 +206,13 @@ contract HopStrategy is
         );
     }
 
+    function initializeQuoteBufferWithHopToWantValue()
+        public
+        onlyStrategistOrSelf
+    {
+        HopStrategyLib.hopToWant(_swapHelperDTO, _quoteEventEmitter, rewardss(), address(want));
+    }
+
     function setSwapHelperDTO(SwapHelperDTO memory __swapHelperDTO) public onlyStrategistOrSelf {
         _swapHelperDTO = __swapHelperDTO;
     }
@@ -248,7 +222,7 @@ contract HopStrategy is
         address,
         uint256 amountOut,
         uint256
-    ) external override onlyRole(QUOTE_OPERATION_PROVIDER) {
+    ) external override onlySwapHelper {
         _swapHelperDTO.quoteBuffer = amountOut;
     }
 }
