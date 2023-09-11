@@ -135,7 +135,7 @@ contract HopStrategy is Initializable, BaseStrategy {
     {
         _claimAndSellRewards();
 
-        uint256 stakingAmount = balanceOfWant();
+        uint256 stakingAmount = balanceOfStaked();
         IStakingRewards(STAKING_REWARD).withdraw(stakingAmount);
         IRouter(HOP_ROUTER).removeLiquidityOneToken(
             stakingAmount,
