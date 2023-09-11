@@ -3,9 +3,7 @@
 pragma solidity ^0.8.18;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {OracleLibrary} from "@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol";
 import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
-import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -14,20 +12,15 @@ import {BaseStrategy} from "../BaseStrategy.sol";
 
 import "../integrations/hop/IStakingRewards.sol";
 import "../integrations/hop/IRouter.sol";
-import "../interfaces/ISwapHelper.sol";
 import "./utils/HopStrategyLib.sol";
-import "../utils/SwapHelperSubscriber.sol";
+import "../utils/SwapHelperUser.sol";
 
 contract HopStrategy is
     Initializable,
     BaseStrategy,
-    SwapHelperSubscriber
+    SwapHelperUser
 {
     using SafeERC20 for IERC20;
-
-    ISwapHelper public swapHelper;
-    uint256 internal _quoteBuffer;
-    bool internal _isQuoteBufferContainsHopToWantValue;
 
     function initialize(
         address _lzEndpoint,
@@ -70,18 +63,44 @@ contract HopStrategy is
         return "HopStrategy";
     }
 
+    function _quoteEventEmitter(
+        address tokenFrom, 
+        address tokenTo, 
+        uint256 amount, 
+        bytes memory errorData
+    ) internal {
+        if (errorData.length == 0) {
+            emit Quote(tokenFrom, tokenTo, amount);
+        } else {
+            emit EmergencyQuoteOnAlternativeDEX(tokenFrom, tokenTo, amount, errorData);
+        }
+    }
+
+    function _swapEventEmitter(
+        address tokenFrom, 
+        address tokenTo, 
+        uint256 amount, 
+        bytes memory errorData
+    ) internal {
+        if (errorData.length == 0) {
+            emit Swap(tokenFrom, tokenTo, amount);
+        } else {
+            emit EmergencySwapOnAlternativeDEX(tokenFrom, tokenTo, amount, errorData);
+        }
+    }
+
     function initializeQuoteBufferWithHopToWantValue()
         public
         onlyStrategistOrSelf
     {
-        HopToWant(rewardss());
+        HopStrategyLib.hopToWant(_swapHelperDTO, _quoteEventEmitter, rewardss(), address(want));
     }
 
     function estimatedTotalAssets() public view override returns (uint256) {
-        if (!_isQuoteBufferContainsHopToWantValue) {
+        if (!_swapHelperDTO.isQuoteBufferContainsHopToWantValue) {
             revert HopStrategyLib.InitializeQuoteBufferWithHopToWantValue();
         }
-        return LpToWant(balanceOfStaked()) + balanceOfWant() + _quoteBuffer;
+        return HopStrategyLib.lpToWant(balanceOfStaked(), address(this)) + balanceOfWant() + _swapHelperDTO.quoteBuffer;
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal override {
@@ -169,90 +188,16 @@ contract HopStrategy is
         );
     }
 
-    function _emergencySmthToSmth(
-        address poolForEmergencyQuote,
-        address tokenFrom,
-        address tokenTo,
-        uint256 amount
-    ) internal view returns (uint256) {
-        (int24 meanTick, ) = OracleLibrary.consult(
-            poolForEmergencyQuote,
-            HopStrategyLib.TWAP_RANGE_SECS
-        );
-        return
-            OracleLibrary.getQuoteAtTick(
-                meanTick,
-                uint128(amount),
-                tokenFrom,
-                tokenTo
-            );
-    }
-
-    function smthToSmth(
-        address poolForEmergencyQuote,
-        address tokenFrom,
-        address tokenTo,
-        uint256 amount
-    ) internal returns (uint256) {
-        // why? to account if smthToSmth(...) is utilized not only in HopToValue
-        _isQuoteBufferContainsHopToWantValue = false;
-
-        try
-            swapHelper.requestQuoteAndFulfillOnOracleExpense(
-                tokenFrom,
-                tokenTo,
-                amount
-            )
-        {
-            emit Quote(tokenFrom, tokenTo, amount);
-        } catch (bytes memory lowLevelErrorData) {
-            uint256 amountOut = _emergencySmthToSmth(
-                poolForEmergencyQuote,
-                tokenFrom,
-                tokenTo,
-                amount
-            );
-            _quoteBuffer = amountOut;
-            emit EmergencyQuoteOnAlternativeDEX(lowLevelErrorData);
-        }
-        return _quoteBuffer;
-    }
-
-    function LpToWant(
-        uint256 amountIn
-    ) internal view returns (uint256 amountOut) {
-        if (amountIn == 0) {
-            return 0;
-        }
-        amountOut = IRouter(HopStrategyLib.HOP_ROUTER)
-            .calculateRemoveLiquidityOneToken(address(this), amountIn, 0);
-    }
-
-    function HopToWant(uint256 amountIn) internal returns (uint256 amountOut) {
-        amountOut = smthToSmth(
-            HopStrategyLib.WETH_USDC_UNI_POOL,
-            HopStrategyLib.WETH,
-            address(want),
-            smthToSmth(
-                HopStrategyLib.HOP_WETH_UNI_POOL,
-                HopStrategyLib.HOP,
-                HopStrategyLib.WETH,
-                amountIn
-            )
-        );
-        _isQuoteBufferContainsHopToWantValue = true;
-    }
-
     function _withdrawSome(uint256 _amountNeeded) internal {
         if (_amountNeeded == 0) {
             return;
         }
-        if (HopToWant(rewardss()) >= _amountNeeded) {
+        if (HopStrategyLib.hopToWant(_swapHelperDTO, _quoteEventEmitter, rewardss(), address(want)) >= _amountNeeded) {
             _claimAndSellRewards();
         } else {
             uint256 _usdcToUnstake = Math.min(
                 balanceOfStaked(),
-                _amountNeeded - HopToWant(rewardss())
+                _amountNeeded - HopStrategyLib.hopToWant(_swapHelperDTO, _quoteEventEmitter, rewardss(), address(want))
             );
             _exitPosition(_usdcToUnstake);
         }
@@ -260,7 +205,12 @@ contract HopStrategy is
 
     function _claimAndSellRewards() internal {
         IStakingRewards(HopStrategyLib.STAKING_REWARD).getReward();
-        _sellHopForWant(IERC20(HopStrategyLib.HOP).balanceOf(address(this)));
+        HopStrategyLib.sellHopForWant(
+            _swapHelperDTO, 
+            _swapEventEmitter, 
+            IERC20(HopStrategyLib.HOP).balanceOf(address(this)),
+            slippage
+        );
     }
 
     function _exitPosition(uint256 _stakedAmount) internal {
@@ -289,56 +239,8 @@ contract HopStrategy is
         );
     }
 
-    function _emergencySellHopForWant(uint256 amountToSell) internal {
-        ISwapRouter.ExactInputParams memory params;
-        bytes memory swapPath = abi.encodePacked(
-            HopStrategyLib.HOP,
-            uint24(HopStrategyLib.HOP_WETH_POOL_FEE),
-            HopStrategyLib.WETH,
-            uint24(HopStrategyLib.USDC_WETH_POOL_FEE),
-            HopStrategyLib.USDC
-        );
-
-        uint256 usdcExpected = HopToWant(amountToSell);
-        params.path = swapPath;
-        params.recipient = address(this);
-        params.deadline = block.timestamp;
-        params.amountIn = amountToSell;
-        params.amountOutMinimum =
-            (usdcExpected * slippage) /
-            HopStrategyLib.MAX_BPS;
-        ISwapRouter(HopStrategyLib.UNISWAP_V3_ROUTER).exactInput(params);
-    }
-
-    function _sellHopForWant(uint256 amountToSell) internal {
-        if (amountToSell == 0) {
-            return;
-        }
-        // hop to usdc
-        uint8 adjustedTo1InchSlippage = uint8(
-            (slippage * 100) / HopStrategyLib.MAX_BPS
-        );
-        try
-            swapHelper.requestSwapAndFulfillOnOracleExpense(
-                HopStrategyLib.HOP,
-                HopStrategyLib.USDC,
-                amountToSell,
-                adjustedTo1InchSlippage
-            )
-        {
-            emit Swap(
-                HopStrategyLib.HOP,
-                HopStrategyLib.USDC,
-                amountToSell
-            );
-        } catch (bytes memory lowLevelErrorData) {
-            _emergencySellHopForWant(amountToSell);
-            emit EmergencySwapOnAlternativeDEX(lowLevelErrorData);
-        }
-    }
-
-    function setSwapHelper(address _swapHelper) public onlyStrategistOrSelf {
-        swapHelper = ISwapHelper(_swapHelper);
+    function setSwapHelperDTO(SwapHelperDTO memory __swapHelperDTO) public onlyStrategistOrSelf {
+        _swapHelperDTO = __swapHelperDTO;
     }
 
     function notifyCallback(
@@ -347,6 +249,6 @@ contract HopStrategy is
         uint256 amountOut,
         uint256
     ) external override onlyRole(QUOTE_OPERATION_PROVIDER) {
-        _quoteBuffer = amountOut;
+        _swapHelperDTO.quoteBuffer = amountOut;
     }
 }

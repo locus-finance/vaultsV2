@@ -28,4 +28,27 @@ library PearlStrategyLib {
         0xD17cb0f162f133e339C0BbFc18c36c357E681D6b;
     address internal constant PEARL_GAUGE_V2 =
         0x97Bd59A8202F8263C2eC39cf6cF6B438D0B45876;
+
+    // function usdrToWant(uint256 _usdrAmount) public view returns (uint256) {
+    //     return
+    //         Utils.scaleDecimals(
+    //             _usdrAmount,
+    //             ERC20(PearlStrategyLib.USDR).decimals(),
+    //             wantDecimals
+    //         );
+    // }
+
+    // function _emergencySellUsdr(uint256 _usdrAmount) internal {
+    //     uint256 wantAmountExpected = usdrToWant(_usdrAmount);
+    //     IPearlRouter(PearlStrategyLib.PEARL_ROUTER)
+    //         .swapExactTokensForTokensSimple(
+    //             _usdrAmount,
+    //             _withSlippage(wantAmountExpected),
+    //             PearlStrategyLib.USDR,
+    //             address(want),
+    //             true,
+    //             address(this),
+    //             block.timestamp
+    //         );
+    // }
 }
