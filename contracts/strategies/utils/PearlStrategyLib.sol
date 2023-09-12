@@ -313,4 +313,20 @@ library PearlStrategyLib {
             );
         }
     }
+
+    event Swap(address indexed src, address indexed dst, uint256 indexed amount);
+    event EmergencySwapOnAlternativeDEX(address indexed src, address indexed dst, uint256 indexed amount, bytes lowLevelErrorData);
+    
+    function _swapEventEmitter(
+        address tokenFrom, 
+        address tokenTo, 
+        uint256 amount, 
+        bytes memory errorData
+    ) internal {
+        if (errorData.length == 0) {
+            emit Swap(tokenFrom, tokenTo, amount);
+        } else {
+            emit EmergencySwapOnAlternativeDEX(tokenFrom, tokenTo, amount, errorData);
+        }
+    }
 }

@@ -133,8 +133,7 @@ contract PearlStrategy is
         uint256 wantBal = want.balanceOf(address(this));
 
         if (wantBal > _debtOutstanding) {
-            uint256 excessWant = wantBal - _debtOutstanding;
-            uint256 halfWant = excessWant / 2;
+            uint256 halfWant = (wantBal - _debtOutstanding) / 2;
             uint256 scaledHalfWant = Utils.scaleDecimals(
                 halfWant,
                 wantDecimals,
