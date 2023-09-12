@@ -85,9 +85,12 @@ contract HopStrategy is
             uint256[] memory liqAmounts = new uint256[](2);
             liqAmounts[0] = excessWant;
             liqAmounts[1] = 0;
-            uint256 minAmount = (IRouter(HopStrategyLib.HOP_ROUTER)
-                .calculateTokenAmount(address(this), liqAmounts, true) *
-                slippage) / HopStrategyLib.MAX_BPS;
+            uint256 minAmount = 
+                (
+                    IRouter(HopStrategyLib.HOP_ROUTER)
+                        .calculateTokenAmount(address(this), liqAmounts, true) * slippage
+                ) 
+                / HopStrategyLib.MAX_BPS;
 
             IRouter(HopStrategyLib.HOP_ROUTER).addLiquidity(
                 liqAmounts,

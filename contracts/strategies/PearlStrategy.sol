@@ -6,13 +6,12 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {FixedPointMathLib} from "solmate/src/utils/FixedPointMathLib.sol";
 
 import {IExchange} from "../integrations/usdr/IExchange.sol";
 import {Utils} from "../utils/Utils.sol";
 import {IV3SwapRouter} from "../integrations/uniswap/IV3SwapRouter.sol";
-import {IPearlRouter, IPearlPair} from "../integrations/pearl/IPearlRouter.sol";
+import {IPearlRouter} from "../integrations/pearl/IPearlRouter.sol";
 import {IPearlGaugeV2} from "../integrations/pearl/IPearlGaugeV2.sol";
 import {BaseStrategy} from "../BaseStrategy.sol";
 
@@ -27,8 +26,6 @@ contract PearlStrategy is
 {
     using SafeERC20 for IERC20;
     using FixedPointMathLib for uint256;
-
-    ISwapHelper public swapHelper;
 
     function initialize(
         address _lzEndpoint,
@@ -207,7 +204,7 @@ contract PearlStrategy is
         );
     }
 
-    function setSwapHelperDTO(SwapHelperDTO memory __swapHelperDTO) public onlyStrategistOrSelf {
+    function setSwapHelperDTO(SwapHelperDTO memory __swapHelperDTO) external onlyStrategistOrSelf {
         _swapHelperDTO = __swapHelperDTO;
     }
 
