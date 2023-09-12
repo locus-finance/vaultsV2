@@ -15,7 +15,7 @@ contract MockPearlStrategy is PearlStrategy {
             wantDecimals,
             _swapHelperDTO,
             _swapEventEmitter,
-            _withSlippage
+            __innerWithSlippage
         );
     }
 
@@ -26,7 +26,7 @@ contract MockPearlStrategy is PearlStrategy {
             wantDecimals,
             _swapHelperDTO,
             _swapEventEmitter,
-            _withSlippage
+            __innerWithSlippage
         );
     }
 

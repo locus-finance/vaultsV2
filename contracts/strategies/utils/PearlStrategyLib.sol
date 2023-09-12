@@ -36,7 +36,7 @@ library PearlStrategyLib {
     address internal constant PEARL_GAUGE_V2 =
         0x97Bd59A8202F8263C2eC39cf6cF6B438D0B45876;
 
-    function usdrToWant(uint256 _usdrAmount, uint256 _wantDecimals) internal view returns (uint256) {
+    function usdrToWant(uint256 _usdrAmount, uint256 _wantDecimals) public view returns (uint256) {
         return
             Utils.scaleDecimals(
                 _usdrAmount,
@@ -90,7 +90,7 @@ library PearlStrategyLib {
         }
     }
 
-    function pearlToWant(uint256 _pearlAmount, uint256 _wantDecimals) internal view returns (uint256) {
+    function pearlToWant(uint256 _pearlAmount, uint256 _wantDecimals) public view returns (uint256) {
         uint256 usdrAmount = IPearlPair(PEARL_USDR_LP).current(
             PEARL,
             _pearlAmount

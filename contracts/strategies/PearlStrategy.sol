@@ -138,7 +138,7 @@ contract PearlStrategy is
                 wantDecimals,
                 _swapHelperDTO,
                 _swapEventEmitter,
-                _withSlippage
+                __innerWithSlippage
             );
         } else {
             uint256 lpTokensToWithdraw = Math.min(
@@ -157,7 +157,7 @@ contract PearlStrategy is
             wantDecimals,
             _swapHelperDTO,
             _swapEventEmitter,
-            _withSlippage
+            __innerWithSlippage
         );
 
         if (_stakedLpTokens == 0) {
@@ -183,7 +183,8 @@ contract PearlStrategy is
             address(want),
             wantDecimals,
             _swapHelperDTO,
-            _swapEventEmitter
+            _swapEventEmitter,
+            __innerWithSlippage
         );
     }
 
@@ -223,7 +224,7 @@ contract PearlStrategy is
             wantDecimals,
             _swapHelperDTO,
             _swapEventEmitter,
-            _withSlippage
+            __innerWithSlippage
         );
 
         uint256 wantBal = want.balanceOf(address(this));
@@ -300,5 +301,11 @@ contract PearlStrategy is
 
     function setSwapHelperDTO(SwapHelperDTO memory __swapHelperDTO) public onlyStrategistOrSelf {
         _swapHelperDTO = __swapHelperDTO;
+    }
+
+    /// @dev There is no syntax in Solidity that allows selection of overloaded functions 
+    /// to be passed as Function Type parameters. So this is workaround.
+    function __innerWithSlippage(uint256 amount) internal view returns(uint256) {
+        return _withSlippage(amount);
     }
 }

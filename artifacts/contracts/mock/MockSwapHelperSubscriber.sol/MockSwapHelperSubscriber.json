@@ -1,0 +1,218 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "MockSwapHelperSubscriber",
+  "sourceName": "contracts/mock/MockSwapHelperSubscriber.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "SwapHelperOnly",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "lowLevelErrorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "EmergencyQuoteOnAlternativeDEX",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "lowLevelErrorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "EmergencySwapOnAlternativeDEX",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amountOut",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amountIn",
+          "type": "uint256"
+        }
+      ],
+      "name": "MockNotified",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amountOut",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amountIn",
+          "type": "uint256"
+        }
+      ],
+      "name": "Notified",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Quote",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "Swap",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amountOut",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amountIn",
+          "type": "uint256"
+        }
+      ],
+      "name": "notifyCallback",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5061011f806100206000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063f056dffe14602d575b600080fd5b603c603836600460ac565b603e565b005b81836001600160a01b0316856001600160a01b03167fa41fead51e95aa8ef7b9b8a86ce16608cc6288de4e973499e58730ab995bdb6584604051608391815260200190565b60405180910390a450505050565b80356001600160a01b038116811460a757600080fd5b919050565b6000806000806080858703121560c157600080fd5b60c8856091565b935060d4602086016091565b9396939550505050604082013591606001359056fea2646970667358221220a3bdd75dcd690494040b96e11f5c581561db7c15b8162ce17a5fd691a52a46cc64736f6c63430008130033",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c8063f056dffe14602d575b600080fd5b603c603836600460ac565b603e565b005b81836001600160a01b0316856001600160a01b03167fa41fead51e95aa8ef7b9b8a86ce16608cc6288de4e973499e58730ab995bdb6584604051608391815260200190565b60405180910390a450505050565b80356001600160a01b038116811460a757600080fd5b919050565b6000806000806080858703121560c157600080fd5b60c8856091565b935060d4602086016091565b9396939550505050604082013591606001359056fea2646970667358221220a3bdd75dcd690494040b96e11f5c581561db7c15b8162ce17a5fd691a52a46cc64736f6c63430008130033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
