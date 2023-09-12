@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.19;
 
-import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-
 import "../interfaces/ISwapHelper.sol";
 
 struct SwapHelperDTO {

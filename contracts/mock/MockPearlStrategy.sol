@@ -31,11 +31,25 @@ contract MockPearlStrategy is PearlStrategy {
     }
 
     function withdrawSome(uint256 _amountNeeded) external {
-        _withdrawSome(_amountNeeded);
+        PearlStrategyLib.withdrawSome(
+            _amountNeeded,
+            address(want),
+            wantDecimals,
+            _swapHelperDTO,
+            _swapEventEmitter,
+            __innerWithSlippage
+        );
     }
 
     function exitPosition(uint256 _stakedLpTokens) external {
-        _exitPosition(_stakedLpTokens);
+        PearlStrategyLib.exitPosition(
+            _stakedLpTokens,
+            address(want),
+            wantDecimals,
+            _swapHelperDTO,
+            _swapEventEmitter,
+            __innerWithSlippage
+        );
     }
 
     function liquidatePosition(uint256 _amountNeeded) external {

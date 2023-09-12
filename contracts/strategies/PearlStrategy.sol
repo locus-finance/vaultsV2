@@ -66,126 +66,18 @@ contract PearlStrategy is
         return "PearlStrategy";
     }
 
-    function balanceOfPearlRewards() public view returns (uint256) {
-        return IPearlGaugeV2(PearlStrategyLib.PEARL_GAUGE_V2).earned(address(this));
-    }
-
-    function balanceOfLpStaked() public view returns (uint256) {
-        return IPearlGaugeV2(PearlStrategyLib.PEARL_GAUGE_V2).balanceOf(address(this));
-    }
-
-    function pearlToWant(uint256 _pearlAmount) public view returns (uint256) {
-        return PearlStrategyLib.pearlToWant(_pearlAmount, wantDecimals);
-    }
-
-    function daiToWant(uint256 _daiAmount) public view returns (uint256) {
-        return
-            Utils.scaleDecimals(
-                _daiAmount,
-                IERC20Metadata(PearlStrategyLib.DAI).decimals(),
-                wantDecimals
-            );
-    }
-
-    function usdrToWant(uint256 _usdrAmount) public view returns (uint256) {
-        return PearlStrategyLib.usdrToWant(_usdrAmount, wantDecimals);
-    }
-
-    function usdrLpToWant(uint256 _usdrLpAmount) public view returns (uint256) {
-        (uint256 amountA, uint256 amountB) = IPearlRouter(PearlStrategyLib.PEARL_ROUTER)
-            .quoteRemoveLiquidity(address(want), PearlStrategyLib.USDR, true, _usdrLpAmount);
-        return amountA + usdrToWant(amountB);
-    }
-
-    function wantToUsdrLp(uint256 _wantAmount) public view returns (uint256) {
-        uint256 oneLp = usdrLpToWant(10 ** IERC20Metadata(PearlStrategyLib.USDC_USDR_LP).decimals());
-        uint256 scaledWantAmount = Utils.scaleDecimals(
-            _wantAmount,
-            wantDecimals,
-            IERC20Metadata(PearlStrategyLib.USDC_USDR_LP).decimals()
-        );
-        uint256 scaledLp = Utils.scaleDecimals(
-            oneLp,
-            wantDecimals,
-            IERC20Metadata(PearlStrategyLib.USDC_USDR_LP).decimals()
-        );
-
-        return
-            (scaledWantAmount * (10 ** IERC20Metadata(PearlStrategyLib.USDC_USDR_LP).decimals())) /
-            scaledLp;
-    }
-
     function estimatedTotalAssets() public view override returns (uint256) {
         return
             want.balanceOf(address(this)) +
-            pearlToWant(
-                balanceOfPearlRewards() + IERC20Metadata(PearlStrategyLib.PEARL).balanceOf(address(this))
-            ) +
-            usdrLpToWant(balanceOfLpStaked());
-    }
-
-    function _withdrawSome(uint256 _amountNeeded) internal {
-        if (_amountNeeded == 0) {
-            return;
-        }
-
-        uint256 rewardsTotal = pearlToWant(balanceOfPearlRewards());
-        if (rewardsTotal >= _amountNeeded) {
-            IPearlGaugeV2(PearlStrategyLib.PEARL_GAUGE_V2).getReward();
-            PearlStrategyLib.sellPearl(
-                IERC20Metadata(PearlStrategyLib.PEARL).balanceOf(address(this)),
+            PearlStrategyLib.pearlToWant(
+                PearlStrategyLib.balanceOfPearlRewards() + IERC20Metadata(PearlStrategyLib.PEARL).balanceOf(address(this)),
+                wantDecimals
+            ) + 
+            PearlStrategyLib.usdrLpToWant(
+                PearlStrategyLib.balanceOfLpStaked(),
                 address(want),
-                wantDecimals,
-                _swapHelperDTO,
-                _swapEventEmitter,
-                __innerWithSlippage
+                wantDecimals
             );
-        } else {
-            uint256 lpTokensToWithdraw = Math.min(
-                wantToUsdrLp(_amountNeeded - rewardsTotal),
-                balanceOfLpStaked()
-            );
-            _exitPosition(lpTokensToWithdraw);
-        }
-    }
-
-    function _exitPosition(uint256 _stakedLpTokens) internal {
-        IPearlGaugeV2(PearlStrategyLib.PEARL_GAUGE_V2).getReward();
-        PearlStrategyLib.sellPearl(
-            IERC20Metadata(PearlStrategyLib.PEARL).balanceOf(address(this)),
-            address(want),
-            wantDecimals,
-            _swapHelperDTO,
-            _swapEventEmitter,
-            __innerWithSlippage
-        );
-
-        if (_stakedLpTokens == 0) {
-            return;
-        }
-
-        IPearlGaugeV2(PearlStrategyLib.PEARL_GAUGE_V2).withdraw(_stakedLpTokens);
-        (uint256 amountA, uint256 amountB) = IPearlRouter(PearlStrategyLib.PEARL_ROUTER)
-            .quoteRemoveLiquidity(address(want), PearlStrategyLib.USDR, true, _stakedLpTokens);
-        IPearlRouter(PearlStrategyLib.PEARL_ROUTER).removeLiquidity(
-            address(want),
-            PearlStrategyLib.USDR,
-            true,
-            _stakedLpTokens,
-            _withSlippage(amountA),
-            _withSlippage(amountB),
-            address(this),
-            block.timestamp
-        );
-
-        PearlStrategyLib.sellUsdr(
-            IERC20Metadata(PearlStrategyLib.USDR).balanceOf(address(this)),
-            address(want),
-            wantDecimals,
-            _swapHelperDTO,
-            _swapEventEmitter,
-            __innerWithSlippage
-        );
     }
 
     function _liquidatePosition(
@@ -196,7 +88,14 @@ contract PearlStrategy is
             return (_amountNeeded, 0);
         }
 
-        _withdrawSome(_amountNeeded - _wantBal);
+        PearlStrategyLib.withdrawSome(
+            _amountNeeded - _wantBal,
+            address(want),
+            wantDecimals,
+            _swapHelperDTO,
+            _swapEventEmitter,
+            __innerWithSlippage
+        );
         _wantBal = want.balanceOf(address(this));
 
         if (_amountNeeded > _wantBal) {
@@ -212,7 +111,14 @@ contract PearlStrategy is
         override
         returns (uint256 _amountFreed)
     {
-        _exitPosition(balanceOfLpStaked());
+        PearlStrategyLib.exitPosition(
+            PearlStrategyLib.balanceOfLpStaked(),
+            address(want),
+            wantDecimals,
+            _swapHelperDTO,
+            _swapEventEmitter,
+            __innerWithSlippage
+        );
         _amountFreed = want.balanceOf(address(this));
     }
 
@@ -283,7 +189,9 @@ contract PearlStrategy is
     }
 
     function _prepareMigration(address _newStrategy) internal override {
-        IPearlGaugeV2(PearlStrategyLib.PEARL_GAUGE_V2).withdraw(balanceOfLpStaked());
+        IPearlGaugeV2(PearlStrategyLib.PEARL_GAUGE_V2).withdraw(
+            PearlStrategyLib.balanceOfLpStaked()
+        );
 
         IERC20(PearlStrategyLib.USDC_USDR_LP).safeTransfer(
             _newStrategy,
