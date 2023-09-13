@@ -234,6 +234,7 @@ contract SwapHelper is AccessControl, IOraclizedSwapHelper, ChainlinkClient {
         isReadyToFulfillQuote = false; // double check the flag
         _requestQuote(src, dst, amount, this.registerQuoteRequest.selector);
         // THE RETURN VALUE MUST BE IGNORED BECAUSE IT IS HANDLED BY THE ORACLE
+        return 0;
     }
 
     function requestQuoteAndFulfillOnOracleExpense(
