@@ -79,6 +79,56 @@ contract EmergencyUniswapV3SwapHelper is ISwapHelper {
     //     ISwapRouter(UNISWAP_V3_ROUTER).exactInput(params);
     // }
 
+    ///// 
+
+    // IPearlRouter.Route[] memory routes = new IPearlRouter.Route[](2);
+    // routes[0] = IPearlRouter.Route({from: PEARL, to: USDR, stable: false});
+    // routes[1] = IPearlRouter.Route({
+    //     from: USDR,
+    //     to: address(want),
+    //     stable: true
+    // });
+
+    // uint256 wantAmountExpected = pearlToWant(_pearlAmount);
+
+    // try
+    //     IPearlRouter(PEARL_ROUTER).swapExactTokensForTokens(
+    //         _pearlAmount,
+    //         _withSlippage(wantAmountExpected),
+    //         routes,
+    //         address(this),
+    //         block.timestamp
+    //     )
+    // returns (uint256[] memory) {} catch {} 
+
+    // uint256 scaledHalfWant = Utils.scaleDecimals(
+    //     halfWant,
+    //     wantDecimals,
+    //     ERC20(DAI).decimals()
+    // );
+    // IV3SwapRouter.ExactInputParams memory params = IV3SwapRouter
+    //     .ExactInputParams({
+    //         path: abi.encodePacked(
+    //             address(want),
+    //             DAI_USDC_UNI_V3_FEE,
+    //             DAI
+    //         ),
+    //         recipient: address(this),
+    //         amountIn: halfWant,
+    //         amountOutMinimum: _withSlippage(scaledHalfWant)
+    //     });
+    // IV3SwapRouter(UNISWAP_V3_ROUTER).exactInput(params);
+
+    // IPearlRouter(PEARL_ROUTER).swapExactTokensForTokensSimple(
+    //     _usdrAmount,
+    //     _withSlippage(wantAmountExpected),
+    //     USDR,
+    //     address(want),
+    //     true,
+    //     address(this),
+    //     block.timestamp
+    // );
+
     function requestSwap(
         address src,
         address dst,
