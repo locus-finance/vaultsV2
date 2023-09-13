@@ -317,6 +317,10 @@ contract SwapHelper is AccessControl, IOraclizedSwapHelper, ChainlinkClient {
             if (srcErc20.allowance(address(this), aggregationRouter) < amount) {
                 srcErc20.approve(aggregationRouter, type(uint256).max);
             }
+            address emergencySwapHelperAddress = address(emergencySwapHelper);
+            if (srcErc20.allowance(address(this), emergencySwapHelperAddress) < amount) {
+                srcErc20.approve(emergencySwapHelperAddress, type(uint256).max);
+            }
         }
     }
 
@@ -327,6 +331,7 @@ contract SwapHelper is AccessControl, IOraclizedSwapHelper, ChainlinkClient {
         uint8 slippage,
         bytes4 callbackSignature
     ) internal {
+        _setMaxAllowancesIfNeededAndCheckPayment(src, amount, _msgSender());
         try
             this.requestChainlinkSwap(
                 src,
@@ -340,7 +345,11 @@ contract SwapHelper is AccessControl, IOraclizedSwapHelper, ChainlinkClient {
                 SwapInfo({srcToken: src, dstToken: dst, inAmount: amount})
             );
         } catch (bytes memory lowLevelErrorData) {
-            emergencySwapHelper.requestSwap(src, dst, amount, slippage);
+            if (src == ONE_INCH_ETH_ADDRESS) {
+                emergencySwapHelper.requestSwap{value: msg.value}(src, dst, amount, slippage);
+            } else {
+                emergencySwapHelper.requestSwap(src, dst, amount, slippage);
+            }
             emit EmergencySwap(
                 SwapInfo({srcToken: src, dstToken: dst, inAmount: amount}),
                 lowLevelErrorData
@@ -358,9 +367,6 @@ contract SwapHelper is AccessControl, IOraclizedSwapHelper, ChainlinkClient {
         if (slippage > 50) {
             revert SlippageIsTooBig(); // A constraint dictated by 1inch Aggregation Protocol
         }
-
-        address sender = _msgSender();
-        _setMaxAllowancesIfNeededAndCheckPayment(src, amount, sender);
 
         Chainlink.Request memory req = buildOperatorRequest(
             jobInfos[uint256(JobPurpose.SWAP_CALLDATA)].jobId,
@@ -382,7 +388,7 @@ contract SwapHelper is AccessControl, IOraclizedSwapHelper, ChainlinkClient {
                     "&slippage=",
                     Strings.toString(slippage),
                     "&receiver=",
-                    Strings.toHexString(sender),
+                    Strings.toHexString(_msgSender()),
                     "&disableEstimate=true"
                 )
             )
