@@ -4,20 +4,6 @@
   "sourceName": "contracts/interfaces/ISwapHelper.sol",
   "abi": [
     {
-      "inputs": [],
-      "name": "fulfillQuote",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "fulfillSwap",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
       "inputs": [
         {
           "internalType": "address",
@@ -36,30 +22,13 @@
         }
       ],
       "name": "requestQuote",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "src",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "dst",
-          "type": "address"
-        },
+      "outputs": [
         {
           "internalType": "uint256",
-          "name": "amount",
+          "name": "amountOut",
           "type": "uint256"
         }
       ],
-      "name": "requestQuoteAndFulfillOnOracleExpense",
-      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
@@ -87,34 +56,6 @@
         }
       ],
       "name": "requestSwap",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "src",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "dst",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint8",
-          "name": "slippage",
-          "type": "uint8"
-        }
-      ],
-      "name": "requestSwapAndFulfillOnOracleExpense",
       "outputs": [],
       "stateMutability": "payable",
       "type": "function"

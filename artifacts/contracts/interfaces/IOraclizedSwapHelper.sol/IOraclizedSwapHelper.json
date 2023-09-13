@@ -1,0 +1,474 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IOraclizedSwapHelper",
+  "sourceName": "contracts/interfaces/IOraclizedSwapHelper.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "CannotAddSubscriber",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "CannotRemoveSubscriber",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotEnoughNativeTokensSent",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "OnlySelfAuthorized",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "QuoteOperationIsNotReady",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "SlippageIsTooBig",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "SwapOperationIsNotReady",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TransferError",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "srcToken",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "dstToken",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "inAmount",
+              "type": "uint256"
+            }
+          ],
+          "indexed": true,
+          "internalType": "struct IOraclizedSwapHelper.SwapInfo",
+          "name": "_quoteBuffer",
+          "type": "tuple"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes",
+          "name": "errorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "EmergencyQuote",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "srcToken",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "dstToken",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "inAmount",
+              "type": "uint256"
+            }
+          ],
+          "indexed": true,
+          "internalType": "struct IOraclizedSwapHelper.SwapInfo",
+          "name": "_swapBuffer",
+          "type": "tuple"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes",
+          "name": "errorData",
+          "type": "bytes"
+        }
+      ],
+      "name": "EmergencySwap",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "srcToken",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "dstToken",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "inAmount",
+              "type": "uint256"
+            }
+          ],
+          "indexed": true,
+          "internalType": "struct IOraclizedSwapHelper.SwapInfo",
+          "name": "_quoteBuffer",
+          "type": "tuple"
+        }
+      ],
+      "name": "Quote",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "toAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "QuoteRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "address",
+                  "name": "srcToken",
+                  "type": "address"
+                },
+                {
+                  "internalType": "address",
+                  "name": "dstToken",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "inAmount",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct IOraclizedSwapHelper.SwapInfo",
+              "name": "swapInfo",
+              "type": "tuple"
+            },
+            {
+              "internalType": "uint256",
+              "name": "outAmount",
+              "type": "uint256"
+            }
+          ],
+          "indexed": true,
+          "internalType": "struct IOraclizedSwapHelper.QuoteInfo",
+          "name": "_quoteBuffer",
+          "type": "tuple"
+        }
+      ],
+      "name": "QuoteSent",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "enum IOraclizedSwapHelper.StrategistInterference",
+          "name": "interference",
+          "type": "uint8"
+        }
+      ],
+      "name": "StrategistInterferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "srcToken",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "dstToken",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "inAmount",
+              "type": "uint256"
+            }
+          ],
+          "indexed": true,
+          "internalType": "struct IOraclizedSwapHelper.SwapInfo",
+          "name": "_swapBuffer",
+          "type": "tuple"
+        }
+      ],
+      "name": "Swap",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "srcToken",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "dstToken",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "inAmount",
+              "type": "uint256"
+            }
+          ],
+          "indexed": true,
+          "internalType": "struct IOraclizedSwapHelper.SwapInfo",
+          "name": "_swapBuffer",
+          "type": "tuple"
+        }
+      ],
+      "name": "SwapPerformed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes",
+          "name": "swapCalldata",
+          "type": "bytes"
+        }
+      ],
+      "name": "SwapRegistered",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "fulfillQuote",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "fulfillSwap",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "quoteBuffer",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "srcToken",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "dstToken",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "inAmount",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IOraclizedSwapHelper.SwapInfo",
+          "name": "",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "outAmount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "requestQuote",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "amountOut",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "requestQuoteAndFulfillOnOracleExpense",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint8",
+          "name": "slippage",
+          "type": "uint8"
+        }
+      ],
+      "name": "requestSwap",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint8",
+          "name": "slippage",
+          "type": "uint8"
+        }
+      ],
+      "name": "requestSwapAndFulfillOnOracleExpense",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "swapBuffer",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "srcToken",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "dstToken",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "inAmount",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
