@@ -12,6 +12,8 @@ library PearlStrategyLib {
         0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;
     address internal constant PEARL_ROUTER =
         0xcC25C0FD84737F44a7d38649b69491BBf0c7f083;
+    address internal constant PEARL_USDR_LP =
+        0xf68c20d6C50706f6C6bd8eE184382518C93B368c;
     
     function pearlToWant(
         uint256 _pearlAmount,

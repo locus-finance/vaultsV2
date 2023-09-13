@@ -182,31 +182,31 @@ contract EmergencyUniswapV3SwapHelper is ISwapHelper {
                 10000;
             ISwapRouter(PearlStrategyLib.UNISWAP_V3_ROUTER).exactInput(params);
         } else if (src == PEARL && dst == USDC) {
-            // // IPearlRouter.Route[] memory routes = new IPearlRouter.Route[](2);
-            // // routes[0] = IPearlRouter.Route({from: PEARL, to: USDR, stable: false});
-            // // routes[1] = IPearlRouter.Route({
-            // //     from: USDR,
-            // //     to: USDC,
-            // //     stable: true
-            // // });
+            IPearlRouter.Route[] memory routes = new IPearlRouter.Route[](2);
+            routes[0] = IPearlRouter.Route({from: PEARL, to: USDR, stable: false});
+            routes[1] = IPearlRouter.Route({
+                from: USDR,
+                to: USDC,
+                stable: true
+            });
 
-            // // uint256 wantAmountExpected = PearlStrategyLib.pearlToWant(
-            // //     amount,
-            // //     PEARL_USDR_LP,
-            // //     PEARL,
-            // //     USDR,
+            uint256 wantAmountExpected = PearlStrategyLib.pearlToWant(
+                amount,
+                PearlStrategyLib.PEARL_USDR_LP,
+                PEARL,
+                USDR,
+                USDC_DECIMALS
+            );
 
-            // // );
-
-            // try
-            //     IPearlRouter(PearlStrategyLib.PEARL_ROUTER).swapExactTokensForTokens(
-            //         amount,
-            //         _withSlippage(wantAmountExpected),
-            //         routes,
-            //         address(this),
-            //         block.timestamp
-            //     )
-            // returns (uint256[] memory) {} catch {}
+            try
+                IPearlRouter(PearlStrategyLib.PEARL_ROUTER).swapExactTokensForTokens(
+                    amount,
+                    _withSlippage(wantAmountExpected),
+                    routes,
+                    address(this),
+                    block.timestamp
+                )
+            returns (uint256[] memory) {} catch {}
         }
         
     }

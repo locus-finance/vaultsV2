@@ -34,8 +34,6 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
     address internal constant USDR_EXCHANGE =
         0x195F7B233947d51F4C3b756ad41a5Ddb34cEBCe0;
 
-    address internal constant PEARL_USDR_LP =
-        0xf68c20d6C50706f6C6bd8eE184382518C93B368c;
     address internal constant USDC_USDR_LP =
         0xD17cb0f162f133e339C0BbFc18c36c357E681D6b;
     address internal constant PEARL_GAUGE_V2 =
@@ -106,7 +104,7 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
         return
             PearlStrategyLib.pearlToWant(
                 _pearlAmount,
-                PEARL_USDR_LP,
+                PearlStrategyLib.PEARL_USDR_LP,
                 PEARL,
                 USDR,
                 wantDecimals
