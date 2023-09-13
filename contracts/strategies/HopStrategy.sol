@@ -3,8 +3,7 @@
 pragma solidity ^0.8.18;
 
 import {BaseStrategy} from "../BaseStrategy.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {OracleLibrary} from "@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -25,21 +24,9 @@ contract HopStrategy is Initializable, BaseStrategy, SwapHelperUser {
     address internal constant USDC = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
     address internal constant LP = 0xB67c014FA700E69681a673876eb8BAFAA36BFf71;
     address internal constant HOP = 0xc5102fE9359FD9a28f877a67E36B0F050d81a3CC;
-
-    address internal constant WETH = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
-    address internal constant HOP_WETH_UNI_POOL =
-        0x44ca2BE2Bd6a7203CCDBb63EED8382274f737A15;
-    address internal constant WETH_USDC_UNI_POOL =
-        0xC31E54c7a869B9FcBEcc14363CF510d1c41fa443;
-    uint256 internal constant HOP_WETH_POOL_FEE = 3000;
-    uint256 internal constant USDC_WETH_POOL_FEE = 500;
+    
     address internal constant UNISWAP_V3_ROUTER =
         0xE592427A0AEce92De3Edee1F18E0157C05861564;
-
-    uint32 internal constant TWAP_RANGE_SECS = 1800;
-
-    address internal constant ETH_USDC_UNI_V3_POOL =
-        0xC6962004f452bE9203591991D15f6b388e09E8D0;
 
     uint256 internal constant MAX_BPS = 10000;
 
@@ -106,11 +93,14 @@ contract HopStrategy is Initializable, BaseStrategy, SwapHelperUser {
             uint256[] memory liqAmounts = new uint256[](2);
             liqAmounts[0] = excessWant;
             liqAmounts[1] = 0;
-            uint256 minAmount = (IRouter(HOP_ROUTER).calculateTokenAmount(
-                address(this),
-                liqAmounts,
-                true
-            ) * slippage) / MAX_BPS;
+            uint256 minAmount = 
+                (
+                    IRouter(HOP_ROUTER).calculateTokenAmount(
+                        address(this),
+                        liqAmounts,
+                        true
+                    ) * slippage
+                ) / MAX_BPS;
 
             IRouter(HOP_ROUTER).addLiquidity(
                 liqAmounts,

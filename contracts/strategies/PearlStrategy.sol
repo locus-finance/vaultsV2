@@ -2,7 +2,8 @@
 
 pragma solidity ^0.8.18;
 
-import {ERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
@@ -16,8 +17,10 @@ import {IPearlGaugeV2} from "../integrations/pearl/IPearlGaugeV2.sol";
 import {BaseStrategy} from "../BaseStrategy.sol";
 
 import "../utils/swaps/SwapHelperUser.sol";
+import "./utils/PearlStrategyLib.sol";
 
 contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
+    using SafeERC20 for IERC20Metadata;
     using SafeERC20 for IERC20;
     using FixedPointMathLib for uint256;
 
@@ -28,16 +31,8 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
     address internal constant PEARL =
         0x7238390d5f6F64e67c3211C343A410E2A3DEc142;
 
-    address internal constant DAI_USDC_V3_POOL =
-        0x5645dCB64c059aa11212707fbf4E7F984440a8Cf;
-    uint24 internal constant DAI_USDC_UNI_V3_FEE = 100;
-
-    address internal constant UNISWAP_V3_ROUTER =
-        0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45;
     address internal constant USDR_EXCHANGE =
         0x195F7B233947d51F4C3b756ad41a5Ddb34cEBCe0;
-    address internal constant PEARL_ROUTER =
-        0xcC25C0FD84737F44a7d38649b69491BBf0c7f083;
 
     address internal constant PEARL_USDR_LP =
         0xf68c20d6C50706f6C6bd8eE184382518C93B368c;
@@ -53,7 +48,7 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
     function initialize(
         address _lzEndpoint,
         address _strategist,
-        IERC20 _want,
+        IERC20Metadata _want,
         address _vault,
         uint16 _vaultChainId,
         uint16 _currentChainId,
@@ -73,18 +68,24 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
             DEFAULT_SLIPPAGE
         );
 
-        want.safeApprove(UNISWAP_V3_ROUTER, type(uint256).max);
-        want.safeApprove(PEARL_ROUTER, type(uint256).max);
+        want.safeApprove(PearlStrategyLib.UNISWAP_V3_ROUTER, type(uint256).max);
+        want.safeApprove(PearlStrategyLib.PEARL_ROUTER, type(uint256).max);
         swapHelper = IOraclizedSwapHelper(_swapHelper);
-        IERC20(USDR).safeApprove(PEARL_ROUTER, type(uint256).max);
-        IERC20(USDC_USDR_LP).safeApprove(PEARL_GAUGE_V2, type(uint256).max);
-        IERC20(USDC_USDR_LP).safeApprove(PEARL_ROUTER, type(uint256).max);
-        IERC20(DAI).safeApprove(USDR_EXCHANGE, type(uint256).max);
-        IERC20(PEARL).safeApprove(PEARL_ROUTER, type(uint256).max);
+        IERC20Metadata(USDR).safeApprove(PearlStrategyLib.PEARL_ROUTER, type(uint256).max);
+        IERC20Metadata(USDC_USDR_LP).safeApprove(
+            PEARL_GAUGE_V2,
+            type(uint256).max
+        );
+        IERC20Metadata(USDC_USDR_LP).safeApprove(
+            PearlStrategyLib.PEARL_ROUTER,
+            type(uint256).max
+        );
+        IERC20Metadata(DAI).safeApprove(USDR_EXCHANGE, type(uint256).max);
+        IERC20Metadata(PEARL).safeApprove(PearlStrategyLib.PEARL_ROUTER, type(uint256).max);
 
-        IERC20(USDR).safeApprove(_swapHelper, type(uint256).max);
-        IERC20(DAI).safeApprove(_swapHelper, type(uint256).max);
-        IERC20(PEARL).safeApprove(_swapHelper, type(uint256).max);
+        IERC20Metadata(USDR).safeApprove(_swapHelper, type(uint256).max);
+        IERC20Metadata(DAI).safeApprove(_swapHelper, type(uint256).max);
+        IERC20Metadata(PEARL).safeApprove(_swapHelper, type(uint256).max);
 
         adjustedTo1InchSlippage = uint8((slippage * 100) / MAX_BPS);
     }
@@ -92,7 +93,6 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
     function name() external pure override returns (string memory) {
         return "PearlStrategy";
     }
-
 
     function balanceOfPearlRewards() public view returns (uint256) {
         return IPearlGaugeV2(PEARL_GAUGE_V2).earned(address(this));
@@ -103,60 +103,61 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
     }
 
     function pearlToWant(uint256 _pearlAmount) public view returns (uint256) {
-        uint256 usdrAmount = IPearlPair(PEARL_USDR_LP).current(
-            PEARL,
-            _pearlAmount
-        );
-        return usdrToWant(usdrAmount);
+        return
+            PearlStrategyLib.pearlToWant(
+                _pearlAmount,
+                PEARL_USDR_LP,
+                PEARL,
+                USDR,
+                wantDecimals
+            );
     }
 
     function daiToWant(uint256 _daiAmount) public view returns (uint256) {
         return
             Utils.scaleDecimals(
                 _daiAmount,
-                ERC20(DAI).decimals(),
+                IERC20Metadata(DAI).decimals(),
                 wantDecimals
             );
     }
 
     function usdrToWant(uint256 _usdrAmount) public view returns (uint256) {
-        return
-            Utils.scaleDecimals(
-                _usdrAmount,
-                ERC20(USDR).decimals(),
-                wantDecimals
-            );
+        return PearlStrategyLib.usdrToWant(_usdrAmount, USDR, wantDecimals);
     }
 
     function usdrLpToWant(uint256 _usdrLpAmount) public view returns (uint256) {
-        (uint256 amountA, uint256 amountB) = IPearlRouter(PEARL_ROUTER)
+        (uint256 amountA, uint256 amountB) = IPearlRouter(PearlStrategyLib.PEARL_ROUTER)
             .quoteRemoveLiquidity(address(want), USDR, true, _usdrLpAmount);
         return amountA + usdrToWant(amountB);
     }
 
     function wantToUsdrLp(uint256 _wantAmount) public view returns (uint256) {
-        uint256 oneLp = usdrLpToWant(10 ** ERC20(USDC_USDR_LP).decimals());
+        uint256 oneLp = usdrLpToWant(
+            10 ** IERC20Metadata(USDC_USDR_LP).decimals()
+        );
         uint256 scaledWantAmount = Utils.scaleDecimals(
             _wantAmount,
             wantDecimals,
-            ERC20(USDC_USDR_LP).decimals()
+            IERC20Metadata(USDC_USDR_LP).decimals()
         );
         uint256 scaledLp = Utils.scaleDecimals(
             oneLp,
             wantDecimals,
-            ERC20(USDC_USDR_LP).decimals()
+            IERC20Metadata(USDC_USDR_LP).decimals()
         );
 
         return
-            (scaledWantAmount * (10 ** ERC20(USDC_USDR_LP).decimals())) /
-            scaledLp;
+            (scaledWantAmount *
+                (10 ** IERC20Metadata(USDC_USDR_LP).decimals())) / scaledLp;
     }
 
     function estimatedTotalAssets() public view override returns (uint256) {
         return
             want.balanceOf(address(this)) +
             pearlToWant(
-                balanceOfPearlRewards() + ERC20(PEARL).balanceOf(address(this))
+                balanceOfPearlRewards() +
+                    IERC20Metadata(PEARL).balanceOf(address(this))
             ) +
             usdrLpToWant(balanceOfLpStaked());
     }
@@ -166,7 +167,10 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
             return;
         }
         swapHelper.requestSwapAndFulfillOnOracleExpense(
-            USDR, address(want), _usdrAmount, adjustedTo1InchSlippage
+            USDR,
+            address(want),
+            _usdrAmount,
+            adjustedTo1InchSlippage
         );
     }
 
@@ -175,7 +179,10 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
             return;
         }
         swapHelper.requestSwapAndFulfillOnOracleExpense(
-            PEARL, address(want), _pearlAmount, adjustedTo1InchSlippage
+            PEARL,
+            address(want),
+            _pearlAmount,
+            adjustedTo1InchSlippage
         );
     }
 
@@ -187,7 +194,7 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
         uint256 rewardsTotal = pearlToWant(balanceOfPearlRewards());
         if (rewardsTotal >= _amountNeeded) {
             IPearlGaugeV2(PEARL_GAUGE_V2).getReward();
-            _sellPearl(ERC20(PEARL).balanceOf(address(this)));
+            _sellPearl(IERC20Metadata(PEARL).balanceOf(address(this)));
         } else {
             uint256 lpTokensToWithdraw = Math.min(
                 wantToUsdrLp(_amountNeeded - rewardsTotal),
@@ -199,16 +206,16 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
 
     function _exitPosition(uint256 _stakedLpTokens) internal {
         IPearlGaugeV2(PEARL_GAUGE_V2).getReward();
-        _sellPearl(ERC20(PEARL).balanceOf(address(this)));
+        _sellPearl(IERC20Metadata(PEARL).balanceOf(address(this)));
 
         if (_stakedLpTokens == 0) {
             return;
         }
 
         IPearlGaugeV2(PEARL_GAUGE_V2).withdraw(_stakedLpTokens);
-        (uint256 amountA, uint256 amountB) = IPearlRouter(PEARL_ROUTER)
+        (uint256 amountA, uint256 amountB) = IPearlRouter(PearlStrategyLib.PEARL_ROUTER)
             .quoteRemoveLiquidity(address(want), USDR, true, _stakedLpTokens);
-        IPearlRouter(PEARL_ROUTER).removeLiquidity(
+        IPearlRouter(PearlStrategyLib.PEARL_ROUTER).removeLiquidity(
             address(want),
             USDR,
             true,
@@ -219,7 +226,7 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
             block.timestamp
         );
 
-        _sellUsdr(ERC20(USDR).balanceOf(address(this)));
+        _sellUsdr(IERC20Metadata(USDR).balanceOf(address(this)));
     }
 
     function _liquidatePosition(
@@ -252,7 +259,7 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
 
     function _adjustPosition(uint256 _debtOutstanding) internal override {
         IPearlGaugeV2(PEARL_GAUGE_V2).getReward();
-        _sellPearl(ERC20(PEARL).balanceOf(address(this)));
+        _sellPearl(IERC20Metadata(PEARL).balanceOf(address(this)));
 
         uint256 wantBal = want.balanceOf(address(this));
 
@@ -261,21 +268,24 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
             uint256 halfWant = excessWant / 2;
 
             swapHelper.requestSwapAndFulfillOnOracleExpense(
-                address(want), DAI, halfWant, adjustedTo1InchSlippage
+                address(want),
+                DAI,
+                halfWant,
+                adjustedTo1InchSlippage
             );
         }
 
-        uint256 daiBal = IERC20(DAI).balanceOf(address(this));
+        uint256 daiBal = IERC20Metadata(DAI).balanceOf(address(this));
         if (daiBal > 0) {
             IExchange(USDR_EXCHANGE).swapFromUnderlying(daiBal, address(this));
         }
 
-        uint256 usdrBal = IERC20(USDR).balanceOf(address(this));
+        uint256 usdrBal = IERC20Metadata(USDR).balanceOf(address(this));
         wantBal = want.balanceOf(address(this));
         if (usdrBal > 0 && wantBal > 0) {
-            (uint256 amountA, uint256 amountB, ) = IPearlRouter(PEARL_ROUTER)
+            (uint256 amountA, uint256 amountB, ) = IPearlRouter(PearlStrategyLib.PEARL_ROUTER)
                 .quoteAddLiquidity(address(want), USDR, true, wantBal, usdrBal);
-            IPearlRouter(PEARL_ROUTER).addLiquidity(
+            IPearlRouter(PearlStrategyLib.PEARL_ROUTER).addLiquidity(
                 address(want),
                 USDR,
                 true,
@@ -288,7 +298,9 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
             );
         }
 
-        uint256 usdrLpBal = IERC20(USDC_USDR_LP).balanceOf(address(this));
+        uint256 usdrLpBal = IERC20Metadata(USDC_USDR_LP).balanceOf(
+            address(this)
+        );
         if (usdrLpBal > 0) {
             IPearlGaugeV2(PEARL_GAUGE_V2).deposit(usdrLpBal);
         }
@@ -297,17 +309,17 @@ contract PearlStrategy is Initializable, BaseStrategy, SwapHelperUser {
     function _prepareMigration(address _newStrategy) internal override {
         IPearlGaugeV2(PEARL_GAUGE_V2).withdraw(balanceOfLpStaked());
 
-        IERC20(USDC_USDR_LP).safeTransfer(
+        IERC20Metadata(USDC_USDR_LP).safeTransfer(
             _newStrategy,
-            IERC20(USDC_USDR_LP).balanceOf(address(this))
+            IERC20Metadata(USDC_USDR_LP).balanceOf(address(this))
         );
-        IERC20(USDR).safeTransfer(
+        IERC20Metadata(USDR).safeTransfer(
             _newStrategy,
-            IERC20(USDR).balanceOf(address(this))
+            IERC20Metadata(USDR).balanceOf(address(this))
         );
-        IERC20(PEARL).safeTransfer(
+        IERC20Metadata(PEARL).safeTransfer(
             _newStrategy,
-            IERC20(PEARL).balanceOf(address(this))
+            IERC20Metadata(PEARL).balanceOf(address(this))
         );
     }
 
