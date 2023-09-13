@@ -7,13 +7,13 @@ import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 
 import {BaseStrategy} from "../BaseStrategy.sol";
 
 import "../integrations/hop/IStakingRewards.sol";
 import "../integrations/hop/IRouter.sol";
-import "./utils/HopStrategyLib.sol";
-import "../utils/SwapHelperUser.sol";
+import "../utils/swaps/SwapHelperUser.sol";
 
 contract HopStrategy is
     Initializable,
@@ -21,6 +21,36 @@ contract HopStrategy is
     SwapHelperUser
 {
     using SafeERC20 for IERC20;
+
+    error InitializeQuoteBufferWithHopToWantValue();
+
+    address internal constant HOP_ROUTER =
+        0x10541b07d8Ad2647Dc6cD67abd4c03575dade261;
+    address internal constant STAKING_REWARD =
+        0xb0CabFE930642AD3E7DECdc741884d8C3F7EbC70;
+    address internal constant USDC = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
+    address internal constant LP = 0xB67c014FA700E69681a673876eb8BAFAA36BFf71;
+    address internal constant HOP = 0xc5102fE9359FD9a28f877a67E36B0F050d81a3CC;
+
+    address internal constant WETH = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
+    address internal constant HOP_WETH_UNI_POOL =
+        0x44ca2BE2Bd6a7203CCDBb63EED8382274f737A15;
+    address internal constant WETH_USDC_UNI_POOL =
+        0xC31E54c7a869B9FcBEcc14363CF510d1c41fa443;
+    uint256 internal constant HOP_WETH_POOL_FEE = 3000;
+    uint256 internal constant USDC_WETH_POOL_FEE = 500;
+    address internal constant UNISWAP_V3_ROUTER =
+        0xE592427A0AEce92De3Edee1F18E0157C05861564;
+
+    uint32 internal constant TWAP_RANGE_SECS = 1800;
+
+    address internal constant ETH_USDC_UNI_V3_POOL =
+        0xC6962004f452bE9203591991D15f6b388e09E8D0;
+
+    uint256 public constant MAX_BPS = 10000;
+
+    bool public isQuoteBufferContainsHopToWantValue;
+    uint256 public requestedQuote;
 
     function initialize(
         address _lzEndpoint,
@@ -32,7 +62,6 @@ contract HopStrategy is
         address _sgRouter,
         uint256 _slippage
     ) external initializer {
-        // __AccessControl_init();
         __BaseStrategy_init(
             _lzEndpoint,
             _strategist,
@@ -44,19 +73,57 @@ contract HopStrategy is
             _sgRouter,
             _slippage
         );
-        IERC20(HopStrategyLib.LP).safeApprove(
-            HopStrategyLib.STAKING_REWARD,
+        IERC20(LP).safeApprove(
+            STAKING_REWARD,
             type(uint256).max
         );
-        IERC20(HopStrategyLib.LP).safeApprove(
-            HopStrategyLib.HOP_ROUTER,
+        IERC20(LP).safeApprove(
+            HOP_ROUTER,
             type(uint256).max
         );
-        IERC20(HopStrategyLib.HOP).safeApprove(
-            HopStrategyLib.UNISWAP_V3_ROUTER,
+        IERC20(HOP).safeApprove(
+            UNISWAP_V3_ROUTER,
             type(uint256).max
         );
-        want.safeApprove(HopStrategyLib.HOP_ROUTER, type(uint256).max);
+        want.safeApprove(HOP_ROUTER, type(uint256).max);
+    }
+
+    function lpToWant(
+        uint256 amountIn,
+        address lpReceiver
+    ) public view returns (uint256 amountOut) {
+        if (amountIn == 0) {
+            return 0;
+        }
+        amountOut = IRouter(HOP_ROUTER)
+            .calculateRemoveLiquidityOneToken(lpReceiver, amountIn, 0);
+    }
+
+    function hopToWant(uint256 amountIn) public returns (uint256 amountOut) {
+        swapHelper.requestQuoteAndFulfillOnOracleExpense(
+            HOP,
+            address(want),
+            amountIn
+        );
+    }
+
+    function sellHopForWant(
+        uint256 amountToSell,
+        uint256 slippage
+    ) internal {
+        if (amountToSell == 0) {
+            return;
+        }
+        // hop to usdc
+        uint8 adjustedTo1InchSlippage = uint8(
+            (slippage * 100) / MAX_BPS
+        );
+        swapHelper.requestSwapAndFulfillOnOracleExpense(
+            HOP,
+            USDC,
+            amountToSell,
+            adjustedTo1InchSlippage
+        );
     }
 
     function name() external pure override returns (string memory) {
@@ -64,10 +131,10 @@ contract HopStrategy is
     }
 
     function estimatedTotalAssets() public view override returns (uint256) {
-        if (!_swapHelperDTO.isQuoteBufferContainsHopToWantValue) {
-            revert HopStrategyLib.InitializeQuoteBufferWithHopToWantValue();
+        if (!isQuoteBufferContainsHopToWantValue) {
+            revert InitializeQuoteBufferWithHopToWantValue();
         }
-        return HopStrategyLib.lpToWant(balanceOfStaked(), address(this)) + balanceOfWant() + _swapHelperDTO.quoteBuffer;
+        return lpToWant(balanceOfStaked(), address(this)) + balanceOfWant() + requestedQuote;
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal override {
@@ -87,20 +154,20 @@ contract HopStrategy is
             liqAmounts[1] = 0;
             uint256 minAmount = 
                 (
-                    IRouter(HopStrategyLib.HOP_ROUTER)
+                    IRouter(HOP_ROUTER)
                         .calculateTokenAmount(address(this), liqAmounts, true) * slippage
                 ) 
-                / HopStrategyLib.MAX_BPS;
+                / MAX_BPS;
 
-            IRouter(HopStrategyLib.HOP_ROUTER).addLiquidity(
+            IRouter(HOP_ROUTER).addLiquidity(
                 liqAmounts,
                 minAmount,
                 block.timestamp
             );
-            uint256 lpBalance = IERC20(HopStrategyLib.LP).balanceOf(
+            uint256 lpBalance = IERC20(LP).balanceOf(
                 address(this)
             );
-            IStakingRewards(HopStrategyLib.STAKING_REWARD).stake(lpBalance);
+            IStakingRewards(STAKING_REWARD).stake(lpBalance);
         }
     }
 
@@ -131,8 +198,8 @@ contract HopStrategy is
         _claimAndSellRewards();
 
         uint256 stakingAmount = balanceOfWant();
-        IStakingRewards(HopStrategyLib.STAKING_REWARD).withdraw(stakingAmount);
-        IRouter(HopStrategyLib.HOP_ROUTER).removeLiquidityOneToken(
+        IStakingRewards(STAKING_REWARD).withdraw(stakingAmount);
+        IRouter(HOP_ROUTER).removeLiquidityOneToken(
             stakingAmount,
             0,
             0,
@@ -147,13 +214,13 @@ contract HopStrategy is
     }
 
     function balanceOfStaked() internal view returns (uint256 amount) {
-        amount = IStakingRewards(HopStrategyLib.STAKING_REWARD).balanceOf(
+        amount = IStakingRewards(STAKING_REWARD).balanceOf(
             address(this)
         );
     }
 
     function rewardss() internal view returns (uint256 amount) {
-        amount = IStakingRewards(HopStrategyLib.STAKING_REWARD).earned(
+        amount = IStakingRewards(STAKING_REWARD).earned(
             address(this)
         );
     }
@@ -162,23 +229,21 @@ contract HopStrategy is
         if (_amountNeeded == 0) {
             return;
         }
-        if (HopStrategyLib.hopToWant(_swapHelperDTO, _quoteEventEmitter, rewardss(), address(want)) >= _amountNeeded) {
+        if (hopToWant(rewardss(), address(want)) >= _amountNeeded) {
             _claimAndSellRewards();
         } else {
             uint256 _usdcToUnstake = Math.min(
                 balanceOfStaked(),
-                _amountNeeded - HopStrategyLib.hopToWant(_swapHelperDTO, _quoteEventEmitter, rewardss(), address(want))
+                _amountNeeded - hopToWant(rewardss(), address(want))
             );
             _exitPosition(_usdcToUnstake);
         }
     }
 
     function _claimAndSellRewards() internal {
-        IStakingRewards(HopStrategyLib.STAKING_REWARD).getReward();
-        HopStrategyLib.sellHopForWant(
-            _swapHelperDTO, 
-            _swapEventEmitter, 
-            IERC20(HopStrategyLib.HOP).balanceOf(address(this)),
+        IStakingRewards(STAKING_REWARD).getReward();
+        sellHopForWant(
+            IERC20(HOP).balanceOf(address(this)),
             slippage
         );
     }
@@ -189,19 +254,20 @@ contract HopStrategy is
         amountsToWithdraw[0] = _stakedAmount;
         amountsToWithdraw[1] = 0;
 
-        uint256 amountLpToWithdraw = IRouter(HopStrategyLib.HOP_ROUTER)
+        uint256 amountLpToWithdraw = IRouter(HOP_ROUTER)
             .calculateTokenAmount(address(this), amountsToWithdraw, false);
 
-        if (amountLpToWithdraw > balanceOfWant()) {
-            amountLpToWithdraw = balanceOfWant();
+        uint256 _balanceOfWant = balanceOfWant();
+        if (amountLpToWithdraw > _balanceOfWant) {
+            amountLpToWithdraw = _balanceOfWant;
         }
 
-        IStakingRewards(HopStrategyLib.STAKING_REWARD).withdraw(
+        IStakingRewards(STAKING_REWARD).withdraw(
             amountLpToWithdraw
         );
-        uint256 minAmount = (_stakedAmount * slippage) / HopStrategyLib.MAX_BPS;
+        uint256 minAmount = (_stakedAmount * slippage) / MAX_BPS;
 
-        IRouter(HopStrategyLib.HOP_ROUTER).removeLiquidityOneToken(
+        IRouter(HOP_ROUTER).removeLiquidityOneToken(
             amountLpToWithdraw,
             0,
             minAmount,
@@ -213,11 +279,11 @@ contract HopStrategy is
         public
         onlyStrategistOrSelf
     {
-        HopStrategyLib.hopToWant(_swapHelperDTO, _quoteEventEmitter, rewardss(), address(want));
+        hopToWant(rewardss(), address(want));
     }
 
-    function setSwapHelperDTO(SwapHelperDTO memory __swapHelperDTO) public onlyStrategistOrSelf {
-        _swapHelperDTO = __swapHelperDTO;
+    function setSwapHelper(address __swapHelper) public onlyStrategistOrSelf {
+        swapHelper = __swapHelper;
     }
 
     function notifyCallback(
@@ -226,6 +292,6 @@ contract HopStrategy is
         uint256 amountOut,
         uint256
     ) external override onlySwapHelper {
-        _swapHelperDTO.quoteBuffer = amountOut;
+        requestedQuote = amountOut;
     }
 }

@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.18;
 
-import "../utils/SwapHelperUser.sol";
+import "../utils/swaps/SwapHelperUser.sol";
 
 contract MockSwapHelperSubscriber is SwapHelperUser {
     event MockNotified(

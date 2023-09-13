@@ -11,69 +11,38 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-import "../interfaces/ISwapHelper.sol";
-import "../utils/SwapHelperUser.sol";
+import "../../interfaces/ISwapHelper.sol";
+import "../../interfaces/IOraclizedSwapHelper.sol";
+import "./SwapHelperUser.sol";
 
-contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
+contract SwapHelper is AccessControl, IOraclizedSwapHelper, ChainlinkClient {
     using Address for address;
     using SafeERC20 for IERC20;
     using Chainlink for Chainlink.Request;
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    enum JobPurpose {
-        QUOTE, SWAP_CALLDATA
+    modifier onlySelfAuthorized() {
+        if (_msgSender() != address(this)) {
+            revert OnlySelfAuthorized();
+        }
+        _;
     }
-
-    enum StrategistInterference {
-        QUOTE_REQUEST_PERFORMED_MANUALLY,
-        SWAP_CALLDATA_REQUEST_PEROFRMED_MANUALLY
-    }
-
-    struct JobInfo {
-        bytes32 jobId;
-        uint256 jobFeeInJuels;
-    }
-
-    struct SwapInfo {
-        address srcToken;
-        address dstToken;
-        uint256 inAmount;
-    }
-
-    struct QuoteInfo {
-        SwapInfo swapInfo;
-        uint256 outAmount;
-    }
-
-    error TransferError();
-    error SlippageIsTooBig();
-    error NotEnoughNativeTokensSent();
-    error CannotAddSubscriber();
-    error CannotRemoveSubscriber();
-    error SwapOperationIsNotReady();
-    error QuoteOperationIsNotReady();
-
-    event QuoteSent(QuoteInfo indexed _quoteBuffer);
-    event QuoteRegistered(uint256 indexed toAmount);
-
-    event SwapPerformed(SwapInfo indexed _swapBuffer);
-    event SwapRegistered(bytes indexed swapCalldata);
-
-    event StrategistInterferred(StrategistInterference indexed interference);
 
     address public constant ONE_INCH_ETH_ADDRESS =
         0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     bytes32 public constant SWAP_AUTHORIZED_ROLE =
         keccak256("SWAP_AUTHORIZED_ROLE");
     bytes32 public constant STRATEGIST_ROLE = keccak256("STRATEGIST_ROLE");
-    bytes32 public constant QUOTE_AUTHORIZED_ROLE = keccak256("QUOTE_AUTHORIZED_ROLE");
+    bytes32 public constant QUOTE_AUTHORIZED_ROLE =
+        keccak256("QUOTE_AUTHORIZED_ROLE");
 
     address public immutable aggregationRouter;
 
     address public oracleAddress;
+    ISwapHelper public emergencySwapHelper;
 
-    QuoteInfo public quoteBuffer;
-    SwapInfo public swapBuffer;
+    QuoteInfo public override quoteBuffer;
+    SwapInfo public override swapBuffer;
 
     bool public isReadyToFulfillSwap;
     bool public isReadyToFulfillQuote;
@@ -100,22 +69,31 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         setChainlinkToken(chainlinkTokenAddress);
         setOracleAddress(chainlinkOracleAddress);
 
-        setJobInfo(JobPurpose.QUOTE, JobInfo({
-            jobId: bytes32(bytes(_quoteJobId)),
-            jobFeeInJuels: 0
-        }));
+        setJobInfo(
+            JobPurpose.QUOTE,
+            JobInfo({jobId: bytes32(bytes(_quoteJobId)), jobFeeInJuels: 0})
+        );
         setFeeInHundredthsOfLink(JobPurpose.QUOTE, _quoteJobFee);
 
-        setJobInfo(JobPurpose.SWAP_CALLDATA, JobInfo({
-            jobId: bytes32(bytes(_swapCalldataJobId)),
-            jobFeeInJuels: 0
-        }));
+        setJobInfo(
+            JobPurpose.SWAP_CALLDATA,
+            JobInfo({
+                jobId: bytes32(bytes(_swapCalldataJobId)),
+                jobFeeInJuels: 0
+            })
+        );
         setFeeInHundredthsOfLink(JobPurpose.SWAP_CALLDATA, _swapCalldataJobFee);
 
         aggregationRouter = _aggregationRouter;
         for (uint8 i = 0; i < authorizedToSwap.length; i++) {
             _grantRole(SWAP_AUTHORIZED_ROLE, authorizedToSwap[uint256(i)]);
         }
+    }
+
+    function setEmergencySwapHelper(
+        address _emergencySwapHelper
+    ) external onlyRole(STRATEGIST_ROLE) {
+        emergencySwapHelper = ISwapHelper(_emergencySwapHelper);
     }
 
     // Update oracle address
@@ -135,7 +113,10 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         return oracleAddress;
     }
 
-    function setJobInfo(JobPurpose _purpose, JobInfo memory _info) public onlyRole(STRATEGIST_ROLE) {
+    function setJobInfo(
+        JobPurpose _purpose,
+        JobInfo memory _info
+    ) public onlyRole(STRATEGIST_ROLE) {
         jobInfos[uint256(_purpose)] = _info;
     }
 
@@ -143,18 +124,17 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         JobPurpose _purpose,
         uint256 _feeInHundredthsOfLink
     ) public onlyRole(STRATEGIST_ROLE) {
-        jobInfos[uint256(_purpose)].jobFeeInJuels = (_feeInHundredthsOfLink * LINK_DIVISIBILITY) / 100;
+        jobInfos[uint256(_purpose)].jobFeeInJuels =
+            (_feeInHundredthsOfLink * LINK_DIVISIBILITY) /
+            100;
     }
 
     function getFeeInHundredthsOfLink(
         JobPurpose _purpose
-    )
-        public
-        view
-        onlyRole(STRATEGIST_ROLE)
-        returns (uint256)
-    {
-        return (jobInfos[uint256(_purpose)].jobFeeInJuels * 100) / LINK_DIVISIBILITY;
+    ) public view onlyRole(STRATEGIST_ROLE) returns (uint256) {
+        return
+            (jobInfos[uint256(_purpose)].jobFeeInJuels * 100) /
+            LINK_DIVISIBILITY;
     }
 
     function addSubscriber(
@@ -189,6 +169,34 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         uint256 amount,
         bytes4 callbackSignature
     ) internal {
+        try this.requestChainlinkQuote(src, dst, amount, callbackSignature) {
+            emit Quote(
+                SwapInfo({srcToken: src, dstToken: dst, inAmount: amount})
+            );
+        } catch (bytes memory lowLevelErrorData) {
+            bytes memory result = address(emergencySwapHelper)
+                .functionStaticCall(
+                    abi.encodePacked(
+                        ISwapHelper.requestQuote.selector,
+                        src,
+                        dst,
+                        amount
+                    )
+                );
+            quoteBuffer.outAmount = abi.decode(result, (uint256));
+            emit EmergencyQuote(
+                SwapInfo({srcToken: src, dstToken: dst, inAmount: amount}),
+                lowLevelErrorData
+            );
+        }
+    }
+
+    function requestChainlinkQuote(
+        address src,
+        address dst,
+        uint256 amount,
+        bytes4 callbackSignature
+    ) external onlySelfAuthorized {
         Chainlink.Request memory req = buildOperatorRequest(
             jobInfos[uint256(JobPurpose.QUOTE)].jobId,
             callbackSignature
@@ -212,16 +220,20 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         quoteBuffer.swapInfo.dstToken = dst;
         quoteBuffer.swapInfo.inAmount = amount;
         // Send the request to the Chainlink oracle
-        sendOperatorRequest(req, jobInfos[uint256(JobPurpose.QUOTE)].jobFeeInJuels);
+        sendOperatorRequest(
+            req,
+            jobInfos[uint256(JobPurpose.QUOTE)].jobFeeInJuels
+        );
     }
 
     function requestQuote(
         address src,
         address dst,
         uint256 amount
-    ) external override onlyRole(QUOTE_AUTHORIZED_ROLE) {
+    ) external override onlyRole(QUOTE_AUTHORIZED_ROLE) returns (uint256) {
         isReadyToFulfillQuote = false; // double check the flag
         _requestQuote(src, dst, amount, this.registerQuoteRequest.selector);
+        // THE RETURN VALUE MUST BE IGNORED BECAUSE IT IS HANDLED BY THE ORACLE
     }
 
     function requestQuoteAndFulfillOnOracleExpense(
@@ -230,9 +242,9 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         uint256 amount
     ) external override onlyRole(QUOTE_AUTHORIZED_ROLE) {
         _requestQuote(
-            src, 
-            dst, 
-            amount, 
+            src,
+            dst,
+            amount,
             this.registerQuoteAndFulfillRequestOnOracleExpense.selector
         );
     }
@@ -276,15 +288,23 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         isReadyToFulfillQuote = false;
     }
 
-    function strategistFulfillQuote(uint256 toAmount) external onlyRole(STRATEGIST_ROLE) {
+    function strategistFulfillQuote(
+        uint256 toAmount
+    ) external onlyRole(STRATEGIST_ROLE) {
         isReadyToFulfillQuote = false; // reset the flag
         quoteBuffer.outAmount = toAmount;
         emit QuoteRegistered(toAmount);
         _fulfillQuoteRequest();
-        emit StrategistInterferred(StrategistInterference.QUOTE_REQUEST_PERFORMED_MANUALLY);
+        emit StrategistInterferred(
+            StrategistInterference.QUOTE_REQUEST_PERFORMED_MANUALLY
+        );
     }
 
-    function _setMaxAllowancesIfNeededAndCheckPayment(address src, uint256 amount, address sender) internal {
+    function _setMaxAllowancesIfNeededAndCheckPayment(
+        address src,
+        uint256 amount,
+        address sender
+    ) internal {
         IERC20 srcErc20 = IERC20(src);
         if (src == ONE_INCH_ETH_ADDRESS) {
             if (msg.value != amount) {
@@ -306,6 +326,34 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         uint8 slippage,
         bytes4 callbackSignature
     ) internal {
+        try
+            this.requestChainlinkSwap(
+                src,
+                dst,
+                amount,
+                slippage,
+                callbackSignature
+            )
+        {
+            emit Swap(
+                SwapInfo({srcToken: src, dstToken: dst, inAmount: amount})
+            );
+        } catch (bytes memory lowLevelErrorData) {
+            emergencySwapHelper.requestSwap(src, dst, amount, slippage);
+            emit EmergencySwap(
+                SwapInfo({srcToken: src, dstToken: dst, inAmount: amount}),
+                lowLevelErrorData
+            );
+        }
+    }
+
+    function requestChainlinkSwap(
+        address src,
+        address dst,
+        uint256 amount,
+        uint8 slippage,
+        bytes4 callbackSignature
+    ) external onlySelfAuthorized {
         if (slippage > 50) {
             revert SlippageIsTooBig(); // A constraint dictated by 1inch Aggregation Protocol
         }
@@ -339,12 +387,11 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
             )
         );
         req.add("contact", "locus-finance");
-        swapBuffer = SwapInfo({
-            srcToken: src,
-            dstToken: dst,
-            inAmount: amount
-        });
-        sendOperatorRequest(req, jobInfos[uint256(JobPurpose.SWAP_CALLDATA)].jobFeeInJuels);
+        swapBuffer = SwapInfo({srcToken: src, dstToken: dst, inAmount: amount});
+        sendOperatorRequest(
+            req,
+            jobInfos[uint256(JobPurpose.SWAP_CALLDATA)].jobFeeInJuels
+        );
     }
 
     function requestSwap(
@@ -354,7 +401,13 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         uint8 slippage
     ) external payable override onlyRole(SWAP_AUTHORIZED_ROLE) {
         isReadyToFulfillSwap = false; // double check if the flag is down
-        _requestSwap(src, dst, amount, slippage, this.registerSwapCalldata.selector);
+        _requestSwap(
+            src,
+            dst,
+            amount,
+            slippage,
+            this.registerSwapCalldata.selector
+        );
     }
 
     function requestSwapAndFulfillOnOracleExpense(
@@ -364,7 +417,13 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         uint8 slippage
     ) external payable override onlyRole(SWAP_AUTHORIZED_ROLE) {
         isReadyToFulfillSwap = false; // double check if the flag is down
-        _requestSwap(src, dst, amount, slippage, this.registerSwapCalldataAndFulfillOnOracleExpense.selector);
+        _requestSwap(
+            src,
+            dst,
+            amount,
+            slippage,
+            this.registerSwapCalldataAndFulfillOnOracleExpense.selector
+        );
     }
 
     function registerSwapCalldata(
@@ -382,7 +441,11 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
     ) public recordChainlinkFulfillment(requestId) {
         _lastSwapCalldata = swapCalldata;
         emit SwapRegistered(swapCalldata);
-        _setMaxAllowancesIfNeededAndCheckPayment(swapBuffer.srcToken, swapBuffer.inAmount, _msgSender());
+        _setMaxAllowancesIfNeededAndCheckPayment(
+            swapBuffer.srcToken,
+            swapBuffer.inAmount,
+            _msgSender()
+        );
         _fulfillSwap();
     }
 
@@ -406,16 +469,20 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         isReadyToFulfillSwap = false;
     }
 
-    function strategistFulfillSwap(bytes memory _swapCalldata) 
-        external 
-        payable 
-        onlyRole(STRATEGIST_ROLE)
-    {
+    function strategistFulfillSwap(
+        bytes memory _swapCalldata
+    ) external payable onlyRole(STRATEGIST_ROLE) {
         isReadyToFulfillSwap = false;
         _lastSwapCalldata = _swapCalldata;
-        _setMaxAllowancesIfNeededAndCheckPayment(swapBuffer.srcToken, swapBuffer.inAmount, _msgSender());
+        _setMaxAllowancesIfNeededAndCheckPayment(
+            swapBuffer.srcToken,
+            swapBuffer.inAmount,
+            _msgSender()
+        );
         _fulfillSwap();
-        emit StrategistInterferred(StrategistInterference.SWAP_CALLDATA_REQUEST_PEROFRMED_MANUALLY);
+        emit StrategistInterferred(
+            StrategistInterference.SWAP_CALLDATA_REQUEST_PEROFRMED_MANUALLY
+        );
     }
 
     function withdrawLink() public onlyRole(STRATEGIST_ROLE) {

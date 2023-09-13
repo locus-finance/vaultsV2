@@ -7,21 +7,9 @@ interface ISwapHelper {
         address src,
         address dst,
         uint256 amount
-    ) external;
+    ) external returns (uint256 amountOut);
+    
     function requestSwap(
-        address src,
-        address dst,
-        uint256 amount,
-        uint8 slippage
-    ) external payable;
-    function fulfillSwap() external;
-    function fulfillQuote() external;
-    function requestQuoteAndFulfillOnOracleExpense(
-        address src,
-        address dst,
-        uint256 amount
-    ) external;
-    function requestSwapAndFulfillOnOracleExpense(
         address src,
         address dst,
         uint256 amount,
