@@ -2,9 +2,10 @@
 
 pragma solidity ^0.8.18;
 
+
+import "../interfaces/IPausable.sol";
 import "../libraries/PausabilityLib.sol";
 import "../libraries/RolesManagementLib.sol";
-import "../../../interfaces/IPausable.sol";
 import "./BaseFacet.sol";
 
 contract PausabilityFacet is IPausable, BaseFacet {
