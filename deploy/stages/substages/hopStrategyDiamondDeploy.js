@@ -11,7 +11,8 @@ module.exports = async ({
     owner: deployer,
     facets: [
       "HopStrategyHarvestFaucet",
-      "HopStrategyStatsFaucet"
+      "HopStrategyStatsFaucet",
+      "HopStrategyInitializerFaucet"
     ],
     log: true,
     libraries: [
@@ -24,7 +25,7 @@ module.exports = async ({
     execute: {
       methodName: 'initialize',
       args: [
-        
+
       ]
     }
   });
