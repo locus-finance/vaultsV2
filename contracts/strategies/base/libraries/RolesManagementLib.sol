@@ -11,13 +11,11 @@ library RolesManagementLib {
 
     // roles to check with EOA
     bytes32 public constant PAUSER_ROLE = keccak256('PAUSER_ROLE');
-    bytes32 public constant AUTHORITY_ROLE = keccak256('AUTHORITY_ROLE');
-    bytes32 public constant DEPOSITEE_ROLE = keccak256('DEPOSITEE_ROLE');
+    bytes32 public constant AUTHORITY_ROLE = keccak256('STRATEGIST_ROLE');
     bytes32 public constant INITIALIZER_ROLE = keccak256('INITIALIZER_ROLE');
-    bytes32 public constant CUSTODIAL_MANAGER_ROLE = keccak256('CUSTODIAL_MANAGER_ROLE');
 
     // roles to check with smart-contracts
-    bytes32 public constant ALLOWED_TOKEN_ROLE = keccak256('ALLOWED_TOKEN_ROLE');
+    // bytes32 public constant ALLOWED_TOKEN_ROLE = keccak256('ALLOWED_TOKEN_ROLE');
 
     struct Storage {
         mapping(bytes32 => mapping(address => bool)) roles;
