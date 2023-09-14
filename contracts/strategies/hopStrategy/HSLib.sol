@@ -15,7 +15,7 @@ library HSLib {
 
     uint256 public constant MAX_BPS = 10000;
 
-    struct StorageMappings {
+    struct StorageReferenceTypes {
         mapping(address => uint256) someMapping;
     }
 
@@ -24,7 +24,7 @@ library HSLib {
     }
 
     struct Storage {
-        StorageMappings mappings;
+        StorageReferenceTypes mappings;
         StoragePrimitives primitives;
     }
 
