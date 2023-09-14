@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IHopStrategyStatsFaucet",
+  "sourceName": "contracts/strategies/hopStrategy/v1/interfaces/IHopStrategyStatsFaucet.sol",
+  "abi": [],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

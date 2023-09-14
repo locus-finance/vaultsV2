@@ -1,0 +1,10 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "HopStrategyStatsFaucet",
+  "sourceName": "contracts/strategies/hopStrategy/v1/HopStrategyStatsFaucet.sol",
+  "abi": [],
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220aaa8a357ebab282c535f5e0182bdda5d1f0114afa81a492892d00fd52d73883164736f6c63430008130033",
+  "deployedBytecode": "0x6080604052600080fdfea2646970667358221220aaa8a357ebab282c535f5e0182bdda5d1f0114afa81a492892d00fd52d73883164736f6c63430008130033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
