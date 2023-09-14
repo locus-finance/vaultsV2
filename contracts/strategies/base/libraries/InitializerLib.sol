@@ -29,10 +29,4 @@ library InitializerLib {
             get().initialized = true;
         }
     }
-
-    function enforceDelegatedOnly() internal view {
-        if (!get().initialized) {
-            revert BaseLib.DelegatedCallsOnly();
-        }
-    }
 }
