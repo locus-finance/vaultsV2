@@ -1,0 +1,53 @@
+{
+  "vaults": {
+    "Omnichain Vault": {
+      "chain": {
+        "nativeToken": "ETH",
+        "chainId": 10,
+        "name": "Optimism"
+      },
+      "wantTokenTicker": "USDC",
+      "wantTokenAddress": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
+      "address": "0x0CECa23490E9a9E60dC52d3A0D98FCA007C86113",
+      "decimals": "6",
+      "managementFee": "0.7",
+      "performanceFee": "5",
+      "strategies": {
+        "HopStrategy": {
+          "address": "0xE3a4D90D197eA5B0aCD7829C070A532250AD7177",
+          "network": "Arbitrum One",
+          "chainId": "42161",
+          "nativeToken": "ETH",
+          "wantTokenTicker": "USDC.e",
+          "wantTokenAddress": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
+          "protocols": [
+
+          ]
+        },
+        "PearlStrategy": {
+          "address": "0xa4e6a596d6df07e4c56c91695fE2F7Df1Ecc28c3",
+          "network": "Polygon",
+          "chainId": "137",
+          "nativeToken": "MATIC",
+          "wantTokenTicker": "USDC",
+          "wantTokenAddress": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+          "protocols": [
+
+          ]
+        },
+        "Velodrome": {
+          "address": " ",
+          "network": " ",
+          "chainId": "",
+          "nativeToken": " ",
+          "wantTokenTicker": " ",
+          "wantTokenAddress": " ",
+          "protocols": [
+
+          ]
+        }
+      }
+    }
+
+  }
+}
