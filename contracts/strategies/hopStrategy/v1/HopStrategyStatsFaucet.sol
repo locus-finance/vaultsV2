@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.18;
 
-contract HopStrategyStatsFaucet {
+import "./interfaces/IHopStrategyStatsFaucet.sol";
+
+contract HopStrategyStatsFaucet is IHopStrategyStatsFaucet {
     
 }
