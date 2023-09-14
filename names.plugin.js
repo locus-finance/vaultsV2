@@ -37,10 +37,10 @@ module.exports = async (hre) => {
   // );
   // 
   // There is also a support for Diamond (EIP 2535) contracts
-  // The "interface" key is for the name of the collective facets interface (could not be used to acquire an address),
-  // and the "proxy" key is for the Hardhat named multi-facet proxy contract name.
+  // The "interface" key is for the name of the collective facets interface (could not be utilized to acquire an address),
+  // and the "proxy" key is for the Hardhat named multi-facet proxy contract name (it could be utilized to acquire an address).
   // To differ the standard contract between diamond contract the collective interface should be prefixed with word "Diamond".
-  // Like: DiamondDiscountHub.sol
+  // Like: DiamondHopStrategy.sol
   // Example of the name usage:
   // const <diamond instance> = await ethers.getContractAt(
   //   hre.names.internal.diamonds.<diamond instance interface postfix>.interface,
