@@ -92,6 +92,12 @@ const getOracleSwapCalldata = async (getEnv, src, dst, from, amount, slippage, r
   return rawResult.data.tx.data;
 }
 
+const emptyStage = (message) => 
+  async ({deployments}) => {
+      const {log} = deployments;
+      log(message);
+  };
+
 module.exports = {
   skipIfAlreadyDeployed,
   withImpersonatedSigner,
@@ -101,5 +107,6 @@ module.exports = {
   getEventBody,
   sendLinkFromWhale,
   getOracleSwapCalldata,
-  getOracleQuote
+  getOracleQuote,
+  emptyStage
 };

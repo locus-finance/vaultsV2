@@ -11,7 +11,7 @@ import {OracleLibrary} from "@uniswap/v3-periphery/contracts/libraries/OracleLib
 import {IV3SwapRouter} from "../../integrations/uniswap/IV3SwapRouter.sol";
 import {IPearlRouter, IPearlPair} from "../../integrations/pearl/IPearlRouter.sol";
 
-import "../../strategies/utils/PearlStrategyLib.sol";
+import "../../strategies/original/utils/PearlStrategyLib.sol";
 import "../../interfaces/ISwapHelper.sol";
 
 contract EmergencyUniswapV3SwapHelper is ISwapHelper {

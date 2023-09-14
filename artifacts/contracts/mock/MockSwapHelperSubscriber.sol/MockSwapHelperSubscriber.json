@@ -1,0 +1,119 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "MockSwapHelperSubscriber",
+  "sourceName": "contracts/mock/MockSwapHelperSubscriber.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "SwapHelperOnly",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amountOut",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amountIn",
+          "type": "uint256"
+        }
+      ],
+      "name": "MockNotified",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "amountOut",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amountIn",
+          "type": "uint256"
+        }
+      ],
+      "name": "Notified",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "src",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "dst",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amountOut",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amountIn",
+          "type": "uint256"
+        }
+      ],
+      "name": "notifyCallback",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "swapHelper",
+      "outputs": [
+        {
+          "internalType": "contract IOraclizedSwapHelper",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b50610167806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80630fc6a11c1461003b578063f056dffe1461006a575b600080fd5b60005461004e906001600160a01b031681565b6040516001600160a01b03909116815260200160405180910390f35b61007d6100783660046100ef565b61007f565b005b81836001600160a01b0316856001600160a01b03167fa41fead51e95aa8ef7b9b8a86ce16608cc6288de4e973499e58730ab995bdb65846040516100c591815260200190565b60405180910390a450505050565b80356001600160a01b03811681146100ea57600080fd5b919050565b6000806000806080858703121561010557600080fd5b61010e856100d3565b935061011c602086016100d3565b9396939550505050604082013591606001359056fea26469706673582212209c2607cee8360b3c772bd2ee2129c3e618f01a1f49a6afd479004afec165a73364736f6c63430008130033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c80630fc6a11c1461003b578063f056dffe1461006a575b600080fd5b60005461004e906001600160a01b031681565b6040516001600160a01b03909116815260200160405180910390f35b61007d6100783660046100ef565b61007f565b005b81836001600160a01b0316856001600160a01b03167fa41fead51e95aa8ef7b9b8a86ce16608cc6288de4e973499e58730ab995bdb65846040516100c591815260200190565b60405180910390a450505050565b80356001600160a01b03811681146100ea57600080fd5b919050565b6000806000806080858703121561010557600080fd5b61010e856100d3565b935061011c602086016100d3565b9396939550505050604082013591606001359056fea26469706673582212209c2607cee8360b3c772bd2ee2129c3e618f01a1f49a6afd479004afec165a73364736f6c63430008130033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

@@ -65,7 +65,7 @@ module.exports = {
     localhost: {},
     hardhat: {
       forking: {
-        url: ARBITRUM_NODE
+        url: ETH_NODE
       }
     },
     mainnet: {
