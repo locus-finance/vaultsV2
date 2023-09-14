@@ -1,5 +1,6 @@
 const hre = require('hardhat');
 
+// Helper stage to turn addresses from the traceback into a human readable artifact names.
 module.exports = async ({
   getNamedAccounts,
   deployments
