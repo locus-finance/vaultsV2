@@ -6,7 +6,7 @@ module.exports = async ({
 }) => {
   const { diamond } = deployments;
   const { deployer } = await getNamedAccounts();
-  await diamond.deploy('DiscountHub', {
+  await diamond.deploy('HopStrategy', {
     from: deployer,
     owner: deployer,
     facets: [
