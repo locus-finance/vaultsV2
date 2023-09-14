@@ -15,17 +15,17 @@ library HSLib {
 
     uint256 public constant MAX_BPS = 10000;
 
-    struct StorageReferenceTypes {
+    struct ReferenceTypes {
         mapping(address => uint256) someMapping;
     }
 
-    struct StoragePrimitives {
+    struct Primitives {
         uint256 somePrimitive;
     }
 
     struct Storage {
-        StorageReferenceTypes mappings;
-        StoragePrimitives primitives;
+        ReferenceTypes rt; // SUCH SHORT NAME TO DECREASE ANNOYING REPEATS IN CODE 
+        Primitives p; // SUCH SHORT NAME TO DECREASE ANNOYING REPEATS IN CODE
     }
 
     function get() internal pure returns (Storage storage s) {
