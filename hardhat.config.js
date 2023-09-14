@@ -16,6 +16,9 @@ require("hardhat-tracer");
 require("./tasks");
 
 const fs = require("fs");
+const { extendEnvironment } = require("hardhat/config");
+
+extendEnvironment(require("./names.plugin"));
 
 const {
   DEPLOYER_PRIVATE_KEY,

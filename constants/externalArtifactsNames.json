@@ -1,0 +1,5 @@
+{
+    "routers": {
+        "uniswapV3": "SwapRouter"
+    }
+}
