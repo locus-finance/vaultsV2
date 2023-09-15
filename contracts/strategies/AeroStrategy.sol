@@ -97,8 +97,8 @@ contract AeroStrategy is Initializable, BaseStrategy {
             );
             _swapWantToDai(daiAmount);
             uint256 minAmountA = (usdcAmount * slippage) / 10000;
-            uint256 minAmountB = (IERC20(DAI).balanceOf(address(this)) *
-                slippage) / 10000;
+            uint256 minAmountB = (daiAmount) *
+                slippage / 10000;
             IVeloRouter(AERO_ROUTER).addLiquidity(
                 USDbC,
                 DAI,
@@ -106,7 +106,7 @@ contract AeroStrategy is Initializable, BaseStrategy {
                 usdcAmount,
                 IERC20(DAI).balanceOf(address(this)),
                 minAmountA,
-                0,
+                minAmountB,
                 address(this),
                 block.timestamp
             );
@@ -224,7 +224,7 @@ contract AeroStrategy is Initializable, BaseStrategy {
         (
             IVeloRouter(AERO_ROUTER).swapExactTokensForTokens(
                 amountToSell,
-                0,
+                amountOutMinimum,
                 routes,
                 address(this),
                 block.timestamp
@@ -272,7 +272,10 @@ contract AeroStrategy is Initializable, BaseStrategy {
 
     function _exitPosition(uint256 _stakedAmount) internal {
         _claimAndSellRewards();
-        uint256 amountLpToWithdraw = (_stakedAmount *
+        (uint256 usdcAmount, ) = _calculateTokenAmounts(
+                _stakedAmount
+            );
+        uint256 amountLpToWithdraw = (usdcAmount *
             IERC20(LP).totalSupply()) / IERC20(USDbC).balanceOf(LP);
         if (amountLpToWithdraw > balanceOfStaked()) {
             amountLpToWithdraw = balanceOfStaked();
