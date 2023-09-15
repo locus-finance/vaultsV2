@@ -23,6 +23,7 @@ const {
   ETH_NODE,
   OPTIMISM_NODE,
   ARBITRUM_NODE,
+  BASE_NODE
 } = process.env;
 
 task("fork_reset", "Reset to local fork", async (taskArgs) => {
@@ -65,7 +66,7 @@ module.exports = {
     localhost: {},
     hardhat: {
       forking: {
-        url: ARBITRUM_NODE
+        url: BASE_NODE
       }
     },
     mainnet: {
@@ -129,6 +130,12 @@ module.exports = {
       chainId: 42161,
       accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
     },
+    base: {
+      url: BASE_NODE,
+      chainId: 8453,
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
+
+    }
   },
   etherscan: {
     apiKey: {
