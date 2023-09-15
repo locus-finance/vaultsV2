@@ -1,6 +1,8 @@
 const { lazyObject } = require("hardhat/plugins");
 
 module.exports = async (hre) => {
+  // LICENCE: MIT
+  // Author: Oleg Bedrin <o.bedrin@locus.finance>
   // This is for the deploy artifacts stage management.
   // The Deployments space is used for dependency injection for deploy scripts and test/fixtures scripts.
   // Example: For fixtures we have to have different artifacts for LP interface and IPair interface but still
