@@ -3,7 +3,8 @@
 pragma solidity ^0.8.18;
 
 import "./interfaces/IHopStrategyHarvestFaucet.sol";
+import "../../base/facets/BaseFacet.sol";
 
-contract HopStrategyHarvestFaucet is IHopStrategyHarvestFaucet {
+contract HopStrategyHarvestFaucet is BaseFacet, IHopStrategyHarvestFaucet {
     
 }
