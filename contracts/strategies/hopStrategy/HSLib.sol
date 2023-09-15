@@ -11,7 +11,7 @@ import "../base/libraries/RolesManagementLib.sol";
 
 // look for the Diamond.sol in the hardhat-deploy/solc_0.8/Diamond.sol
 library HSLib {
-    bytes32 constant HOP_STRATEGY_STORAGE_POSITION = keccak256("diamond.standard.diamond.storage.discount_hub");
+    bytes32 constant HOP_STRATEGY_STORAGE_POSITION = keccak256("diamond.standard.diamond.storage.hop_strategy");
 
     uint256 public constant MAX_BPS = 10000;
 
