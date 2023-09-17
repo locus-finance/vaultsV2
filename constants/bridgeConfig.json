@@ -53,7 +53,7 @@
         "sgBridge": "0x0eAaDb50167702993fe0b4d5Cce7d6a3C1572109",
         "sgRouter": "0xB0D502E938ed5f4df2E681fE6E419ff29631d62b",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
-        "vault": "0x0CECa23490E9a9E60dC52d3A0D98FCA007C86113"
+        "vault": "0xe6d244b77cdb5fda68390676c65a1a8c1c72b611"
     },
     "polygon": {
         "chainId": 109,
@@ -64,7 +64,7 @@
         "sgBridge": "0x1f2833baCcF2C96a7A6D98bA42Ed8aDfCF68fa99",
         "sgRouter": "0x45A01E4e04F14f7A4a6702c74187c5F6222033cd",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
-        "TestStrategy": "0xa4e6a596d6df07e4c56c91695fE2F7Df1Ecc28c3"
+        "PearlStrategy": "0xc051345ada30e8c72a10df5462bb67479ec46c0b"
     },
     "arbitrumOne": {
         "chainId": 110,

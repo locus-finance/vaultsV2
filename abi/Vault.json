@@ -51,6 +51,7 @@
   "function revokeStrategy(uint16,address)",
   "function setConfig(uint16,uint16,uint256,bytes)",
   "function setEmergencyShutdown(bool)",
+  "function setGovernance(address)",
   "function setMinDstGas(uint16,uint16,uint256)",
   "function setPayloadSizeLimit(uint16,uint256)",
   "function setPrecrime(address)",
