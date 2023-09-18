@@ -75,6 +75,7 @@
         "sgBridge": "0x352d8275AAE3e0c2404d9f68f6cEE084B5bEB3DD",
         "sgRouter": "0x53Bf833A5d6c4ddA888F69c22C88C9f356a41614",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
+        "HopStrategy": "0x27Df001eA059a70532e30104E992E3D00883Dd90",
         "slippage": 9500
     }
 }

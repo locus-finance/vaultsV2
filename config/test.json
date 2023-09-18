@@ -8,13 +8,13 @@
       },
       "wantTokenTicker": "USDC",
       "wantTokenAddress": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
-      "address": "0x0CECa23490E9a9E60dC52d3A0D98FCA007C86113",
+      "address": "0xe6d244b77cdb5fda68390676c65a1a8c1c72b611",
       "decimals": "6",
       "managementFee": "0.7",
       "performanceFee": "5",
       "strategies": {
         "HopStrategy": {
-          "address": "0xE3a4D90D197eA5B0aCD7829C070A532250AD7177",
+          "address": "0x27Df001eA059a70532e30104E992E3D00883Dd90",
           "network": "Arbitrum One",
           "chainId": "42161",
           "nativeToken": "ETH",
