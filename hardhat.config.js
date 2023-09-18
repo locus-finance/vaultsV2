@@ -146,6 +146,7 @@ module.exports = {
       arbitrumGoerli: process.env.ARBISCAN_API_KEY,
       optimisticGoerli: process.env.OPTIMISM_API_KEY,
       goerli: process.env.ETHERSCAN_API_KEY,
+      base: process.env.BASESCAN_API_KEY,
       avalancheFujiTestnet: process.env.SNOWTRACE_API_KEY,
     },
   },
