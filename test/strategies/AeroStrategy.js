@@ -1,23 +1,16 @@
 const {
     loadFixture,
     mine,
-    time,
     reset,
+    time,
 } = require("@nomicfoundation/hardhat-network-helpers");
-const { ZERO_ADDRESS } = require("@openzeppelin/test-helpers/src/constants");
 const { expect } = require("chai");
 const { utils, BigNumber } = require("ethers");
-const { parseEther } = require("ethers/lib/utils");
 const { ethers } = require("hardhat");
-
 const { getEnv } = require("../scripts/utils");
-
 const IERC20_SOURCE = "@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20";
-
 const BASE_NODE = getEnv("BASE_NODE");
 const BASE_FORK_BLOCK = getEnv("BASE_FORK_BLOCK");
-
-// upgrades.silenceWarnings();
 
 describe("AeroStrategy", function () {
     const TOKENS = {
@@ -32,11 +25,9 @@ describe("AeroStrategy", function () {
             decimals: 18,
         },
         ETH: {
-            whale: "0xdd9176eA3E7559D6B68b537eF555D3e89403f742"
-        }
+            whale: "0xdd9176eA3E7559D6B68b537eF555D3e89403f742",
+        },
     };
-
-    // const STABLE_JOE_STAKING = "0x43646A8e839B2f2766392C1BF8f60F6e587B6960";
 
     async function deployContractAndSetVariables() {
         await reset(BASE_NODE, Number(BASE_FORK_BLOCK));
@@ -149,8 +140,14 @@ describe("AeroStrategy", function () {
         const { strategy } = await loadFixture(deployContractAndSetVariables);
         const oneUnit = utils.parseEther("1");
 
-        expect(Number(await strategy.LpToWant(oneUnit))).to.be.greaterThan(0);
-        expect(Number(await strategy.AeroToWant(oneUnit))).to.be.greaterThan(0);
+        expect(Number(await strategy.LpToWant(oneUnit))).to.be.closeTo(
+            ethers.utils.parseUnits("2000019", 6),
+            ethers.utils.parseUnits("100", 6)
+        );
+        expect(Number(await strategy.AeroToWant(oneUnit))).to.be.closeTo(
+            ethers.utils.parseUnits("0.051", 6),
+            ethers.utils.parseUnits("0.01", 6)
+        );
     });
 
     it("should harvest with a profit", async function () {
@@ -160,29 +157,21 @@ describe("AeroStrategy", function () {
 
         // Simulating whale depositing 1000 USDC into vault
         const balanceBefore = await want.balanceOf(whale.address);
-        console.log(balanceBefore);
         await vault.connect(whale)["deposit(uint256)"](balanceBefore);
         expect(await want.balanceOf(vault.address)).to.equal(balanceBefore);
         await strategy.connect(deployer).harvest();
-        console.log("HARVEST DONE");
         expect(await strategy.estimatedTotalAssets()).to.be.closeTo(
             balanceBefore,
             ethers.utils.parseUnits("10", 6)
         );
         // We are dropping some USDC to staking contract to simulate profit from JOE staking
         await dealTokensToAddress(whale.address, TOKENS.USDC, "1000");
-        console.log("PROBLEM");
         const deposit = await want.balanceOf(whale.address);
-        await ethers.provider.send('evm_increaseTime', [100 * 24 * 60 * 60])
-        console.log(deposit);
+        await time.increase(100 * 24 * 60 * 60);
         await vault.connect(whale)["deposit(uint256)"](deposit);
-        console.log("ANOTHER HARVEST 1");
         let tx = await strategy.connect(deployer).harvest();
-        console.log("ANOTHER HARVEST 1");
         await tx.wait();
-        // expect(Number(await strategy.rewardss())).to.be.greaterThan(0);
-        await ethers.provider.send('evm_increaseTime', [50 * 24 * 60 * 60])
-        console.log(1);
+        await time.increase(50 * 24 * 60 * 60);
         await strategy.connect(deployer).harvest();
 
         // Previous harvest indicated some profit and it was withdrawn to vault
@@ -194,14 +183,11 @@ describe("AeroStrategy", function () {
 
         // Vault reinvesing its profit back to strategy
         await strategy.connect(deployer).harvest();
-        console.log("GOOD JOB");
         expect(Number(await strategy.estimatedTotalAssets())).to.be.greaterThan(
             Number(balanceBefore)
         );
-        console.log("Assets", Number(await strategy.estimatedTotalAssets()));
         // Mining blocks for unlocking all profit so whale can withdraw
         mine(36000);
-        console.log(await vault.balanceOf(whale.address));
         await vault
             .connect(whale)
         ["withdraw(uint256,address,uint256)"](
@@ -209,7 +195,6 @@ describe("AeroStrategy", function () {
             whale.address,
             1000
         );
-        console.log("WITHDRAW DONE");
         expect(Number(await want.balanceOf(whale.address))).to.be.greaterThan(
             Number(balanceBefore)
         );
@@ -221,7 +206,6 @@ describe("AeroStrategy", function () {
         );
 
         const balanceBefore = await want.balanceOf(whale.address);
-        console.log(balanceBefore);
         await vault.connect(whale)["deposit(uint256)"](balanceBefore);
         expect(await want.balanceOf(vault.address)).to.equal(balanceBefore);
 
@@ -230,10 +214,8 @@ describe("AeroStrategy", function () {
             balanceBefore,
             ethers.utils.parseUnits("100", 6)
         );
-        console.log("WITHDRAW");
-        await ethers.provider.send('evm_increaseTime', [50 * 24 * 60 * 60])
+        await time.increase(50 * 24 * 60 * 60);
 
-        console.log(await vault.balanceOf(whale.address));
         await vault
             .connect(whale)
         ["withdraw(uint256,address,uint256)"](
@@ -241,26 +223,22 @@ describe("AeroStrategy", function () {
             whale.address,
             1000
         );
-        console.log("WITHDRAWED");
         expect(Number(await want.balanceOf(whale.address))).to.be.closeTo(
             balanceBefore,
             ethers.utils.parseUnits("100", 6)
         );
 
         const newWhaleBalance = await want.balanceOf(whale.address);
-        console.log(newWhaleBalance)
         await vault.connect(whale)["deposit(uint256)"](newWhaleBalance);
         expect(Number(await want.balanceOf(whale.address))).to.be.equal(0);
-        console.log("deposited");
-        await ethers.provider.send('evm_increaseTime', [50 * 24 * 60 * 60])
+        await time.increase(50 * 24 * 60 * 60);
 
         await strategy.harvest();
-        console.log("harvested");
         await dealTokensToAddress(strategy.address, TOKENS.USDC, "1000");
         await vault
             .connect(whale)
         ["withdraw(uint256,address,uint256)"](
-            (await vault.balanceOf(whale.address)),
+            await vault.balanceOf(whale.address),
             whale.address,
             1000
         );
@@ -284,7 +262,7 @@ describe("AeroStrategy", function () {
             balanceBefore,
             ethers.utils.parseUnits("100", 6)
         );
-        await ethers.provider.send('evm_increaseTime', [50 * 24 * 60 * 60])
+        await time.increase(50 * 24 * 60 * 60);
 
         await strategy.connect(deployer).tend();
 
@@ -341,9 +319,9 @@ describe("AeroStrategy", function () {
             ethers.utils.parseUnits("100", 6)
         );
 
-        const JOEStrategy = await ethers.getContractFactory("AeroStrategy");
+        const NewAeroStrategy = await ethers.getContractFactory("AeroStrategy");
         const newStrategy = await upgrades.deployProxy(
-            JOEStrategy,
+            NewAeroStrategy,
             [vault.address, deployer.address],
             {
                 initializer: "initialize",
@@ -370,34 +348,27 @@ describe("AeroStrategy", function () {
         expect(Number(await want.balanceOf(strategy.address))).to.be.equal(0);
         expect(Number(await strategy.balanceOfStaked())).to.be.equal(0);
         expect(Number(await newStrategy.balanceOfStaked())).to.be.equal(0);
-        console.log(1);
 
         expect(Number(await want.balanceOf(newStrategy.address))).to.be.closeTo(
             balanceBefore,
             ethers.utils.parseUnits("100", 6)
-
         );
-        console.log(1);
 
         expect(Number(await strategy.balanceOfWant())).to.be.equal(0);
-        console.log(1);
         expect(Number(await newStrategy.balanceOfWant())).to.be.closeTo(
             balanceBefore,
             ethers.utils.parseUnits("100", 6)
         );
-        console.log(1);
         await newStrategy.harvest();
 
         expect(Number(await strategy.balanceOfStaked())).to.be.equal(0);
-        expect(BigNumber.from(await newStrategy.balanceOfStaked())).to.be.closeTo(
+        expect(
+            BigNumber.from(await newStrategy.balanceOfStaked())
+        ).to.be.closeTo(
             BigNumber.from(joeStaked),
             ethers.utils.parseUnits("1", 18)
         );
     });
-
-
-
-
 
     it("should withdraw on vault shutdown", async function () {
         const { vault, strategy, whale, deployer, want } = await loadFixture(
@@ -428,5 +399,4 @@ describe("AeroStrategy", function () {
             ethers.utils.parseUnits("100", 6)
         );
     });
-
 });
