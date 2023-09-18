@@ -89,6 +89,10 @@ contract Vault is
         emergencyShutdown = _emergencyShutdown;
     }
 
+    function setGovernance(address _newGovernance) external onlyAuthorized() {
+        governance = _newGovernance;
+    }
+
     function totalAssets() public view override returns (uint256) {
         return totalDebt + totalIdle();
     }

@@ -5,47 +5,38 @@ const { vaultChain } = require("../utils");
 
 const TOKEN = "USDC";
 
-//!Form config
+module.exports = async function ({ getNamedAccounts }) {
+    const { deployer } = await getNamedAccounts();
 
-async function deployHopStrategy() {
-  const { deployer } = await getNamedAccounts();
+    console.log(`Your address: ${deployer}. Network: ${hre.network.name}`);
 
-  console.log(`Your address: ${deployer}. Network: ${hre.network.name}`);
+    const config = bridgeConfig[hre.network.name];
+    const vaultConfig = bridgeConfig[vaultChain(hre.network.name)];
+    const HopStrategy = await ethers.getContractFactory("HopStrategy");
+    const hopStrategy = await upgrades.deployProxy(
+        HopStrategy,
+        [
+            config.lzEndpoint,
+            deployer,
+            config[TOKEN].address,
+            vaultConfig.vault,
+            vaultConfig.chainId,
+            config.chainId,
+            config.sgBridge,
+            config.sgRouter,
+        ],
+        {
+            initializer: "initialize",
+            kind: "transparent",
+        }
+    );
+    await hopStrategy.deployed();
 
-  const config = bridgeConfig["arbitrumOne"];
-  const vaultConfig = bridgeConfig[vaultChain("arbitrumOne")];
-  const HopStrategy = await ethers.getContractFactory("HopStrategy");
-  const hopStrategy = await upgrades.deployProxy(
-    HopStrategy,
-    [
-      config.lzEndpoint,
-      deployer,
-      config[TOKEN].address,
-      vaultConfig.vault,
-      vaultConfig.chainId,
-      config.sgBridge,
-      config.sgRouter,
-      config.slippage,
-    ],
-    {
-      initializer: "initialize",
-      kind: "transparent",
-    }
-  );
-  await hopStrategy.deployed();
+    console.log("HopStrategy deployed to:", hopStrategy.address);
 
-  console.log("hopStrategy deployed to:", hopStrategy.address);
-
-  await hre.run("verify:verify", {
-    address: hopStrategy.address,
-  });
-}
+    await hre.run("verify:verify", {
+        address: hopStrategy.address,
+    });
+};
 
 module.exports.tags = ["HopStrategy"];
-
-deployHopStrategy()
-  .catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  })
-  .then(() => { });
