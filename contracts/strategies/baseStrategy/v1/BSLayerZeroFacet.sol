@@ -3,7 +3,7 @@
 pragma solidity ^0.8.18;
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
 import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
 
@@ -11,7 +11,6 @@ import {IStrategyMessages} from "../../../interfaces/IStrategyMessages.sol";
 
 import "./interfaces/IBSLiquidatePositionFacet.sol";
 import "./interfaces/IBSPrepareMigrationFacet.sol";
-import "./interfaces/IBSHandleWithdrawSomeRequestFacet.sol";
 import "./interfaces/IBSAdjustPositionFacet.sol";
 import "./interfaces/IBSLayerZeroFacet.sol";
 import "./interfaces/IBSStargateFacet.sol";
@@ -24,25 +23,26 @@ import "../BSLib.sol";
 contract BSLayerZeroFacet is
     IBSLayerZeroFacet,
     NonblockingLzAppUpgradeable,
-    BaseFacet
+    BaseFacet,
+    IStrategyMessages
 {
     using BytesLib for bytes;
-    using SafeERC20 for IERC20Metadata;
+    using SafeERC20 for IERC20;
 
     function _initialize(address _lzEndpoint) external override internalOnly {
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
     }
 
     function sendMessageToVault(bytes memory _payload) public override internalOnly {
-        BSLib.Storage.Primitives memory p = BSLib.get().p;
+        BSLib.Primitives memory p = BSLib.get().p;
 
         bytes memory remoteAndLocalAddresses = abi.encodePacked(
             p.vault,
             address(this)
         );
 
-        // version = 1, gasForDestinationLzReceive = 1_000_000;
-        bytes memory adapterParams = abi.encodePacked(1, 1_000_000);
+        // uint16 version = 1, uint256 gasForDestinationLzReceive = 1_000_000;
+        bytes memory adapterParams = abi.encodePacked(uint16(1), uint256(1_000_000));
 
         (uint256 nativeFee, ) = lzEndpoint.estimateFees(
             p.vaultChainId,
@@ -71,7 +71,7 @@ contract BSLayerZeroFacet is
         bytes calldata _srcAddress,
         uint64 _nonce,
         bytes calldata _payload
-    ) external virtual override delegatedOnly {
+    ) public virtual override delegatedOnly {
         address sender = _msgSender();
         if (sender != address(lzEndpoint)) {
             revert InvalidEndpointCaller(sender);
@@ -92,7 +92,7 @@ contract BSLayerZeroFacet is
         bytes memory _payload
     ) internal override {
         // Specified `memory` cause there are only read-only operations.
-        BSLib.Storage.Primitives memory p = BSLib.get().p;
+        BSLib.Primitives memory p = BSLib.get().p;
 
         if (_srcChainId != p.vaultChainId) {
             revert VaultChainIdMismatch(_srcChainId, p.vaultChainId);
@@ -115,7 +115,7 @@ contract BSLayerZeroFacet is
                 _payload,
                 (uint256, AdjustPositionRequest)
             );
-            IBSAdjustPosition(address(this)).adjustPosition(
+            IBSAdjustPositionFacet(address(this)).adjustPosition(
                 request.debtOutstanding
             );
             emit BSLib.AdjustedPosition(request.debtOutstanding);
@@ -139,13 +139,14 @@ contract BSLayerZeroFacet is
     function _handleWithdrawSomeRequest(
         WithdrawSomeRequest memory _request
     ) internal {
-        BSLib.Storage.ReferenceTypes storage rt = BSLib.get().rt;
+        BSLib.ReferenceTypes storage rt = BSLib.get().rt;
+        BSLib.Primitives memory p = BSLib.get().p;
 
         if (rt.withdrawnInEpoch[_request.id]) {
             revert AlreadyWithdrawn();
         }
 
-        (uint256 liquidatedAmount, uint256 loss) = IBSLiquidatePosition(
+        (uint256 liquidatedAmount, uint256 loss) = IBSLiquidatePositionFacet(
             address(this)
         ).liquidatePosition(_request.amount);
 
@@ -162,8 +163,8 @@ contract BSLayerZeroFacet is
         if (liquidatedAmount > 0) {
             IBSStargateFacet(address(this)).bridge(
                 liquidatedAmount,
-                vaultChainId,
-                vault,
+                p.vaultChainId,
+                p.vault,
                 payload
             );
         } else {

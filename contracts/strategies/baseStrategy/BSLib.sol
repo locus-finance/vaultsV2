@@ -4,10 +4,10 @@ pragma solidity ^0.8.18;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import "../base/libraries/BaseLib.sol";
-import "../base/libraries/InitializerLib.sol";
-import "../base/libraries/PausabilityLib.sol";
-import "../base/libraries/RolesManagementLib.sol";
+import "../diamondBase/libraries/BaseLib.sol";
+import "../diamondBase/libraries/InitializerLib.sol";
+import "../diamondBase/libraries/PausabilityLib.sol";
+import "../diamondBase/libraries/RolesManagementLib.sol";
 
 import {ISgBridge} from "../../interfaces/ISgBridge.sol";
 import {IStargateRouter} from "../../integrations/stargate/IStargate.sol";
@@ -36,7 +36,7 @@ library BSLib {
         bool emergencyExit;
         ISgBridge sgBridge;
         IStargateRouter sgRouter;
-        uint256 _signNonce;
+        uint256 signNonce;
     }
 
     struct Storage {

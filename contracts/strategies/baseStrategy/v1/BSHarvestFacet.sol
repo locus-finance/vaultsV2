@@ -6,7 +6,12 @@ import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 import {IStrategyMessages} from "../../../interfaces/IStrategyMessages.sol";
 
+import "./interfaces/IBSUtilsFacet.sol";
+import "./interfaces/IBSLiquidatePositionFacet.sol";
 import "./interfaces/IBSHarvestFacet.sol";
+import "./interfaces/IBSStargateFacet.sol";
+import "./interfaces/IBSStatsFacet.sol";
+import "./interfaces/IBSLayerZeroFacet.sol";
 import "../../diamondBase/facets/BaseFacet.sol";
 import "../../diamondBase/libraries/RolesManagementLib.sol";
 import "../BSLib.sol";
@@ -21,7 +26,7 @@ contract BSHarvestFacet is BaseFacet, IBSHarvestFacet {
     ) external override delegatedOnly {
         RolesManagementLib.enforceSenderRole(RolesManagementLib.STRATEGIST_ROLE);
         
-        BSLib.Storage.Primitives storage p = BSLib.get().p;
+        BSLib.Primitives storage p = BSLib.get().p;
 
         IBSUtilsFacet(address(this)).verifySignature(_signature);
 

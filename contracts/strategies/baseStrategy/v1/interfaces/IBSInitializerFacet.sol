@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.18;
 
-import "@openzeppelin/contract/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IBSInitializerFacet {
     function __BaseStrategy_init(

@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.18;
 
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "./interfaces/IBSManagementFacet.sol";
@@ -10,14 +11,21 @@ import "../../diamondBase/facets/BaseFacet.sol";
 import "../BSLib.sol";
 
 contract BSManagementFacet is BaseFacet, IBSManagementFacet {
+    using SafeERC20 for IERC20;
+
+    function setStrategist(address _newStrategist) external override {
+        RolesManagementLib.enforceSenderRole(RolesManagementLib.OWNER_ROLE);
+        BSLib.get().p.strategist = _newStrategist;
+    }
+
     function setEmergencyExit(bool _emergencyExit) external override {
         RolesManagementLib.enforceSenderRole(RolesManagementLib.STRATEGIST_ROLE);
-        emergencyExit = _emergencyExit;
+        BSLib.get().p.emergencyExit = _emergencyExit;
     }
 
     function setSlippage(uint256 _slippage) external override {
         RolesManagementLib.enforceSenderRole(RolesManagementLib.STRATEGIST_ROLE);
-        slippage = _slippage;
+        BSLib.get().p.slippage = _slippage;
     }
 
     function sweepToken(IERC20 _token) external override {

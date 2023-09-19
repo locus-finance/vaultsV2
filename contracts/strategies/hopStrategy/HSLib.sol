@@ -4,10 +4,10 @@ pragma solidity ^0.8.18;
 
 import "hardhat-deploy/solc_0.8/diamond/libraries/LibDiamond.sol";
 
-import "../base/libraries/BaseLib.sol";
-import "../base/libraries/InitializerLib.sol";
-import "../base/libraries/PausabilityLib.sol";
-import "../base/libraries/RolesManagementLib.sol";
+import "../diamondBase/libraries/BaseLib.sol";
+import "../diamondBase/libraries/InitializerLib.sol";
+import "../diamondBase/libraries/PausabilityLib.sol";
+import "../diamondBase/libraries/RolesManagementLib.sol";
 
 // look for the Diamond.sol in the hardhat-deploy/solc_0.8/Diamond.sol
 library HSLib {

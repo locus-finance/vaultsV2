@@ -32,11 +32,11 @@ contract BSStargateFacet is
         address _dest,
         bytes memory _payload
     ) external override internalOnly {
-        BSLib.Storage.Primitives memory p = BSLib.get().p;
+        BSLib.Primitives memory p = BSLib.get().p;
 
         uint256 fee = p.sgBridge.feeForBridge(_destChainId, _dest, _payload);
         p.sgBridge.bridge{value: fee}(
-            address(p.want)
+            address(p.want),
             _amount,
             _destChainId,
             _dest,
@@ -52,7 +52,7 @@ contract BSStargateFacet is
         uint256 _amountLD,
         bytes memory
     ) external override delegatedOnly {
-        BSLib.Storage.Primitives memory p = BSLib.get().p;
+        BSLib.Primitives memory p = BSLib.get().p;
         
         if (msg.sender != address(p.sgRouter) && msg.sender != address(p.sgBridge)) {
             revert RouterOrBridgeOnly();

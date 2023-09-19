@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.18;
 
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+
 import "./interfaces/IBSUtilsFacet.sol";
 import "../../diamondBase/facets/BaseFacet.sol";
 import "../BSLib.sol";
@@ -9,7 +11,7 @@ import "../BSLib.sol";
 contract BSUtilsFacet is BaseFacet, IBSUtilsFacet {
     function getEthSignedMessageHash(
         bytes32 _messageHash
-    ) public override pure delegatedOnly returns (bytes32) {
+    ) public override view delegatedOnly returns (bytes32) {
         return
             keccak256(
                 abi.encodePacked(
@@ -20,7 +22,7 @@ contract BSUtilsFacet is BaseFacet, IBSUtilsFacet {
     }
 
     function strategistSignMessageHash() public override view delegatedOnly returns (bytes32) {
-        BSLib.Storage.Primitives memory p = BSLib.get().p;
+        BSLib.Primitives memory p = BSLib.get().p;
         return
             keccak256(
                 abi.encodePacked(address(this), p.signNonce, p.currentChainId)
@@ -31,7 +33,7 @@ contract BSUtilsFacet is BaseFacet, IBSUtilsFacet {
         bytes32 messageHash = strategistSignMessageHash();
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
 
-        if (ECDSA.recover(ethSignedMessageHash, _signature) != strategist) {
+        if (ECDSA.recover(ethSignedMessageHash, _signature) != BSLib.get().p.strategist) {
             revert InvalidSignature();
         }
     }
@@ -43,7 +45,7 @@ contract BSUtilsFacet is BaseFacet, IBSUtilsFacet {
     function withSlippage(
         uint256 _amount,
         uint256 _slippage
-    ) external override pure returns delegatedOnly (uint256) {
+    ) external override view delegatedOnly returns (uint256) {
         return (_amount * _slippage) / BSLib.MAX_BPS;
     }
 }

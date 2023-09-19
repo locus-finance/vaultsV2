@@ -16,4 +16,6 @@ interface IBSManagementFacet {
     function clearWant() external;
 
     function callMe(uint256 epoch) external;
+
+    function setStrategist(address _newStrategist) external;
 }

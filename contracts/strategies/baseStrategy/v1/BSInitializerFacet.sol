@@ -8,11 +8,12 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {ISgBridge} from "../../../interfaces/ISgBridge.sol";
 import {IStargateRouter} from "../../../integrations/stargate/IStargate.sol";
 
-import "./interfaces/IBaseStrategyInitializerFacet.sol";
+import "./interfaces/IBSLayerZeroFacet.sol";
+import "./interfaces/IBSInitializerFacet.sol";
 import "../../diamondBase/facets/BaseFacet.sol";
 import "../BSLib.sol";
 
-contract BSInitializerFacet is BaseFacet, IBaseStrategyInitializerFacet {
+contract BSInitializerFacet is BaseFacet, IBSInitializerFacet {
     function __BaseStrategy_init(
         address _lzEndpoint,
         address _strategist,
@@ -24,7 +25,7 @@ contract BSInitializerFacet is BaseFacet, IBaseStrategyInitializerFacet {
         address _sgRouter,
         uint256 _slippage
     ) external override internalOnly {
-        BSLib.Storage.Primitives storage p = BSLib.get().p;
+        BSLib.Primitives storage p = BSLib.get().p;
 
         IBSLayerZeroFacet(address(this))._initialize(_lzEndpoint);
         p.strategist = _strategist;
@@ -32,12 +33,12 @@ contract BSInitializerFacet is BaseFacet, IBaseStrategyInitializerFacet {
         p.vaultChainId = _vaultChainId;
         p.vault = _vault;
         p.slippage = _slippage;
-        p.wantDecimals = IERC20Metadata(address(want)).decimals();
+        p.wantDecimals = IERC20Metadata(address(_want)).decimals();
         p.signNonce = 0;
         p.currentChainId = _currentChainId;
         p.sgBridge = ISgBridge(_sgBridge);
         p.sgRouter = IStargateRouter(_sgRouter);
 
-        want.approve(_sgBridge, type(uint256).max);
+        p.want.approve(_sgBridge, type(uint256).max);
     }
 }
