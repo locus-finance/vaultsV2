@@ -6,8 +6,8 @@ import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 import {IStrategyMessages} from "../../../interfaces/IStrategyMessages.sol";
 
+import "./interfaces/forSpecificStrategies/IBSLiquidatePositionFacet.sol";
 import "./interfaces/IBSUtilsFacet.sol";
-import "./interfaces/IBSLiquidatePositionFacet.sol";
 import "./interfaces/IBSHarvestFacet.sol";
 import "./interfaces/IBSStargateFacet.sol";
 import "./interfaces/IBSStatsFacet.sol";

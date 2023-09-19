@@ -9,9 +9,9 @@ import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/Nonbloc
 
 import {IStrategyMessages} from "../../../interfaces/IStrategyMessages.sol";
 
-import "./interfaces/IBSLiquidatePositionFacet.sol";
-import "./interfaces/IBSPrepareMigrationFacet.sol";
-import "./interfaces/IBSAdjustPositionFacet.sol";
+import "./interfaces/forSpecificStrategies/IBSLiquidatePositionFacet.sol";
+import "./interfaces/forSpecificStrategies/IBSPrepareMigrationFacet.sol";
+import "./interfaces/forSpecificStrategies/IBSAdjustPositionFacet.sol";
 import "./interfaces/IBSLayerZeroFacet.sol";
 import "./interfaces/IBSStargateFacet.sol";
 import "../../diamondBase/facets/BaseFacet.sol";
