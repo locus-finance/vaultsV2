@@ -2,12 +2,10 @@
 
 pragma solidity ^0.8.18;
 
-import "hardhat-deploy/solc_0.8/diamond/UsingDiamondOwner.sol";
-
 import "../libraries/InitializerLib.sol";
 import "../libraries/BaseLib.sol";
 
-abstract contract BaseFacet is UsingDiamondOwner {
+abstract contract BaseFacet {
     /// @dev An address of the actual contract instance. The original address as part of the context.
     address internal immutable __self = address(this);
 
