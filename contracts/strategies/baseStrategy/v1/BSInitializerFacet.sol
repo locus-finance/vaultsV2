@@ -10,6 +10,7 @@ import {IStargateRouter} from "../../../integrations/stargate/IStargate.sol";
 
 import "./interfaces/IBaseStrategyInitializerFacet.sol";
 import "../../diamondBase/facets/BaseFacet.sol";
+import "../BSLib.sol";
 
 contract BSInitializerFacet is BaseFacet, IBaseStrategyInitializerFacet {
     function __BaseStrategy_init(
@@ -23,17 +24,19 @@ contract BSInitializerFacet is BaseFacet, IBaseStrategyInitializerFacet {
         address _sgRouter,
         uint256 _slippage
     ) external override internalOnly {
+        BSLib.Storage.Primitives storage p = BSLib.get().p;
+
         IBSLayerZeroFacet(address(this))._initialize(_lzEndpoint);
-        strategist = _strategist;
-        want = _want;
-        vaultChainId = _vaultChainId;
-        vault = _vault;
-        slippage = _slippage;
-        wantDecimals = IERC20Metadata(address(want)).decimals();
-        _signNonce = 0;
-        currentChainId = _currentChainId;
-        sgBridge = ISgBridge(_sgBridge);
-        sgRouter = IStargateRouter(_sgRouter);
+        p.strategist = _strategist;
+        p.want = _want;
+        p.vaultChainId = _vaultChainId;
+        p.vault = _vault;
+        p.slippage = _slippage;
+        p.wantDecimals = IERC20Metadata(address(want)).decimals();
+        p.signNonce = 0;
+        p.currentChainId = _currentChainId;
+        p.sgBridge = ISgBridge(_sgBridge);
+        p.sgRouter = IStargateRouter(_sgRouter);
 
         want.approve(_sgBridge, type(uint256).max);
     }
