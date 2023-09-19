@@ -9,7 +9,7 @@ import "../BSLib.sol";
 contract BSUtilsFacet is BaseFacet, IBSUtilsFacet {
     function getEthSignedMessageHash(
         bytes32 _messageHash
-    ) public override pure returns (bytes32) {
+    ) public override pure delegatedOnly returns (bytes32) {
         return
             keccak256(
                 abi.encodePacked(
@@ -19,7 +19,7 @@ contract BSUtilsFacet is BaseFacet, IBSUtilsFacet {
             );
     }
 
-    function strategistSignMessageHash() public override view returns (bytes32) {
+    function strategistSignMessageHash() public override view delegatedOnly returns (bytes32) {
         BSLib.Storage.Primitives memory p = BSLib.get().p;
         return
             keccak256(
@@ -27,14 +27,23 @@ contract BSUtilsFacet is BaseFacet, IBSUtilsFacet {
             );
     }
 
-    function withSlippage(uint256 _amount) external override view returns (uint256) {
-        return (_amount * slippage) / BSLib.MAX_BPS;
+    function verifySignature(bytes memory _signature) external override view delegatedOnly {
+        bytes32 messageHash = strategistSignMessageHash();
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
+
+        if (ECDSA.recover(ethSignedMessageHash, _signature) != strategist) {
+            revert InvalidSignature();
+        }
+    }
+
+    function withSlippage(uint256 _amount) external override view delegatedOnly returns (uint256) {
+        return (_amount * BSLib.get().p.slippage) / BSLib.MAX_BPS;
     }
 
     function withSlippage(
         uint256 _amount,
         uint256 _slippage
-    ) external override pure returns (uint256) {
+    ) external override pure returns delegatedOnly (uint256) {
         return (_amount * _slippage) / BSLib.MAX_BPS;
     }
 }

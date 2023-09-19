@@ -24,14 +24,65 @@ import "../BSLib.sol";
 contract BSLayerZeroFacet is
     IBSLayerZeroFacet,
     NonblockingLzAppUpgradeable,
-    BaseFacet,
-    IStrategyMessages
+    BaseFacet
 {
     using BytesLib for bytes;
     using SafeERC20 for IERC20Metadata;
 
     function _initialize(address _lzEndpoint) external override internalOnly {
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
+    }
+
+    function sendMessageToVault(bytes memory _payload) public override internalOnly {
+        BSLib.Storage.Primitives memory p = BSLib.get().p;
+
+        bytes memory remoteAndLocalAddresses = abi.encodePacked(
+            p.vault,
+            address(this)
+        );
+
+        // version = 1, gasForDestinationLzReceive = 1_000_000;
+        bytes memory adapterParams = abi.encodePacked(1, 1_000_000);
+
+        (uint256 nativeFee, ) = lzEndpoint.estimateFees(
+            p.vaultChainId,
+            address(this),
+            _payload,
+            false,
+            adapterParams
+        );
+
+        if (address(this).balance < nativeFee) {
+            revert InsufficientFunds(nativeFee, address(this).balance);
+        }
+
+        lzEndpoint.send{value: nativeFee}(
+            p.vaultChainId,
+            remoteAndLocalAddresses,
+            _payload,
+            payable(address(this)),
+            address(this),
+            adapterParams
+        );
+    }
+
+    function lzReceive(
+        uint16 _srcChainId,
+        bytes calldata _srcAddress,
+        uint64 _nonce,
+        bytes calldata _payload
+    ) external virtual override delegatedOnly {
+        address sender = _msgSender();
+        if (sender != address(lzEndpoint)) {
+            revert InvalidEndpointCaller(sender);
+        }
+        _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
+    }
+
+    function _handleMigrationRequest(address _newStrategy) internal {
+        IERC20 want = BSLib.get().p.want;
+        IBSPrepareMigrationFacet(address(this)).prepareMigration(_newStrategy);
+        want.safeTransfer(_newStrategy, want.balanceOf(address(this)));
     }
 
     function _nonblockingLzReceive(
@@ -116,61 +167,9 @@ contract BSLayerZeroFacet is
                 payload
             );
         } else {
-            _sendMessageToVault(payload);
+            sendMessageToVault(payload);
         }
 
         rt.withdrawnInEpoch[_request.id] = true;
-    }
-
-    function _handleMigrationRequest(address _newStrategy) internal {
-        IERC20 want = BSLib.get().p.want;
-        IBSPrepareMigrationFacet(address(this)).prepareMigration(_newStrategy);
-        want.safeTransfer(_newStrategy, want.balanceOf(address(this)));
-    }
-
-    function _sendMessageToVault(bytes memory _payload) internal {
-        BSLib.Storage.Primitives memory p = BSLib.get().p;
-
-        bytes memory remoteAndLocalAddresses = abi.encodePacked(
-            p.vault,
-            address(this)
-        );
-
-        // version = 1, gasForDestinationLzReceive = 1_000_000;
-        bytes memory adapterParams = abi.encodePacked(1, 1_000_000);
-
-        (uint256 nativeFee, ) = lzEndpoint.estimateFees(
-            p.vaultChainId,
-            address(this),
-            _payload,
-            false,
-            adapterParams
-        );
-
-        if (address(this).balance < nativeFee) {
-            revert InsufficientFunds(nativeFee, address(this).balance);
-        }
-
-        lzEndpoint.send{value: nativeFee}(
-            p.vaultChainId,
-            remoteAndLocalAddresses,
-            _payload,
-            payable(address(this)),
-            address(this),
-            adapterParams
-        );
-    }
-
-    function lzReceive(
-        uint16 _srcChainId,
-        bytes calldata _srcAddress,
-        uint64 _nonce,
-        bytes calldata _payload
-    ) external virtual override delegatedOnly {
-        address sender = _msgSender();
-        if (sender != address(lzEndpoint)) {
-            revert InvalidEndpointCaller(sender);
-        }
-        _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
 }

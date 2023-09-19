@@ -11,4 +11,5 @@ interface IBSLayerZeroFacet {
     error IncorrectMessageType(uint256 messageType);
 
     function _initialize(address _lzEndpoint) external;
+    function sendMessageToVault(bytes memory _payload) external;
 }
