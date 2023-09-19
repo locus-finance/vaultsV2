@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.18;
 
-import "./BaseLib.sol";
-
 library InitializerLib {
+    error AlreadyInitialized();
+
     bytes32 constant INITIALIZER_STORAGE_POSITION = keccak256("diamond.standard.diamond.storage.locus.initializer");
 
     struct Storage {
@@ -24,7 +24,7 @@ library InitializerLib {
 
     function initialize() internal {
         if (get().initialized) {
-            revert BaseLib.AlreadyInitialized();
+            revert AlreadyInitialized();
         } else {
             get().initialized = true;
         }

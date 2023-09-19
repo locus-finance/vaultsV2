@@ -13,8 +13,13 @@ import {ISgBridge} from "../../interfaces/ISgBridge.sol";
 import {IStargateRouter} from "../../integrations/stargate/IStargate.sol";
 
 // look for the Diamond.sol in the hardhat-deploy/solc_0.8/Diamond.sol
-library HSLib {
+library BSLib {
+    event StrategyMigrated(address newStrategy);
+    event AdjustedPosition(uint256 debtOutstanding);
+
     bytes32 constant BASE_STRATEGY_STORAGE_POSITION = keccak256("diamond.standard.diamond.storage.base_strategy");
+
+    uint256 public constant MAX_BPS = 10000;
 
     struct ReferenceTypes {
         mapping(uint256 => bool) withdrawnInEpoch;

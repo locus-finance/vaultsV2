@@ -13,8 +13,6 @@ import "../base/libraries/RolesManagementLib.sol";
 library HSLib {
     bytes32 constant HOP_STRATEGY_STORAGE_POSITION = keccak256("diamond.standard.diamond.storage.hop_strategy");
 
-    uint256 public constant MAX_BPS = 10000;
-
     struct ReferenceTypes {
         mapping(address => uint256) someMapping;
     }

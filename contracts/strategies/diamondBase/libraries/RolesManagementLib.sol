@@ -2,17 +2,17 @@
 
 pragma solidity ^0.8.18;
 
-import "hardhat-deploy/solc_0.8/diamond/libraries/LibDiamond.sol";
-
 import "./BaseLib.sol";
 
 library RolesManagementLib {
+    error HasNoRole(address who, bytes32 role);
+
     bytes32 constant ROLES_MANAGEMENT_STORAGE_POSITION = keccak256("diamond.standard.diamond.storage.locus.roles");
 
     // roles to check with EOA
     bytes32 public constant PAUSER_ROLE = keccak256('PAUSER_ROLE');
-    bytes32 public constant AUTHORITY_ROLE = keccak256('STRATEGIST_ROLE');
-    bytes32 public constant INITIALIZER_ROLE = keccak256('INITIALIZER_ROLE');
+    bytes32 public constant STRATEGIST_ROLE = keccak256('STRATEGIST_ROLE');
+    bytes32 public constant OWNER_ROLE = keccak256('OWNER_ROLE');
 
     // roles to check with smart-contracts
     // bytes32 public constant ALLOWED_TOKEN_ROLE = keccak256('ALLOWED_TOKEN_ROLE');
@@ -30,7 +30,7 @@ library RolesManagementLib {
 
     function enforceRole(address who, bytes32 role) internal view {
         if (!get().roles[role][who]) {
-            revert BaseLib.HasNoRole(who, role);
+            revert HasNoRole(who, role);
         }
     }
 
