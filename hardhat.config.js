@@ -151,6 +151,16 @@ module.exports = {
       base: process.env.BASESCAN_API_KEY,
       avalancheFujiTestnet: process.env.SNOWTRACE_API_KEY,
     },
+    customChains: [
+      {
+        network: "base",
+        chainId: 8453,
+        urls: {
+          apiURL: "https://api.basescan.org/api",
+          browserURL: "https://basescan.org/"
+        }
+      }
+    ]
   },
   gasReporter: {
     enable: true,

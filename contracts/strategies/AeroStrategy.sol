@@ -16,6 +16,8 @@ import "../integrations/velo/IVeloGauge.sol";
 contract AeroStrategy is Initializable, BaseStrategy {
     using SafeERC20 for IERC20;
 
+    uint256 public constant DEFAULT_SLIPPAGE = 9_800;
+
     address internal constant AERO_ROUTER =
         0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43;
     address internal constant AERO_GAUGE =
@@ -35,9 +37,9 @@ contract AeroStrategy is Initializable, BaseStrategy {
         IERC20 _want,
         address _vault,
         uint16 _vaultChainId,
+        uint16 _currentChainId,
         address _sgBridge,
-        address _sgRouter,
-        uint256 _slippage
+        address _router
     ) external initializer {
         __BaseStrategy_init(
             _lzEndpoint,
@@ -45,10 +47,10 @@ contract AeroStrategy is Initializable, BaseStrategy {
             _want,
             _vault,
             _vaultChainId,
-            uint16(block.chainid),
+            _currentChainId,
             _sgBridge,
-            _sgRouter,
-            _slippage
+            _router,
+            DEFAULT_SLIPPAGE
         );
         IERC20(USDbC).safeApprove(AERO_ROUTER, type(uint256).max);
         IERC20(LP).safeApprove(AERO_GAUGE, type(uint256).max);

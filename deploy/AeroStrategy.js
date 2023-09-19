@@ -5,46 +5,38 @@ const { vaultChain } = require("../utils");
 
 const TOKEN = "USDC";
 
-//!Form config
-
-async function deployAeroStrategy() {
+module.exports = async function ({ getNamedAccounts }) {
     const { deployer } = await getNamedAccounts();
 
     console.log(`Your address: ${deployer}. Network: ${hre.network.name}`);
-    const config = bridgeConfig["base"];
-    const vaultConfig = bridgeConfig[vaultChain("base")];
-    const Strategy = await ethers.getContractFactory("AeroStrategy");
-    const strategy = await upgrades.deployProxy(
-        Strategy,
+
+    const config = bridgeConfig[hre.network.name];
+    const vaultConfig = bridgeConfig[vaultChain(hre.network.name)];
+    const AeroStrategy = await ethers.getContractFactory("AeroStrategy");
+    const aeroStrategy = await upgrades.deployProxy(
+        AeroStrategy,
         [
             config.lzEndpoint,
             deployer,
             config[TOKEN].address,
             vaultConfig.vault,
             vaultConfig.chainId,
+            config.chainId,
             config.sgBridge,
             config.sgRouter,
-            config.slippage,
         ],
         {
             initializer: "initialize",
             kind: "transparent",
         }
     );
-    await strategy.deployed();
+    await aeroStrategy.deployed();
 
-    console.log("Aero strategy deployed to:", strategy.address);
+    console.log("AeroStrategy deployed to:", aeroStrategy.address);
 
     await hre.run("verify:verify", {
-        address: strategy.address,
+        address: aeroStrategy.address,
     });
-}
+};
 
 module.exports.tags = ["AeroStrategy"];
-
-deployAeroStrategy()
-    .catch((error) => {
-        console.error(error);
-        process.exitCode = 1;
-    })
-    .then(() => { });
