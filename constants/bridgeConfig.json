@@ -64,7 +64,8 @@
         "sgBridge": "0x1f2833baCcF2C96a7A6D98bA42Ed8aDfCF68fa99",
         "sgRouter": "0x45A01E4e04F14f7A4a6702c74187c5F6222033cd",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
-        "PearlStrategy": "0xc051345ada30e8c72a10df5462bb67479ec46c0b"
+        "PearlStrategy": "0xc051345ada30e8c72a10df5462bb67479ec46c0b",
+        "TestStrategy": "0xc051345ada30e8c72a10df5462bb67479ec46c0b"
     },
     "arbitrumOne": {
         "chainId": 110,
@@ -76,7 +77,8 @@
         "sgRouter": "0x53Bf833A5d6c4ddA888F69c22C88C9f356a41614",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
         "HopStrategy": "0x27Df001eA059a70532e30104E992E3D00883Dd90",
-        "slippage": 9500
+        "slippage": 9500,
+        "TestStrategy": "0x27Df001eA059a70532e30104E992E3D00883Dd90"
     },
     "base": {
         "chainId": 184,
@@ -87,6 +89,8 @@
         "sgBridge": "0xAF54BE5B6eEc24d6BFACf1cce4eaF680A8239398",
         "sgRouter": "0x45f1A95A4D3f3836523F5c83673c797f4d4d263B",
         "lzEndpoint": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7",
-        "slippage": 9500
+        "AeroStrategy": "0x37ee9b268ee9f55c307b6a974496fa733f82c8b3",
+        "slippage": 9500,
+        "TestStrategy": "0x37ee9b268ee9f55c307b6a974496fa733f82c8b3"
     }
 }

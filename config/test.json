@@ -35,21 +35,10 @@
 
           ]
         },
-        "Velodrome": {
-          "address": " ",
-          "network": " ",
-          "chainId": "",
-          "nativeToken": " ",
-          "wantTokenTicker": " ",
-          "wantTokenAddress": " ",
-          "protocols": [
-
-          ]
-        },
         "AeroDrome" : {
           "address": "0x37ee9b268ee9f55c307b6a974496fa733f82c8b3",
           "network": "Base",
-          "chainId": "184",
+          "chainId": "8453",
           "nativeToken": "ETH",
           "wantTokenTicker": "USDbC",
           "wantTokenAddress": "0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca",
