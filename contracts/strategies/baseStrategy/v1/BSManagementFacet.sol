@@ -15,6 +15,11 @@ contract BSManagementFacet is BaseFacet, IBSManagementFacet {
 
     function setStrategist(address _newStrategist) external override {
         RolesManagementLib.enforceSenderRole(RolesManagementLib.OWNER_ROLE);
+        address oldStrategist = BSLib.get().p.strategist;
+        if (oldStrategist != address(0)) {
+            RolesManagementLib.revokeRole(oldStrategist, RolesManagementLib.STRATEGIST_ROLE);
+        }
+        RolesManagementLib.grantRole(_newStrategist, RolesManagementLib.STRATEGIST_ROLE);
         BSLib.get().p.strategist = _newStrategist;
     }
 

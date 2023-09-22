@@ -1,31 +1,31 @@
-// SPDX-License-Identifier: MIT
+// // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.18;
+// pragma solidity ^0.8.18;
 
-import {PearlStrategy} from "../strategies/original/PearlStrategy.sol";
+// import {PearlStrategy} from "../strategies/original/PearlStrategy.sol";
 
-contract MockPearlStrategy is PearlStrategy {
-    function sellUsdr(uint256 _usdrAmount) external {
-        _sellUsdr(_usdrAmount);
-    }
+// contract MockPearlStrategy is PearlStrategy {
+//     function sellUsdr(uint256 _usdrAmount) external {
+//         _sellUsdr(_usdrAmount);
+//     }
 
-    function sellPearl(uint256 _pearlAmount) external {
-        _sellPearl(_pearlAmount);
-    }
+//     function sellPearl(uint256 _pearlAmount) external {
+//         _sellPearl(_pearlAmount);
+//     }
 
-    function withdrawSome(uint256 _amountNeeded) external {
-        _withdrawSome(_amountNeeded);
-    }
+//     function withdrawSome(uint256 _amountNeeded) external {
+//         _withdrawSome(_amountNeeded);
+//     }
 
-    function exitPosition(uint256 _stakedLpTokens) external {
-        _exitPosition(_stakedLpTokens);
-    }
+//     function exitPosition(uint256 _stakedLpTokens) external {
+//         _exitPosition(_stakedLpTokens);
+//     }
 
-    function liquidatePosition(uint256 _amountNeeded) external {
-        _liquidatePosition(_amountNeeded);
-    }
+//     function liquidatePosition(uint256 _amountNeeded) external {
+//         _liquidatePosition(_amountNeeded);
+//     }
 
-    function liquidateAllPositions() external returns (uint256) {
-        return _liquidateAllPositions();
-    }
-}
+//     function liquidateAllPositions() external returns (uint256) {
+//         return _liquidateAllPositions();
+//     }
+// }

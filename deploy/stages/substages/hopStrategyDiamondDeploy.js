@@ -10,13 +10,13 @@ module.exports = async ({
     from: deployer,
     owner: deployer,
     facets: [
-      "HopStrategyHarvestFaucet",
-      "HopStrategyStatsFaucet",
-      "HopStrategyInitializerFaucet"
+      "HSHarvestFaucet",
+      "HSStatsFaucet",
+      "HSInitializerFaucet"
     ],
     log: true,
     libraries: [
-      'HPLib',
+      'HSLib',
       'BaseLib',
       'InitializerLib',
       'PausabilityLib',

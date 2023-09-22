@@ -9,59 +9,14 @@
 // import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 // import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-// import {BaseStrategy} from "./BaseStrategy.sol";
+// import {BaseStrategy} from "../../BaseStrategy.sol";
 
 // import "../../integrations/hop/IStakingRewards.sol";
 // import "../../integrations/hop/IRouter.sol";
-// import "./swaps/SwapHelperUser.sol";
+// import "../../utils/swaps/SwapHelperUser.sol";
 
 // contract HopStrategy is Initializable, BaseStrategy, SwapHelperUser {
 //     using SafeERC20 for IERC20;
-
-//     address internal constant HOP_ROUTER =
-//         0x10541b07d8Ad2647Dc6cD67abd4c03575dade261;
-//     address internal constant STAKING_REWARD =
-//         0xb0CabFE930642AD3E7DECdc741884d8C3F7EbC70;
-//     address internal constant USDC = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
-//     address internal constant LP = 0xB67c014FA700E69681a673876eb8BAFAA36BFf71;
-//     address internal constant HOP = 0xc5102fE9359FD9a28f877a67E36B0F050d81a3CC;
-    
-//     address internal constant UNISWAP_V3_ROUTER =
-//         0xE592427A0AEce92De3Edee1F18E0157C05861564;
-
-//     uint256 internal constant MAX_BPS = 10000;
-
-//     uint256 public requestedQuoteHopToWant;
-
-//     function initialize(
-//         address _lzEndpoint,
-//         address _strategist,
-//         IERC20 _want,
-//         address _vault,
-//         uint16 _vaultChainId,
-//         address _sgBridge,
-//         address _sgRouter,
-//         uint256 _slippage,
-//         address _swapHelper
-//     ) external initializer {
-//         __BaseStrategy_init(
-//             _lzEndpoint,
-//             _strategist,
-//             _want,
-//             _vault,
-//             _vaultChainId,
-//             uint16(block.chainid),
-//             _sgBridge,
-//             _sgRouter,
-//             _slippage
-//         );
-//         swapHelper = IOraclizedSwapHelper(_swapHelper);
-//         IERC20(LP).safeApprove(STAKING_REWARD, type(uint256).max);
-//         IERC20(LP).safeApprove(HOP_ROUTER, type(uint256).max);
-//         IERC20(HOP).safeApprove(UNISWAP_V3_ROUTER, type(uint256).max);
-//         IERC20(HOP).safeApprove(_swapHelper, type(uint256).max);
-//         want.safeApprove(HOP_ROUTER, type(uint256).max);
-//     }
 
 //     function name() external pure override returns (string memory) {
 //         return "HopStrategy";

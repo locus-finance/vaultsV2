@@ -10,6 +10,9 @@ interface IBSLayerZeroFacet {
     error InsufficientFunds(uint256 amount, uint256 balance);
     error IncorrectMessageType(uint256 messageType);
 
+    /// @dev Naming convention is violated due to internal nature of the function. 
+    /// Basically the function should be marked `internalOnly` and should be
+    /// called specifically in the initialization function of the concrete strategy diamond.
     function _initialize(address _lzEndpoint) external;
     function sendMessageToVault(bytes memory _payload) external;
 }

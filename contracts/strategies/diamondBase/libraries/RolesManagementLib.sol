@@ -15,7 +15,7 @@ library RolesManagementLib {
     bytes32 public constant OWNER_ROLE = keccak256('OWNER_ROLE');
 
     // roles to check with smart-contracts
-    // bytes32 public constant ALLOWED_TOKEN_ROLE = keccak256('ALLOWED_TOKEN_ROLE');
+    // Example: bytes32 public constant ALLOWED_TOKEN_ROLE = keccak256('ALLOWED_TOKEN_ROLE');
 
     struct Storage {
         mapping(bytes32 => mapping(address => bool)) roles;

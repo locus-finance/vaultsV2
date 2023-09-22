@@ -10,7 +10,9 @@ import {IStargateRouter} from "../../../integrations/stargate/IStargate.sol";
 
 import "./interfaces/IBSLayerZeroFacet.sol";
 import "./interfaces/IBSInitializerFacet.sol";
+import "./interfaces/IBSChainlinkFacet.sol";
 import "../../diamondBase/facets/BaseFacet.sol";
+import "../../diamondBase/libraries/RolesManagementLib.sol";
 import "../BSLib.sol";
 
 contract BSInitializerFacet is BaseFacet, IBSInitializerFacet {
@@ -23,12 +25,32 @@ contract BSInitializerFacet is BaseFacet, IBSInitializerFacet {
         uint16 _currentChainId,
         address _sgBridge,
         address _sgRouter,
-        uint256 _slippage
+        uint256 _slippage,
+        uint256 _quoteJobFee,
+        uint256 _swapCalldataJobFee, 
+        address _aggregationRouter, 
+        address _chainlinkTokenAddress, 
+        address _chainlinkOracleAddress, 
+        string memory _swapCalldataJobId, 
+        string memory _quoteJobId
     ) external override internalOnly {
         BSLib.Primitives storage p = BSLib.get().p;
 
         IBSLayerZeroFacet(address(this))._initialize(_lzEndpoint);
+        IBSChainlinkFacet(address(this))._initialize(
+            _quoteJobFee,
+            _swapCalldataJobFee,
+            _aggregationRouter,
+            _chainlinkTokenAddress,
+            _chainlinkOracleAddress,
+            _swapCalldataJobId,
+            _quoteJobId
+        );
+
         p.strategist = _strategist;
+        RolesManagementLib.grantRole(_strategist, RolesManagementLib.STRATEGIST_ROLE);
+        RolesManagementLib.grantRole(msg.sender, RolesManagementLib.OWNER_ROLE);
+        
         p.want = _want;
         p.vaultChainId = _vaultChainId;
         p.vault = _vault;
@@ -38,7 +60,7 @@ contract BSInitializerFacet is BaseFacet, IBSInitializerFacet {
         p.currentChainId = _currentChainId;
         p.sgBridge = ISgBridge(_sgBridge);
         p.sgRouter = IStargateRouter(_sgRouter);
-
+        
         p.want.approve(_sgBridge, type(uint256).max);
     }
 }
