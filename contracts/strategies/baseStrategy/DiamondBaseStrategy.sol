@@ -9,6 +9,10 @@ import "./v1/interfaces/IBSLayerZeroFacet.sol";
 import "./v1/interfaces/IBSManagementFacet.sol";
 import "./v1/interfaces/IBSStargateFacet.sol";
 import "./v1/interfaces/IBSUtilsFacet.sol";
+import "./v1/interfaces/IBSSwapHelperFacet.sol";
+import "./v1/interfaces/IBSChainlinkFacet.sol";
+import "./v1/interfaces/IBSOneInchQuoteFacet.sol";
+import "./v1/interfaces/IBSOneInchSwapFacet.sol";
 
 // IMPORTANT: all of the collective diamond interfaces MUST be prefixed with Diamond word.
 /// @dev This MUST aggregate all of the faucets interfaces, to be able to grasp a full view of ABI in one place.
@@ -19,5 +23,9 @@ interface DiamondBaseStrategy is
     IBSLayerZeroFacet,
     IBSManagementFacet,
     IBSStargateFacet,
-    IBSUtilsFacet
+    IBSUtilsFacet,
+    IBSSwapHelperFacet,
+    IBSChainlinkFacet,
+    IBSOneInchQuoteFacet,
+    IBSOneInchSwapFacet
 {}

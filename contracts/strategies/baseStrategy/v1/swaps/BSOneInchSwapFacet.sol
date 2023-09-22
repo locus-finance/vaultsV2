@@ -72,6 +72,7 @@ contract BSOneInchSwapFacet is BaseFacet, IBSOneInchSwapFacet {
         );
     }
 
+    /// @dev Only to be used in either strategist intervention or an Oracle execution.
     function fulfillSwapRequest() public override internalOnly {
         BSOneInchLib.Primitives memory p = BSOneInchLib.get().p;
         if (p.swapBuffer.srcToken == BSOneInchLib.ONE_INCH_ETH_ADDRESS) {
