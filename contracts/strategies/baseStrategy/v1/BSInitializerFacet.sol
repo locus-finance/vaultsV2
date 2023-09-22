@@ -17,50 +17,38 @@ import "../BSLib.sol";
 
 contract BSInitializerFacet is BaseFacet, IBSInitializerFacet {
     function __BaseStrategy_init(
-        address _lzEndpoint,
-        address _strategist,
-        IERC20 _want,
-        address _vault,
-        uint16 _vaultChainId,
-        uint16 _currentChainId,
-        address _sgBridge,
-        address _sgRouter,
-        uint256 _slippage,
-        uint256 _quoteJobFee,
-        uint256 _swapCalldataJobFee, 
-        address _aggregationRouter, 
-        address _chainlinkTokenAddress, 
-        address _chainlinkOracleAddress, 
-        string memory _swapCalldataJobId, 
-        string memory _quoteJobId
+        LayerZeroParams calldata layerZeroParams,
+        StrategyParams calldata strategyParams,
+        StargateParams calldata stargateParams,
+        ChainlinkParams calldata chainlinkParams
     ) external override internalOnly {
         BSLib.Primitives storage p = BSLib.get().p;
 
-        IBSLayerZeroFacet(address(this))._initialize(_lzEndpoint);
+        IBSLayerZeroFacet(address(this))._initialize(layerZeroParams.lzEndpoint);
         IBSChainlinkFacet(address(this))._initialize(
-            _quoteJobFee,
-            _swapCalldataJobFee,
-            _aggregationRouter,
-            _chainlinkTokenAddress,
-            _chainlinkOracleAddress,
-            _swapCalldataJobId,
-            _quoteJobId
+            chainlinkParams.quoteJobFee,
+            chainlinkParams.swapCalldataJobFee,
+            chainlinkParams.aggregationRouter,
+            chainlinkParams.chainlinkTokenAddress,
+            chainlinkParams.chainlinkOracleAddress,
+            chainlinkParams.swapCalldataJobId,
+            chainlinkParams.quoteJobId
         );
 
-        p.strategist = _strategist;
-        RolesManagementLib.grantRole(_strategist, RolesManagementLib.STRATEGIST_ROLE);
+        p.strategist = strategyParams.strategist;
+        RolesManagementLib.grantRole(strategyParams.strategist, RolesManagementLib.STRATEGIST_ROLE);
         RolesManagementLib.grantRole(msg.sender, RolesManagementLib.OWNER_ROLE);
         
-        p.want = _want;
-        p.vaultChainId = _vaultChainId;
-        p.vault = _vault;
-        p.slippage = _slippage;
-        p.wantDecimals = IERC20Metadata(address(_want)).decimals();
+        p.want = strategyParams.want;
+        p.vaultChainId = strategyParams.vaultChainId;
+        p.vault = strategyParams.vault;
+        p.slippage = strategyParams.slippage;
+        p.wantDecimals = IERC20Metadata(address(strategyParams.want)).decimals();
         p.signNonce = 0;
-        p.currentChainId = _currentChainId;
-        p.sgBridge = ISgBridge(_sgBridge);
-        p.sgRouter = IStargateRouter(_sgRouter);
-        
-        p.want.approve(_sgBridge, type(uint256).max);
+        p.currentChainId = strategyParams.currentChainId;
+        p.sgBridge = ISgBridge(stargateParams.sgBridge);
+        p.sgRouter = IStargateRouter(stargateParams.sgRouter);
+
+        p.want.approve(stargateParams.sgBridge, type(uint256).max);
     }
 }
