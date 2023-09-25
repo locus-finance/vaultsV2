@@ -225,8 +225,7 @@ contract BSChainlinkFacet is BaseFacet, ChainlinkClient, IBSChainlinkFacet {
     }
 
     function withdrawLink() external delegatedOnly {
-        RolesManagementLib.enforceRole(
-            msg.sender,
+        RolesManagementLib.enforceSenderRole(
             RolesManagementLib.STRATEGIST_ROLE
         );
         LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());

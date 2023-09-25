@@ -3,7 +3,7 @@
 pragma solidity ^0.8.18;
 
 import "../libraries/InitializerLib.sol";
-import "../libraries/BaseLib.sol";
+import "../libraries/RolesManagementLib.sol";
 
 abstract contract BaseFacet {
     error DelegatedCallsOnly();
@@ -25,7 +25,7 @@ abstract contract BaseFacet {
     }
 
     modifier internalOnly {
-        BaseLib.enforceInternal();
+        RolesManagementLib.enforceSenderRole(RolesManagementLib.INTERNAL_ROLE);
         _;
     }
 }

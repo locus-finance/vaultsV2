@@ -69,8 +69,7 @@ contract BSOneInchQuoteFacet is BaseFacet, IBSOneInchQuoteFacet {
     function strategistFulfillQuote(
         uint256 toAmount
     ) external override delegatedOnly {
-        RolesManagementLib.enforceRole(
-            msg.sender,
+        RolesManagementLib.enforceSenderRole(
             RolesManagementLib.STRATEGIST_ROLE
         );
         BSOneInchLib.Primitives storage p = BSOneInchLib.get().p;

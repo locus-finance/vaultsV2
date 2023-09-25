@@ -97,8 +97,7 @@ contract BSOneInchSwapFacet is BaseFacet, IBSOneInchSwapFacet {
     function strategistFulfillSwap(
         bytes memory _swapCalldata
     ) external payable override {
-        RolesManagementLib.enforceRole(
-            msg.sender,
+        RolesManagementLib.enforceSenderRole(
             RolesManagementLib.STRATEGIST_ROLE
         );
         BSOneInchLib.Primitives storage p = BSOneInchLib.get().p;
