@@ -10,4 +10,8 @@ interface IPSStatsFacet is IBSStatsFacet {
         external
         pure
         returns (PSLib.Storage memory);
+
+    function balanceOfPearlRewards() external view returns (uint256);
+
+    function balanceOfLpStaked() external view returns (uint256);
 }

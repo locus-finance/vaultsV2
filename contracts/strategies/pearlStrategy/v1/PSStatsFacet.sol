@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.18;
 
+import {IPearlGaugeV2} from "../../../integrations/pearl/IPearlGaugeV2.sol";
+
 import "../../../integrations/hop/IStakingRewards.sol";
 
 import "./interfaces/IPSStatsFacet.sol";
@@ -29,6 +31,14 @@ contract PSStatsFacet is BSStatsFacet, IPSStatsFacet {
         return "PearlStrategy";
     }
 
+    function balanceOfPearlRewards() public view delegatedOnly override returns (uint256) {
+        return IPearlGaugeV2(PSLib.PEARL_GAUGE_V2).earned(address(this));
+    }
+
+    function balanceOfLpStaked() public view delegatedOnly override returns (uint256) {
+        return IPearlGaugeV2(PSLib.PEARL_GAUGE_V2).balanceOf(address(this));
+    }
+
     function estimatedTotalAssets()
         public
         view
@@ -36,6 +46,12 @@ contract PSStatsFacet is BSStatsFacet, IPSStatsFacet {
         delegatedOnly
         returns (uint256)
     {
-        return 0;
+        return
+            BSLib.get().p.want.balanceOf(address(this)) +
+            IPSUtilsFacet(address(this)).pearlToWant(
+                balanceOfPearlRewards() +
+                    IERC20(PSLib.PEARL).balanceOf(address(this))
+            ) +
+            IPSUtilsFacet(address(this)).usdrLpToWant(balanceOfLpStaked());
     }
 }

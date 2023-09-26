@@ -22,13 +22,35 @@ contract PSLiquidatePositionFacet is BaseFacet, IBSLiquidatePositionFacet {
         internalOnly
         returns (uint256 _liquidatedAmount, uint256 _loss)
     {
+        IERC20 want = BSLib.get().p.want;
+
+        uint256 _wantBal = want.balanceOf(address(this));
+        if (_wantBal >= _amountNeeded) {
+            return (_amountNeeded, 0);
+        }
+
+        IPSWithdrawAndExitFacet(address(this)).withdrawSome(
+            _amountNeeded - _wantBal
+        );
+        _wantBal = want.balanceOf(address(this));
+
+        if (_amountNeeded > _wantBal) {
+            _liquidatedAmount = _wantBal;
+            _loss = _amountNeeded - _wantBal;
+        } else {
+            _liquidatedAmount = _amountNeeded;
+        }
     }
 
     function liquidateAllPositions()
         external
-        internalOnly
         override
+        internalOnly
         returns (uint256 _amountFreed)
     {
+        IPSWithdrawAndExitFacet(address(this)).exitPosition(
+            IPSStatsFacet(address(this)).balanceOfLpStaked()
+        );
+        _amountFreed = BSLib.get().p.want.balanceOf(address(this));
     }
 }
