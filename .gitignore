@@ -12,5 +12,6 @@ artifacts/@layerzerolabs
 artifacts/@openzeppelin
 process.env
 deployments
+artifacts
 
 .DS_Store
