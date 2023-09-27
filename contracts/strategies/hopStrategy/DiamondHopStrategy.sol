@@ -15,7 +15,6 @@ import "../baseStrategy/v1/interfaces/forSpecificStrategies/IBSAdjustPositionFac
 import "../baseStrategy/v1/interfaces/forSpecificStrategies/IBSEmergencySwapOrQuoteFacet.sol";
 import "../baseStrategy/v1/interfaces/forSpecificStrategies/IBSLiquidatePositionFacet.sol";
 import "../baseStrategy/v1/interfaces/forSpecificStrategies/IBSPrepareMigrationFacet.sol";
-import "../baseStrategy/v1/interfaces/forSpecificStrategies/IBSQuoteNotifiableFacet.sol";
 
 import "./v1/interfaces/IHSStatsFacet.sol";
 import "./v1/interfaces/IHSInitializerFacet.sol";

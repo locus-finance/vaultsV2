@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.18;
 
-import "../../../baseStrategy/v1/interfaces/forSpecificStrategies/IBSQuoteNotifiableFacet.sol";
+import "../../../baseStrategy/v1/interfaces/IBSQuoteNotifiableFacet.sol";
 
 interface IPSUtilsFacet is IBSQuoteNotifiableFacet {
     function pearlToWant(uint256 _pearlAmount) external view returns (uint256);

@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.18;
 
-import "../../../baseStrategy/v1/interfaces/forSpecificStrategies/IBSQuoteNotifiableFacet.sol";
+import "../../../baseStrategy/v1/interfaces/IBSQuoteNotifiableFacet.sol";
 
 interface IHSUtilsFacet is IBSQuoteNotifiableFacet {
     function claimAndSellRewards() external;

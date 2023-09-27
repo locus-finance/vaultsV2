@@ -8,7 +8,7 @@ import "../../../diamondBase/libraries/RolesManagementLib.sol";
 import "../../../diamondBase/facets/BaseFacet.sol";
 import "../../BSLib.sol";
 import "./libraries/BSOneInchLib.sol";
-import "../interfaces/forSpecificStrategies/IBSQuoteNotifiableFacet.sol";
+import "../interfaces/IBSQuoteNotifiableFacet.sol";
 import "../interfaces/IBSChainlinkFacet.sol";
 import "../interfaces/forSpecificStrategies/IBSEmergencySwapOrQuoteFacet.sol";
 import "../interfaces/IBSOneInchQuoteFacet.sol";

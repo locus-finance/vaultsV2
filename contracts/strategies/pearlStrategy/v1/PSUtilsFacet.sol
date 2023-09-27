@@ -12,11 +12,11 @@ import "../../../integrations/hop/IRouter.sol";
 
 import "../../baseStrategy/v1/interfaces/IBSSwapHelperFacet.sol";
 import "../../baseStrategy/BSLib.sol";
-import "../../diamondBase/facets/BaseFacet.sol";
+import "../../baseStrategy/v1/swaps/BSQuoteNotifiableFacet.sol";
 import "./interfaces/IPSUtilsFacet.sol";
 import "../PSLib.sol";
 
-contract PSUtilsFacet is BaseFacet, IPSUtilsFacet {
+contract PSUtilsFacet is BSQuoteNotifiableFacet, IPSUtilsFacet {
     function pearlToWant(
         uint256 _pearlAmount
     ) external view override internalOnly returns (uint256) {
@@ -108,11 +108,4 @@ contract PSUtilsFacet is BaseFacet, IPSUtilsFacet {
             PSLib.get().adjustedTo1InchSlippage
         );
     }
-
-    function notifyCallback(
-        address,
-        address,
-        uint256,
-        uint256
-    ) external override internalOnly {}
 }
