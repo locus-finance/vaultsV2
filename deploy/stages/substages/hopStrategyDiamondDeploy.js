@@ -7,8 +7,8 @@ module.exports = async ({
   const { diamond } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const bridgeConfig = require("../../constants/bridgeConfig.json");
-  const { vaultChain } = require("../../utils");
+  const bridgeConfig = require("../../../constants/bridgeConfig.json");
+  const { vaultChain } = require("../../../utils");
   const config = bridgeConfig["arbitrumOne"];
   const vaultConfig = bridgeConfig[vaultChain("arbitrumOne")];
 
