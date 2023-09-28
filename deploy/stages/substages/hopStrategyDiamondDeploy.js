@@ -18,6 +18,7 @@ module.exports = async ({
     from: deployer,
     owner: deployer,
     facets: [
+      "RolesManagementFacet",
       "BSHarvestFacet",
       "BSLayerZeroFacet",
       "BSManagementFacet",
