@@ -104,8 +104,6 @@ contract BSChainlinkFacet is BaseFacet, ChainlinkClient, IBSChainlinkFacet {
         IBSOneInchQuoteFacet(address(this)).fulfillQuoteRequest();
     }
 
-    /// @dev Naming convention is broken due to actual visibility made by the modifier `onlySelfAuthorized`.
-    /// Made like that to be executable through the CALL opcode.
     function requestChainlinkQuote(
         address src,
         address dst,
@@ -150,8 +148,9 @@ contract BSChainlinkFacet is BaseFacet, ChainlinkClient, IBSChainlinkFacet {
         uint8 slippage,
         bytes4 callbackSignature
     ) external override internalOnly {
+        // A constraint dictated by 1inch Aggregation Protocol
         if (slippage > 50) {
-            revert BSOneInchLib.SlippageIsTooBig(); // A constraint dictated by 1inch Aggregation Protocol
+            revert BSOneInchLib.SlippageIsTooBig();
         }
 
         Chainlink.Request memory req = buildOperatorRequest(

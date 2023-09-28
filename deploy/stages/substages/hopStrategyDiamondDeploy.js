@@ -10,14 +10,25 @@ module.exports = async ({
     from: deployer,
     owner: deployer,
     facets: [
-      "HSHarvestFaucet",
-      "HSStatsFaucet",
-      "HSInitializerFaucet"
+      "BSHarvestFacet",
+      "BSLayerZeroFacet",
+      "BSManagementFacet",
+      "BSStargateFacet",
+      "BSSwapHelperFacet",
+      "BSUtilsFacet",
+      "HSAdjustPositionFacet",
+      "HSEmergencySwapOrQuoteFacet",
+      "HSInitializerFacet",
+      "HSLiquidatePOsitionFacet",
+      "HSPrepareMigrationFacet",
+      "HSStatsFacet",
+      "HSUtilsFacet",
+      "HSWithdrawAndExitFacet"
     ],
     log: true,
     libraries: [
       'HSLib',
-      'BaseLib',
+      'BSOneInchLib',
       'InitializerLib',
       'PausabilityLib',
       'RolesManagementLib'

@@ -4,7 +4,6 @@ module.exports.tags = ["debug"]; // UTILIZE ONLY AS FIXTURE OR HARDHAT EVM INITI
 module.exports.dependencies = [
   "hop",
   "pearl",
-  "pika",
   "updateTracerNames"
 ];
 module.exports.runAtTheEnd = true;
