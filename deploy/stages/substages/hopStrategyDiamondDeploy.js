@@ -28,7 +28,7 @@ module.exports = async ({
       "HSAdjustPositionFacet",
       "HSEmergencySwapOrQuoteFacet",
       "HSInitializerFacet",
-      "HSLiquidatePOsitionFacet",
+      "HSLiquidatePositionFacet",
       "HSPrepareMigrationFacet",
       "HSStatsFacet",
       "HSUtilsFacet",
