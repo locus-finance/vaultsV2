@@ -1,6 +1,6 @@
 const { types } = require("hardhat/config");
 module.exports = async function (taskArgs, hre) {
-  (await hre.artifacts.getAllFullyQualifiedNames())
+  return (await hre.artifacts.getAllFullyQualifiedNames())
     .filter(
       e => {
         return !e.includes('hardhat') && 

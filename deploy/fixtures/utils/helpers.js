@@ -98,6 +98,45 @@ const emptyStage = (message) =>
       log(message);
   };
 
+const diamondCut = async (
+  facetCuts, 
+  initializableContract, 
+  initializeCalldata, 
+  diamondInstanceName, 
+  deployments
+) => {
+  const diamondInstance = await hre.ethers.getContractAt(
+    "DiamondCutFacet",
+    (await deployments.get(diamondInstanceName.proxy)).address
+  );
+
+  await diamondInstance.diamondCut(
+    facetCuts,
+    initializableContract,
+    initializeCalldata
+  );
+}
+
+const removeFacet = async (facetName, diamondInstanceName, deployments, signatures) => {
+  const facetAddress = (
+    await deployments.get(facetName)
+  ).address;
+
+  await diamondCut(
+    [
+      [
+        facetAddress,
+        2, // FacetCutAction.Remove = 2
+        signatures
+      ]
+    ],
+    hre.ethers.constants.AddressZero,
+    "0x0",
+    diamondInstanceName,
+    deployments
+  );
+}
+
 module.exports = {
   skipIfAlreadyDeployed,
   withImpersonatedSigner,
@@ -108,5 +147,7 @@ module.exports = {
   sendLinkFromWhale,
   getOracleSwapCalldata,
   getOracleQuote,
-  emptyStage
+  emptyStage,
+  removeFacet,
+  diamondCut
 };

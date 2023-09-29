@@ -18,8 +18,6 @@ import "../../diamondBase/facets/BaseFacet.sol";
 import "../BSLib.sol";
 
 /// @dev WARNING: `NonblockingLzAppUpgradeable` and the diamond proxy have different `owner()`'s!
-/// AND `abstract` modifier for the contract is utilized to force a developer to make this contract a
-/// super contract to some strategy. In order to make internal calls work.
 contract BSLayerZeroFacet is
     IBSLayerZeroFacet,
     NonblockingLzAppUpgradeable,
