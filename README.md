@@ -9,6 +9,6 @@ npx hardhat --network optimism upgrade --target-contract Vault --target-addr VAU
 ## STRATEGY
 
 ```
-npx hardhat --network polygon deploy --tags PearlStrategy - deploy
-npx hardhat --network polygon upgrade --target-contract PearlStrategy --target-addr STRATEGY_ADDRESS - upgrade
+npx hardhat --network polygon deploy --tags PearlStrategy
+npx hardhat --network polygon upgrade --target-contract PearlStrategy --target-addr STRATEGY_ADDRESS
 ```
