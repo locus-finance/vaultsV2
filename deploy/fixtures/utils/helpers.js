@@ -1,4 +1,5 @@
 const axios = require("axios");
+const diamondCutFacetAbi = require('hardhat-deploy/extendedArtifacts/DiamondCutFacet.json').abi;
 
 ////////////////////////////////////////////
 // Constants Starts
@@ -106,7 +107,7 @@ const diamondCut = async (
   deployments
 ) => {
   const diamondInstance = await hre.ethers.getContractAt(
-    "DiamondCutFacet",
+    diamondCutFacetAbi,
     (await deployments.get(diamondInstanceName.proxy)).address
   );
 
@@ -117,21 +118,35 @@ const diamondCut = async (
   );
 }
 
-const removeFacet = async (facetName, diamondInstanceName, deployments, signatures) => {
-  const facetAddress = (
-    await deployments.get(facetName)
-  ).address;
+const manipulateFacet = async (
+  diamondInstanceName, 
+  facetCutAction,
+  deployments, 
+  abi,
+  facetNameOrFacetAddress=hre.ethers.constants.AddressZero,
+  initializableContract=hre.ethers.constants.AddressZero,
+  initializeCalldata=hre.ethers.utils.stripZeros(hre.ethers.utils.arrayify("0x00"))
+) => {
+  const facetAddress = facetNameOrFacetAddress.startsWith("0x") 
+    ? facetNameOrFacetAddress 
+    : (await deployments.get(facetName)).address;
+
+  const iface = new hre.ethers.utils.Interface(abi);
+  const functions = Object.values(iface.functions);
+
+  const formatType = hre.ethers.utils.FormatTypes.full;
+  deployments.log(`Manipulating ABI at ${diamondInstanceName.interface} (FacetCutAction: ${facetCutAction}): \n${functions.reduce((a, b) => `\t${a.format(formatType)}\n\t${b.format(formatType)}`)}`);
 
   await diamondCut(
     [
       [
         facetAddress,
-        2, // FacetCutAction.Remove = 2
-        signatures
+        facetCutAction,
+        functions.map(e => iface.getSighash(e))
       ]
     ],
-    hre.ethers.constants.AddressZero,
-    "0x0",
+    initializableContract,
+    initializeCalldata,
     diamondInstanceName,
     deployments
   );
@@ -148,6 +163,6 @@ module.exports = {
   getOracleSwapCalldata,
   getOracleQuote,
   emptyStage,
-  removeFacet,
-  diamondCut
+  diamondCut,
+  manipulateFacet
 };
