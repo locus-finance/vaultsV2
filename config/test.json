@@ -24,7 +24,7 @@
           ]
         },
         "PearlStrategy": {
-          "address": " ",
+          "address": "0x1516528cdfb031887aa30da030aa7dce0aa92d04",
           "network": "Polygon",
           "chainId": "137",
           "nativeToken": "MATIC",
