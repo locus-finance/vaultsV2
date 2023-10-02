@@ -2,14 +2,11 @@
 
 pragma solidity ^0.8.19;
 
-import {ERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {ERC4626} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
+import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
-import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
+import {BytesLib, NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
 import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
@@ -50,8 +47,6 @@ contract Vault is
         token.approve(_sgBridge, type(uint256).max);
     }
 
-    uint256 public constant MAX_BPS = 10_000;
-
     address public override governance;
     IERC20 public override token;
 
@@ -75,8 +70,23 @@ contract Vault is
         _;
     }
 
+    modifier isAction(uint16 _chainId, address _strategy) {
+        require(strategies[_chainId][_strategy].activation > 0, "V2");
+        _;
+    }
+
+    modifier nonAction(uint16 _chainId, address _strategy) {
+        require(strategies[_chainId][_strategy].activation == 0, "V3");
+        _;
+    }
+
+    modifier WithdrawInProgress() {
+        require(!_withdrawEpochs[withdrawEpoch].inProgress, "V4");
+        _;
+    }
+
     function decimals() public view virtual override returns (uint8) {
-        return ERC20(address(token)).decimals();
+        return ERC20Upgradeable(address(token)).decimals();
     }
 
     function revokeFunds() external override onlyAuthorized {
@@ -89,9 +99,19 @@ contract Vault is
         emergencyShutdown = _emergencyShutdown;
     }
 
-    function setGovernance(address _newGovernance) external onlyAuthorized() {
+    function setGovernance(address _newGovernance) external onlyAuthorized {
         governance = _newGovernance;
     }
+
+
+    function setStrategist(
+        uint16 _chainId,
+        address _strategy,
+        address _newStrategist
+    ) external onlyAuthorized {
+        strategies[_chainId][_strategy].strategist = _newStrategist;
+    }
+
 
     function totalAssets() public view override returns (uint256) {
         return totalDebt + totalIdle();
@@ -122,9 +142,8 @@ contract Vault is
         uint256 _debtRatio,
         uint256 _performanceFee,
         address _strategist
-    ) external override onlyAuthorized {
-        require(strategies[_chainId][_strategy].activation == 0, "V2");
-        require(totalDebtRatio + _debtRatio <= MAX_BPS, "V3");
+    ) external override onlyAuthorized nonAction(_chainId, _strategy){
+        require(totalDebtRatio + _debtRatio <= 10_000, "V5");
 
         strategies[_chainId][_strategy] = StrategyParams({
             activation: block.timestamp,
@@ -156,8 +175,7 @@ contract Vault is
         return _creditAvailable(_chainId, _strategy);
     }
 
-    function handleWithdrawals() external override onlyAuthorized {
-        require(!_withdrawEpochs[withdrawEpoch].inProgress, "V4");
+    function handleWithdrawals() external override onlyAuthorized WithdrawInProgress {
 
         uint256 withdrawValue = 0;
         for (
@@ -223,8 +241,6 @@ contract Vault is
             }
         }
 
-        require(strategyRequested > 0, "V5");
-
         _withdrawEpochs[withdrawEpoch].approveExpected = strategyRequested;
         _withdrawEpochs[withdrawEpoch].inProgress = true;
     }
@@ -245,15 +261,10 @@ contract Vault is
         address _strategy,
         uint256 _debtRatio
     ) external override onlyAuthorized {
-        require(
-            strategies[_chainId][_strategy].activation > 0,
-            "Vault::InactiveStrategy"
-        );
-
         totalDebtRatio -= strategies[_chainId][_strategy].debtRatio;
         strategies[_chainId][_strategy].debtRatio = _debtRatio;
 
-        require(totalDebtRatio + _debtRatio <= MAX_BPS, "V6");
+        require(totalDebtRatio + _debtRatio <= 10_000, "V6");
         totalDebtRatio += _debtRatio;
     }
 
@@ -261,10 +272,8 @@ contract Vault is
         uint16 _chainId,
         address _oldStrategy,
         address _newStrategy
-    ) external onlyAuthorized {
+    ) external onlyAuthorized nonAction(_chainId, _newStrategy){
         require(_newStrategy != address(0), "V7");
-        require(strategies[_chainId][_oldStrategy].activation > 0, "V8");
-        require(strategies[_chainId][_newStrategy].activation == 0, "V9");
 
         StrategyParams memory params = strategies[_chainId][_oldStrategy];
         strategies[_chainId][_newStrategy] = StrategyParams({
@@ -298,12 +307,12 @@ contract Vault is
         uint256 _amountLD,
         bytes memory _payload
     ) external override {
-        require(_token == address(token), "V10");
+        require(_token == address(token), "V8");
         require(
             msg.sender == address(sgRouter) ||
                 msg.sender == address(sgBridge) ||
                 msg.sender == owner(),
-            "V11"
+            "V9"
         );
 
         address srcAddress = address(
@@ -321,7 +330,7 @@ contract Vault is
         uint64 _nonce,
         bytes calldata _payload
     ) public virtual override {
-        require(msg.sender == address(lzEndpoint), "V12");
+        require(msg.sender == address(lzEndpoint), "V10");
 
         _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
@@ -330,7 +339,7 @@ contract Vault is
         uint256 _amount,
         address _recipient
     ) internal returns (uint256) {
-        require(!emergencyShutdown, "V13");
+        require(!emergencyShutdown, "V11");
         uint256 shares = _issueSharesForAmount(_recipient, _amount);
         token.safeTransferFrom(msg.sender, address(this), _amount);
         return shares;
@@ -363,8 +372,6 @@ contract Vault is
         uint256 _receivedTokens
     ) internal {
         _verifySignature(_chainId, _message);
-
-        require(strategies[_chainId][_message.strategy].activation > 0, "V14");
 
         if (_message.loss > 0) {
             _reportLoss(_chainId, _message.strategy, _message.loss);
@@ -437,7 +444,7 @@ contract Vault is
         address _strategy,
         uint256 _loss
     ) internal {
-        require(strategies[_chainId][_strategy].totalDebt >= _loss, "V15");
+        require(strategies[_chainId][_strategy].totalDebt >= _loss, "V12");
         strategies[_chainId][_strategy].totalLoss += _loss;
         strategies[_chainId][_strategy].totalDebt -= _loss;
         totalDebt -= _loss;
@@ -447,8 +454,7 @@ contract Vault is
         uint256 _shares,
         address _recipient,
         uint256 _maxLoss
-    ) internal {
-        require(!_withdrawEpochs[withdrawEpoch].inProgress, "V16");
+    ) internal WithdrawInProgress{
 
         _transfer(msg.sender, address(this), _shares);
         _withdrawEpochs[withdrawEpoch].requests.push(
@@ -480,7 +486,7 @@ contract Vault is
         } else {
             shares = (_amount * totalSupply()) / totalAssets();
         }
-        require(shares > 0, "V17");
+        require(shares > 0, "V13");
         _mint(_to, shares);
         return shares;
     }
@@ -489,9 +495,7 @@ contract Vault is
         uint16 _chainId,
         address _strategy,
         bytes memory _payload
-    ) internal {
-        StrategyParams storage params = strategies[_chainId][_strategy];
-        require(params.activation > 0, "V18");
+    ) internal isAction(_chainId, _strategy) {
 
         bytes memory remoteAndLocalAddresses = abi.encodePacked(
             _strategy,
@@ -540,7 +544,7 @@ contract Vault is
         }
 
         uint256 strategyDebtLimit = (strategies[_chainId][_strategy].debtRatio *
-            totalAssets()) / MAX_BPS;
+            totalAssets()) / 10_000;
         uint256 strategyTotalDebt = strategies[_chainId][_strategy].totalDebt;
 
         if (strategyDebtLimit <= strategyTotalDebt) {
@@ -555,7 +559,7 @@ contract Vault is
         address _strategy
     ) internal view returns (uint256) {
         uint256 strategyDebtLimit = (strategies[_chainId][_strategy].debtRatio *
-            totalAssets()) / MAX_BPS;
+            totalAssets()) / 10_000;
         uint256 strategyTotalDebt = strategies[_chainId][_strategy].totalDebt;
 
         if (emergencyShutdown) {
@@ -569,7 +573,7 @@ contract Vault is
 
     function _fulfillWithdrawEpoch() internal {
         uint256 requestsLength = _withdrawEpochs[withdrawEpoch].requests.length;
-        require(requestsLength > 0, "V19");
+        require(requestsLength > 0, "V14");
 
         uint256[] memory shareValues = new uint256[](requestsLength);
 
@@ -586,7 +590,7 @@ contract Vault is
 
             if (valueToTransfer < request.expected) {
                 uint256 diff = request.expected - valueToTransfer;
-                uint256 diffScaled = (diff * MAX_BPS) / request.expected;
+                uint256 diffScaled = (diff * 10_000) / request.expected;
 
                 if (diffScaled > request.maxLoss) {
                     request.success = false;
@@ -609,8 +613,7 @@ contract Vault is
     function _handleWithdrawSomeResponse(
         uint16 _chainId,
         WithdrawSomeResponse memory _message
-    ) internal {
-        require(strategies[_chainId][_message.source].activation > 0, "V20");
+    ) internal isAction(_chainId, _message.source){
 
         if (_message.loss > 0) {
             _reportLoss(_chainId, _message.source, _message.loss);
@@ -645,7 +648,7 @@ contract Vault is
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
-        require(strategies[_srcChainId][srcAddress].activation > 0, "V21");
+        require(strategies[_srcChainId][srcAddress].activation > 0, "V15");
 
         _handlePayload(_srcChainId, _payload, 0);
     }
@@ -672,7 +675,7 @@ contract Vault is
     ) internal {
         require(
             _usedNonces[_chainId][_report.strategy][_report.nonce] == false,
-            "V22"
+            "V16"
         );
         bytes32 messageHash = keccak256(
             abi.encodePacked(_report.strategy, _report.nonce, _chainId)
@@ -683,7 +686,7 @@ contract Vault is
         require(
             ECDSA.recover(ethSignedMessageHash, _report.signature) ==
                 strategies[_chainId][_report.strategy].strategist,
-            "V23"
+            "V17"
         );
 
         _usedNonces[_chainId][_report.strategy][_report.nonce] = true;
