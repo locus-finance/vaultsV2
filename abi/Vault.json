@@ -76,5 +76,6 @@
   "function trustedRemoteLookup(uint16) view returns (bytes)",
   "function updateStrategyDebtRatio(uint16,address,uint256)",
   "function withdraw(uint256,address,uint256)",
-  "function withdrawEpoch() view returns (uint256)"
+  "function withdrawEpoch() view returns (uint256)",
+  "function withdrawEpochs(uint256) view returns (bool, uint256, uint256)"
 ]

@@ -59,7 +59,7 @@ contract Vault is
 
     mapping(uint16 => EnumerableSet.AddressSet) internal _strategiesByChainId;
     EnumerableSet.UintSet internal _supportedChainIds;
-    mapping(uint256 => WithdrawEpoch) internal _withdrawEpochs;
+    mapping(uint256 => WithdrawEpoch) public withdrawEpochs;
     mapping(uint16 => mapping(address => mapping(uint256 => bool)))
         internal _usedNonces;
 
@@ -81,7 +81,7 @@ contract Vault is
     }
 
     modifier WithdrawInProgress() {
-        require(!_withdrawEpochs[withdrawEpoch].inProgress, "V4");
+        require(!withdrawEpochs[withdrawEpoch].inProgress, "V4");
         _;
     }
 
@@ -180,10 +180,10 @@ contract Vault is
         uint256 withdrawValue = 0;
         for (
             uint256 i = 0;
-            i < _withdrawEpochs[withdrawEpoch].requests.length;
+            i < withdrawEpochs[withdrawEpoch].requests.length;
             i++
         ) {
-            WithdrawRequest storage request = _withdrawEpochs[withdrawEpoch]
+            WithdrawRequest storage request = withdrawEpochs[withdrawEpoch]
                 .requests[i];
             withdrawValue += _shareValue(request.shares);
         }
@@ -221,7 +221,7 @@ contract Vault is
                     amountNeeded,
                     params.totalDebt
                 );
-                _withdrawEpochs[withdrawEpoch].requestedAmount[chainId][
+                withdrawEpochs[withdrawEpoch].requestedAmount[chainId][
                     strategy
                 ] = strategyRequest;
                 amountNeeded -= strategyRequest;
@@ -241,8 +241,8 @@ contract Vault is
             }
         }
 
-        _withdrawEpochs[withdrawEpoch].approveExpected = strategyRequested;
-        _withdrawEpochs[withdrawEpoch].inProgress = true;
+        withdrawEpochs[withdrawEpoch].approveExpected = strategyRequested;
+        withdrawEpochs[withdrawEpoch].inProgress = true;
     }
 
     function pricePerShare() external view override returns (uint256) {
@@ -457,7 +457,7 @@ contract Vault is
     ) internal WithdrawInProgress{
 
         _transfer(msg.sender, address(this), _shares);
-        _withdrawEpochs[withdrawEpoch].requests.push(
+        withdrawEpochs[withdrawEpoch].requests.push(
             WithdrawRequest({
                 author: msg.sender,
                 user: _recipient,
@@ -572,19 +572,19 @@ contract Vault is
     }
 
     function _fulfillWithdrawEpoch() internal {
-        uint256 requestsLength = _withdrawEpochs[withdrawEpoch].requests.length;
+        uint256 requestsLength = withdrawEpochs[withdrawEpoch].requests.length;
         require(requestsLength > 0, "V14");
 
         uint256[] memory shareValues = new uint256[](requestsLength);
 
         for (uint256 i = 0; i < requestsLength; i++) {
-            WithdrawRequest storage request = _withdrawEpochs[withdrawEpoch]
+            WithdrawRequest storage request = withdrawEpochs[withdrawEpoch]
                 .requests[i];
             shareValues[i] = _shareValue(request.shares);
         }
 
         for (uint256 i = 0; i < requestsLength; i++) {
-            WithdrawRequest storage request = _withdrawEpochs[withdrawEpoch]
+            WithdrawRequest storage request = withdrawEpochs[withdrawEpoch]
                 .requests[i];
             uint256 valueToTransfer = Math.min(shareValues[i], totalIdle());
 
@@ -606,7 +606,7 @@ contract Vault is
 
         emit FulfilledWithdrawEpoch(withdrawEpoch, requestsLength);
 
-        _withdrawEpochs[withdrawEpoch].inProgress = false;
+        withdrawEpochs[withdrawEpoch].inProgress = false;
         withdrawEpoch++;
     }
 
@@ -621,11 +621,11 @@ contract Vault is
         strategies[_chainId][_message.source].totalDebt -= _message.amount;
         totalDebt -= _message.amount;
 
-        _withdrawEpochs[_message.id].approveActual++;
-        _withdrawEpochs[_message.id].approved[_chainId][_message.source] = true;
+        withdrawEpochs[_message.id].approveActual++;
+        withdrawEpochs[_message.id].approved[_chainId][_message.source] = true;
         if (
-            _withdrawEpochs[_message.id].approveExpected ==
-            _withdrawEpochs[_message.id].approveActual
+            withdrawEpochs[_message.id].approveExpected ==
+            withdrawEpochs[_message.id].approveActual
         ) {
             _fulfillWithdrawEpoch();
         }
