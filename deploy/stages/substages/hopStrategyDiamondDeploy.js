@@ -68,21 +68,24 @@ module.exports = async ({
     "HSPrepareMigrationFacet",
     "HSStatsFacet",
     "HSUtilsFacet",
-    "HSWithdrawAndExitFacet"
+    "HSWithdrawAndExitFacet",
+    "BSLayerZeroFacet"
+  ];
+
+  const libraries = [
+    'HSLib',
+    'BSOneInchLib',
+    'InitializerLib',
+    'PausabilityLib',
+    'RolesManagementLib'
   ];
 
   await diamond.deploy('HopStrategy', {
     from: deployer,
-    owner: deployer,
     facets,
     log: true,
-    libraries: [
-      'HSLib',
-      'BSOneInchLib',
-      'InitializerLib',
-      'PausabilityLib',
-      'RolesManagementLib'
-    ]
+    libraries,
+    execute
   });
 
   await manipulateFacet(
@@ -91,20 +94,5 @@ module.exports = async ({
     deployments,
     require('hardhat-deploy/extendedArtifacts/OwnershipFacet.json').abi
   );
-
-  await diamond.deploy('HopStrategy', {
-    from: deployer,
-    owner: deployer,
-    facets: [...facets, "BSLayerZeroFacet"],
-    log: true,
-    libraries: [
-      'HSLib',
-      'BSOneInchLib',
-      'InitializerLib',
-      'PausabilityLib',
-      'RolesManagementLib'
-    ],
-    execute
-  });
 }
 module.exports.tags = ["hopStrategyDiamondDeploy", "hop"];

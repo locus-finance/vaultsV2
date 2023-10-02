@@ -118,6 +118,13 @@ const diamondCut = async (
   );
 }
 
+// EXAMPLE: Standard OwnershipFacet removal.
+// await manipulateFacet(
+//   hre.names.internal.diamonds.hopStrategy,
+//   2, // FacetCutAction.Remove == 2
+//   deployments,
+//   require('hardhat-deploy/extendedArtifacts/OwnershipFacet.json').abi
+// );
 const manipulateFacet = async (
   diamondInstanceName, 
   facetCutAction,
@@ -129,7 +136,7 @@ const manipulateFacet = async (
 ) => {
   const facetAddress = facetNameOrFacetAddress.startsWith("0x") 
     ? facetNameOrFacetAddress 
-    : (await deployments.get(facetName)).address;
+    : (await deployments.get(facetNameOrFacetAddress)).address;
 
   const iface = new hre.ethers.utils.Interface(abi);
   const functions = Object.values(iface.functions);
