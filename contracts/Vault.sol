@@ -2,21 +2,22 @@
 
 pragma solidity ^0.8.19;
 
-import {ERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {ERC4626} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
-import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
-import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import { ERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import { ERC4626 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
+import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
+import { BytesLib } from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
+import { NonblockingLzAppUpgradeable } from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
+import { ERC20Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-import {ISgBridge} from "./interfaces/ISgBridge.sol";
-import {IStargateReceiver} from "./integrations/stargate/IStargate.sol";
-import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
-import {StrategyParams, WithdrawRequest, WithdrawEpoch, IVault} from "./interfaces/IVault.sol";
+import { ISgBridge } from "./interfaces/ISgBridge.sol";
+import { IStargateReceiver } from "./integrations/stargate/IStargate.sol";
+import { IStrategyMessages } from "./interfaces/IStrategyMessages.sol";
+import { StrategyParams, WithdrawRequest, WithdrawEpoch, IVault } from "./interfaces/IVault.sol";
+import { IBaseStrategy } from "./interfaces/IBaseStrategy.sol";
 
 contract Vault is
     Initializable,
@@ -48,6 +49,14 @@ contract Vault is
         sgRouter = _sgRouter;
 
         token.approve(_sgBridge, type(uint256).max);
+        //Optimism
+        _LzIdToNaturalId[111] = 10;
+        //polygon
+        _LzIdToNaturalId[109] = 137;
+        //arbitrum
+        _LzIdToNaturalId[110] = 42161;
+        //base
+        _LzIdToNaturalId[184] = 8453;
     }
 
     uint256 public constant MAX_BPS = 10_000;
@@ -67,6 +76,8 @@ contract Vault is
     mapping(uint256 => WithdrawEpoch) internal _withdrawEpochs;
     mapping(uint16 => mapping(address => mapping(uint256 => bool)))
         internal _usedNonces;
+    mapping(uint16 lzChainId => uint256 nativeChainId)
+        internal _LzIdToNaturalId;
 
     address public sgRouter;
 
@@ -89,16 +100,19 @@ contract Vault is
         emergencyShutdown = _emergencyShutdown;
     }
 
-    function setGovernance(address _newGovernance) external onlyAuthorized() {
-        governance = _newGovernance;
-    }
-
     function totalAssets() public view override returns (uint256) {
         return totalDebt + totalIdle();
     }
 
     function totalIdle() public view returns (uint256) {
         return token.balanceOf(address(this));
+    }
+
+    function addChain(
+        uint16 _lzChainId,
+        uint256 _naturalChainId
+    ) external onlyAuthorized {
+        _LzIdToNaturalId[_lzChainId] = _naturalChainId;
     }
 
     function deposit(
@@ -207,18 +221,21 @@ contract Vault is
                     strategy
                 ] = strategyRequest;
                 amountNeeded -= strategyRequest;
-
-                _sendMessageToStrategy(
-                    chainId,
-                    strategy,
-                    abi.encode(
-                        MessageType.WithdrawSomeRequest,
-                        WithdrawSomeRequest({
-                            id: withdrawEpoch,
-                            amount: strategyRequest
-                        })
-                    )
-                );
+                if (block.chainid == _LzIdToNaturalId[chainId]) {
+                    IBaseStrategy(strategy).withdraw(strategyRequest);
+                } else {
+                    _sendMessageToStrategy(
+                        chainId,
+                        strategy,
+                        abi.encode(
+                            MessageType.WithdrawSomeRequest,
+                            WithdrawSomeRequest({
+                                id: withdrawEpoch,
+                                amount: strategyRequest
+                            })
+                        )
+                    );
+                }
                 strategyRequested++;
             }
         }
@@ -279,15 +296,18 @@ contract Vault is
         });
         strategies[_chainId][_oldStrategy].debtRatio = 0;
         strategies[_chainId][_oldStrategy].totalDebt = 0;
-
-        _sendMessageToStrategy(
-            _chainId,
-            _oldStrategy,
-            abi.encode(
-                MessageType.MigrateStrategyRequest,
-                MigrateStrategyRequest({newStrategy: _newStrategy})
-            )
-        );
+        if (block.chainid == _LzIdToNaturalId[_chainId]) {
+            IBaseStrategy(_oldStrategy).migrate(_newStrategy);
+        } else {
+            _sendMessageToStrategy(
+                _chainId,
+                _oldStrategy,
+                abi.encode(
+                    MessageType.MigrateStrategyRequest,
+                    MigrateStrategyRequest({ newStrategy: _newStrategy })
+                )
+            );
+        }
     }
 
     function sgReceive(
@@ -394,26 +414,29 @@ contract Vault is
         ) {
             debt = _message.totalAssets;
         }
-
-        if (_message.giveToStrategy > 0) {
-            _bridge(
-                _message.giveToStrategy,
-                _chainId,
-                _message.strategy,
-                abi.encode(
-                    MessageType.AdjustPositionRequest,
-                    AdjustPositionRequest({debtOutstanding: debt})
-                )
-            );
+        if (block.chainid == _LzIdToNaturalId[_chainId]) {
+            IBaseStrategy(_message.strategy).adjustPosition(debt);
         } else {
-            _sendMessageToStrategy(
-                _chainId,
-                _message.strategy,
-                abi.encode(
-                    MessageType.AdjustPositionRequest,
-                    AdjustPositionRequest({debtOutstanding: debt})
-                )
-            );
+            if (_message.giveToStrategy > 0) {
+                _bridge(
+                    _message.giveToStrategy,
+                    _chainId,
+                    _message.strategy,
+                    abi.encode(
+                        MessageType.AdjustPositionRequest,
+                        AdjustPositionRequest({ debtOutstanding: debt })
+                    )
+                );
+            } else {
+                _sendMessageToStrategy(
+                    _chainId,
+                    _message.strategy,
+                    abi.encode(
+                        MessageType.AdjustPositionRequest,
+                        AdjustPositionRequest({ debtOutstanding: debt })
+                    )
+                );
+            }
         }
 
         StrategyParams memory params = strategies[_chainId][_message.strategy];
@@ -510,7 +533,7 @@ contract Vault is
             revert InsufficientFunds(nativeFee, address(this).balance);
         }
 
-        lzEndpoint.send{value: nativeFee}(
+        lzEndpoint.send{ value: nativeFee }(
             _chainId,
             remoteAndLocalAddresses,
             _payload,
@@ -657,7 +680,7 @@ contract Vault is
         bytes memory _payload
     ) internal {
         uint256 fee = sgBridge.feeForBridge(_destChainId, _dest, _payload);
-        sgBridge.bridge{value: fee}(
+        sgBridge.bridge{ value: fee }(
             address(token),
             _amount,
             _destChainId,
