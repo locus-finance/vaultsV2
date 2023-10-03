@@ -17,6 +17,8 @@ import "../integrations/hop/IRouter.sol";
 contract HopStrategy is Initializable, BaseStrategy {
     using SafeERC20 for IERC20;
 
+    uint256 public constant DEFAULT_SLIPPAGE = 9_800;
+
     address internal constant HOP_ROUTER =
         0x10541b07d8Ad2647Dc6cD67abd4c03575dade261;
     address internal constant STAKING_REWARD =
@@ -46,9 +48,9 @@ contract HopStrategy is Initializable, BaseStrategy {
         IERC20 _want,
         address _vault,
         uint16 _vaultChainId,
+        uint16 _currentChainId,
         address _sgBridge,
-        address _sgRouter,
-        uint256 _slippage
+        address _router
     ) external initializer {
         __BaseStrategy_init(
             _lzEndpoint,
@@ -56,10 +58,10 @@ contract HopStrategy is Initializable, BaseStrategy {
             _want,
             _vault,
             _vaultChainId,
-            uint16(block.chainid),
+            _currentChainId,
             _sgBridge,
-            _sgRouter,
-            _slippage
+            _router,
+            DEFAULT_SLIPPAGE
         );
         IERC20(LP).safeApprove(STAKING_REWARD, type(uint256).max);
         IERC20(LP).safeApprove(HOP_ROUTER, type(uint256).max);

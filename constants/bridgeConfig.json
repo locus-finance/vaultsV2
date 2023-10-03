@@ -53,7 +53,7 @@
         "sgBridge": "0x0eAaDb50167702993fe0b4d5Cce7d6a3C1572109",
         "sgRouter": "0xB0D502E938ed5f4df2E681fE6E419ff29631d62b",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
-        "vault": "0xe6d244b77cdb5fda68390676c65a1a8c1c72b611"
+        "vault": "0x053d5f68E0DAe1aA8C538C4034d57A75Ac520880"
     },
     "polygon": {
         "chainId": 109,
@@ -64,17 +64,33 @@
         "sgBridge": "0x1f2833baCcF2C96a7A6D98bA42Ed8aDfCF68fa99",
         "sgRouter": "0x45A01E4e04F14f7A4a6702c74187c5F6222033cd",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
-        "PearlStrategy": "0xc051345ada30e8c72a10df5462bb67479ec46c0b"
+        "PearlStrategy": "0x1516528cdfb031887aa30da030aa7dce0aa92d04",
+        "TestStrategy": "0x1516528cdfb031887aa30da030aa7dce0aa92d04"
     },
     "arbitrumOne": {
         "chainId": 110,
         "USDC": {
-            "address": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
+            "address": "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
             "poolId": 1
         },
-        "sgBridge": "0x352d8275AAE3e0c2404d9f68f6cEE084B5bEB3DD",
+        "sgBridge": "0x6562007a38d2D3127f15a9d9F631BE7e0206CF92",
         "sgRouter": "0x53Bf833A5d6c4ddA888F69c22C88C9f356a41614",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
-        "slippage": 9500
+        "HopStrategy": "0x06ee0ecc0088bb6f6ebff75ad93801e2008119e7",
+        "slippage": 9500,
+        "TestStrategy": "0x06ee0ecc0088bb6f6ebff75ad93801e2008119e7"
+    },
+    "base": {
+        "chainId": 184,
+        "USDC": {
+            "address": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
+            "poolId": 1
+        },
+        "sgBridge": "0xbfcbbf26acb88d4fd529dcaebc3de6083ccc8746",
+        "sgRouter": "0x45f1A95A4D3f3836523F5c83673c797f4d4d263B",
+        "lzEndpoint": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7",
+        "AeroStrategy": " ",
+        "slippage": 9500,
+        "TestStrategy": " "
     }
 }

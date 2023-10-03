@@ -15,7 +15,6 @@
   "event StrategyWithdrawnSome(uint16 indexed,address indexed,uint256,uint256,uint256)",
   "event Transfer(address indexed,address indexed,uint256)",
   "function DEFAULT_PAYLOAD_SIZE_LIMIT() view returns (uint256)",
-  "function MAX_BPS() view returns (uint256)",
   "function addStrategy(uint16,address,uint256,uint256,address)",
   "function allowance(address,address) view returns (uint256)",
   "function approve(address,uint256) returns (bool)",
@@ -57,6 +56,7 @@
   "function setPrecrime(address)",
   "function setReceiveVersion(uint16)",
   "function setSendVersion(uint16)",
+  "function setStrategist(uint16,address,address)",
   "function setTrustedRemote(uint16,bytes)",
   "function setTrustedRemoteAddress(uint16,bytes)",
   "function sgBridge() view returns (address)",
@@ -76,5 +76,6 @@
   "function trustedRemoteLookup(uint16) view returns (bytes)",
   "function updateStrategyDebtRatio(uint16,address,uint256)",
   "function withdraw(uint256,address,uint256)",
-  "function withdrawEpoch() view returns (uint256)"
+  "function withdrawEpoch() view returns (uint256)",
+  "function withdrawEpochs(uint256) view returns (bool, uint256, uint256)"
 ]
