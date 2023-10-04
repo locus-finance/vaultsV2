@@ -6,7 +6,7 @@
             "poolId": 1
         },
         "sgBridge": "0x1B7Aa2A0AE1A15E3FBBD2e471179E9C5830Cdf96",
-        "sgRouter": "0x13093E05Eb890dfA6DacecBdE51d24DabAb2Faa1",
+        "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0x93f54D755A063cE7bB9e6Ac47Eccc8e33411d706",
         "vault": "0x0BFf684cFDBd855402B1cFcE7f562bBfAfd1B824"
     },
@@ -17,7 +17,7 @@
             "poolId": 1
         },
         "sgBridge": "0x029Ec8aB61C0824005b19cFb9232aF5a11e2A2c7",
-        "sgRouter": "0xb850873f4c993Ac2405A1AdD71F6ca5D4d4d6b4f",
+        "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0x6aB5Ae6822647046626e83ee6dB8187151E1d5ab",
         "TestStrategy": "0x8637f8AFe33f98eEEfDfD32D0eB52b28d16a05fA"
     },
@@ -28,7 +28,7 @@
             "poolId": 1
         },
         "sgBridge": "0xf1784bFe7d54F1e5315f9769Ed4a24Ad85Be123e",
-        "sgRouter": "0x95461eF0e0ecabC049a5c4a6B98Ca7B335FAF068",
+        "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0xae92d5aD7583AD66E49A0c67BAd18F6ba52dDDc1",
         "vault": "0xC7AD81c5Fd1595720fAb04fa66BdcB7Aa1D5e12A",
         "TestStrategy": "0x2c92df5De5dd5012F49533B5b0c4221756E62778"
@@ -40,7 +40,7 @@
             "poolId": 1
         },
         "sgBridge": "0x053DCEfBAd276D90d242d1cbFCB8affE9640aCe5",
-        "sgRouter": "0x817436a076060D158204d955E5403b6Ed0A5fac0",
+        "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0xf69186dfBa60DdB133E91E9A4B5673624293d8F8",
         "TestStrategy": "0x1B8D2f715EEe6802250622214e4C1eBBF5A7639C"
     },
@@ -51,7 +51,7 @@
             "poolId": 1
         },
         "sgBridge": "0x0eAaDb50167702993fe0b4d5Cce7d6a3C1572109",
-        "sgRouter": "0xB0D502E938ed5f4df2E681fE6E419ff29631d62b",
+        "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
         "vault": "0x053d5f68E0DAe1aA8C538C4034d57A75Ac520880"
     },
@@ -62,7 +62,7 @@
             "poolId": 1
         },
         "sgBridge": "0x1f2833baCcF2C96a7A6D98bA42Ed8aDfCF68fa99",
-        "sgRouter": "0x45A01E4e04F14f7A4a6702c74187c5F6222033cd",
+        "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
         "PearlStrategy": "0x1516528cdfb031887aa30da030aa7dce0aa92d04",
         "TestStrategy": "0x1516528cdfb031887aa30da030aa7dce0aa92d04"
@@ -74,7 +74,7 @@
             "poolId": 1
         },
         "sgBridge": "0x6562007a38d2D3127f15a9d9F631BE7e0206CF92",
-        "sgRouter": "0x53Bf833A5d6c4ddA888F69c22C88C9f356a41614",
+        "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
         "HopStrategy": "0x06ee0ecc0088bb6f6ebff75ad93801e2008119e7",
         "slippage": 9500,
@@ -87,7 +87,7 @@
             "poolId": 1
         },
         "sgBridge": "0xbfcbbf26acb88d4fd529dcaebc3de6083ccc8746",
-        "sgRouter": "0x45f1A95A4D3f3836523F5c83673c797f4d4d263B",
+        "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7",
         "AeroStrategy": " ",
         "slippage": 9500,
