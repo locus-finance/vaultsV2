@@ -8,13 +8,13 @@
       },
       "wantTokenTicker": "USDC",
       "wantTokenAddress": "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
-      "address": "0x053d5f68E0DAe1aA8C538C4034d57A75Ac520880",
+      "address": "0xd39583c9d1001c237151a5a6d4c7a7207b2c08e3",
       "decimals": "6",
       "managementFee": "0.7",
       "performanceFee": "5",
       "strategies": {
         "HopStrategy": {
-          "address": "0x06EE0ECc0088Bb6F6EBff75aD93801E2008119E7",
+          "address": "0xe6aAE58caC2c7c7A785a38e7147be92e8e3F6484",
           "network": "Arbitrum One",
           "chainId": "42161",
           "nativeToken": "ETH",
@@ -24,7 +24,7 @@
           ]
         },
         "PearlStrategy": {
-          "address": "0x1516528cdfb031887aa30da030aa7dce0aa92d04",
+          "address": "0x7A5374650b4Dc4Fa15408412bD01fb1BdcB97BA8",
           "network": "Polygon",
           "chainId": "137",
           "nativeToken": "MATIC",
@@ -34,13 +34,13 @@
 
           ]
         },
-        "AeroDrome" : {
+        "VeloDrome" : {
           "address": " ",
-          "network": "Base",
-          "chainId": "8453",
-          "nativeToken": "ETH",
+          "network": "Polygon",
+          "chainId": "137",
+          "nativeToken": "MATIC",
           "wantTokenTicker": "USDbC",
-          "wantTokenAddress": "0xd9aaec86b65d86f6a7b5b1b0c42ffa531710b6ca",
+          "wantTokenAddress": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
           "protocols": [
 
           ]
