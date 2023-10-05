@@ -32,7 +32,7 @@ contract Vault is
         address _governance,
         address _lzEndpoint,
         IERC20 _token,
-        address _sgBridge,
+
         address _sgRouter
     ) external override initializer {
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
@@ -41,10 +41,7 @@ contract Vault is
 
         governance = _governance;
         token = _token;
-        sgBridge = ISgBridge(_sgBridge);
         sgRouter = _sgRouter;
-
-        token.approve(_sgBridge, type(uint256).max);
     }
 
     address public override governance;
@@ -105,6 +102,7 @@ contract Vault is
 
 
     function setSgBridge(address _newSgBridge) external onlyAuthorized {
+        token.approve(_newSgBridge, type(uint256).max);
         sgBridge = ISgBridge(_newSgBridge);
     }
 
