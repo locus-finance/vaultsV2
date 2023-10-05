@@ -32,7 +32,6 @@ contract Vault is
         address _governance,
         address _lzEndpoint,
         IERC20 _token,
-
         address _sgRouter
     ) external override initializer {
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);

@@ -269,11 +269,6 @@
         },
         {
           "internalType": "address",
-          "name": "_sgBridge",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
           "name": "_sgRouter",
           "type": "address"
         }
