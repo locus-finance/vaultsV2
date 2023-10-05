@@ -104,6 +104,11 @@ contract Vault is
     }
 
 
+    function setSgBridge(address _newSgBridge) external onlyAuthorized {
+        sgBridge = ISgBridge(_newSgBridge);
+    }
+
+
     function setStrategist(
         uint16 _chainId,
         address _strategy,
@@ -273,8 +278,6 @@ contract Vault is
         address _oldStrategy,
         address _newStrategy
     ) external onlyAuthorized nonAction(_chainId, _newStrategy){
-        require(_newStrategy != address(0), "V7");
-
         StrategyParams memory params = strategies[_chainId][_oldStrategy];
         strategies[_chainId][_newStrategy] = StrategyParams({
             activation: params.lastReport,

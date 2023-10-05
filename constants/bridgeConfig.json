@@ -50,7 +50,7 @@
             "address": "0x7f5c764cbc14f9669b88837ca1490cca17c31607",
             "poolId": 1
         },
-        "sgBridge": "0x0eAaDb50167702993fe0b4d5Cce7d6a3C1572109",
+        "sgBridge": "0xe46a4bC0fDc515Ec7eD7c2F61B75b086ED61d8e0",
         "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
         "vault": "0x053d5f68E0DAe1aA8C538C4034d57A75Ac520880"
@@ -61,7 +61,7 @@
             "address": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
             "poolId": 1
         },
-        "sgBridge": "0x1f2833baCcF2C96a7A6D98bA42Ed8aDfCF68fa99",
+        "sgBridge": "0x4a7544b8b8a8d06bbdde70acca51e1f49f376c1b",
         "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
         "PearlStrategy": "0x1516528cdfb031887aa30da030aa7dce0aa92d04",
@@ -73,7 +73,7 @@
             "address": "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
             "poolId": 1
         },
-        "sgBridge": "0x6562007a38d2D3127f15a9d9F631BE7e0206CF92",
+        "sgBridge": "0xfAd9dFD9D3D7656ecBC585Be77AEF85B6Bf01016",
         "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
         "HopStrategy": "0x06ee0ecc0088bb6f6ebff75ad93801e2008119e7",
@@ -86,7 +86,7 @@
             "address": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
             "poolId": 1
         },
-        "sgBridge": "0xbfcbbf26acb88d4fd529dcaebc3de6083ccc8746",
+        "sgBridge": " ",
         "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7",
         "AeroStrategy": " ",

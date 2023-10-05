@@ -56,6 +56,7 @@
   "function setPrecrime(address)",
   "function setReceiveVersion(uint16)",
   "function setSendVersion(uint16)",
+  "function setSgBridge(address)",
   "function setStrategist(uint16,address,address)",
   "function setTrustedRemote(uint16,bytes)",
   "function setTrustedRemoteAddress(uint16,bytes)",
