@@ -150,7 +150,6 @@ contract LocusStaking is ReentrancyGuard, Pausable, AccessControl {
         emit RewardAdded(reward);
     }
 
-    // Added to support recovering LP Rewards from other systems such as BAL to be distributed to holders
     function recoverTokens(
         address tokenAddress,
         uint256 tokenAmount
