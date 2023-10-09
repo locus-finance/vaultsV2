@@ -108,11 +108,14 @@ contract Migration is Ownable, ReentrancyGuard {
 
     function emergencyExit() external onlyOwner {
         //emergency case
-        //do i need to transfer share tokens
         token.transfer(treasury, token.balanceOf(address(this)));
         IERC20(address(vaultV2)).transfer(
             treasury,
             IERC20(address(vaultV2)).balanceOf(address(this))
+        );
+        IERC20(address(vaultV1)).transfer(
+            treasury,
+            IERC20(address(vaultV1)).balanceOf(address(this))
         );
     }
 
