@@ -90,7 +90,7 @@ contract VotingEscrow is ReentrancyGuard, Ownable2Step {
 
     uint8 public immutable decimals;
     string public constant name = "Voting Escrow Locus Token";
-    string public constant symbol = "veLCT";
+    string public constant symbol = "veLCS";
 
     uint256 public minLockDuration;
 

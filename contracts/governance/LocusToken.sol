@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetFixedSupply.sol";
 contract LocusToken is ERC20PresetFixedSupply, Ownable {
 
     constructor()
-        ERC20PresetFixedSupply("Locus Token", "LCT", 15_000_000 ether, msg.sender)
+        ERC20PresetFixedSupply("Locus Token", "LCS", 15_000_000 ether, msg.sender)
     {}
 
     function burn(uint256 amount) public override onlyOwner {
