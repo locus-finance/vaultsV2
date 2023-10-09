@@ -63,7 +63,6 @@ interface IVault {
         address _governance,
         address _lzEndpoint,
         IERC20 _token,
-        address _sgBridge,
         address _sgRouter
     ) external;
 

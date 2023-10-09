@@ -25,6 +25,7 @@ const {
   OPTIMISM_NODE,
   ARBITRUM_NODE,
   BASE_NODE,
+
 } = process.env;
 
 task("fork_reset", "Reset to local fork", async (taskArgs) => {
@@ -33,8 +34,6 @@ task("fork_reset", "Reset to local fork", async (taskArgs) => {
     params: [],
   });
 });
-
-const polygonMumbaiUrl = `https://rpc.ankr.com/polygon_mumbai`;
 
 module.exports = {
   mocha: {
@@ -60,8 +59,8 @@ module.exports = {
   },
   namedAccounts: {
     deployer: {
-      default: 0,
-    },
+      default: 0
+    }
   },
   networks: {
     // localhost: {},
@@ -82,7 +81,7 @@ module.exports = {
     optimismgoerli: {
       url: OPTIMISM_NODE,
       accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
-      gasPrice: 10_000_000_000,
+      gasPrice: 10_000_000_000
     },
     sepolia: {
       url: `https://rpc.ankr.com/eth_sepolia`,
@@ -177,15 +176,16 @@ module.exports = {
     flat: true,
     spacing: 2,
     format: "minimal",
-    only: [":Vault$", ":BaseStrategy$", ":SgBridge$", ":TestStrategy$"],
+    only: [":Vault$", ":BaseStrategy$", ":SgBridge$", ":TestStrategy$"]
   },
   contractSizer: {
     alphaSort: true,
     disambiguatePaths: false,
     runOnCompile: true,
-    strict: true,
-    only: [":Vault"],
-  },
+
+    strict: true
+  }
+
 };
 
 function getSortedFiles(dependenciesGraph) {
@@ -230,7 +230,7 @@ subtask(
   .addOptionalParam("output", undefined, undefined, types.string)
   .setAction(async ({ files, output }, { run }) => {
     const dependencyGraph = await run("flat:get-dependency-graph", {
-      files,
+      files
     });
 
     let flattened = "";
@@ -295,11 +295,11 @@ subtask("flat:get-dependency-graph")
         : files.map((f) => fs.realpathSync(f));
 
     const sourceNames = await run("compile:solidity:get-source-names", {
-      sourcePaths,
+      sourcePaths
     });
 
     const dependencyGraph = await run("compile:solidity:get-dependency-graph", {
-      sourceNames,
+      sourceNames
     });
 
     return dependencyGraph;
@@ -322,7 +322,7 @@ task("flat", "Flattens and prints contracts and their dependencies")
     console.log(
       await run("flat:get-flattened-sources", {
         files,
-        output,
+        output
       })
     );
   });
