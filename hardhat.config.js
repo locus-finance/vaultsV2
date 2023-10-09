@@ -61,7 +61,6 @@ module.exports = {
     }
   },
   networks: {
-    localhost: {},
     hardhat: {
       forking: {
         url: BASE_NODE
