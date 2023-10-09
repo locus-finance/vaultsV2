@@ -38,7 +38,7 @@ contract LocusStaking is ReentrancyGuard, Pausable, AccessControl {
     IERC20 public stakingToken;
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
-    uint256 public rewardsDuration = 12;
+    uint256 public rewardsDuration = 4 weeks;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
 
@@ -112,8 +112,8 @@ contract LocusStaking is ReentrancyGuard, Pausable, AccessControl {
         uint256 reward = rewards[_msgSender()];
         if (reward > 0) {
             rewards[_msgSender()] = 0;
-            rewardsToken.safeTransfer(_msgSender(), reward);
             totalReward -= reward;
+            rewardsToken.safeTransfer(_msgSender(), reward);
             emit RewardPaid(_msgSender(), reward);
         }
     }
