@@ -100,10 +100,7 @@ contract VotingEscrow is ReentrancyGuard, Ownable2Step {
     // @param _name Token name
     // @param _symbol Token symbol
     // """
-    constructor(
-        address tokenAddr,
-        uint256 _minLockDuration
-    ) {
+    constructor(address tokenAddr, uint256 _minLockDuration) {
         pointHistory[0].blk = block.number;
         pointHistory[0].ts = block.timestamp;
         decimals = IERC20Metadata(tokenAddr).decimals();
@@ -401,7 +398,8 @@ contract VotingEscrow is ReentrancyGuard, Ownable2Step {
         if (_value == 0) revert CannotLockZero();
         if (_locked.amount > 0) revert LockHasNotYetBeenCreated();
         if (unlockTime <= block.timestamp) revert CannotCreateLockInPastTime();
-        if (unlockTime < minLockDuration + block.timestamp) revert CannotCreateLockForLessThenMinLock();
+        if (unlockTime < minLockDuration + block.timestamp)
+            revert CannotCreateLockForLessThenMinLock();
         if (unlockTime > block.timestamp + MAXTIME) revert MaxTimeHit();
 
         _locked.start = block.timestamp;
@@ -440,10 +438,18 @@ contract VotingEscrow is ReentrancyGuard, Ownable2Step {
 
         if (_locked.end <= block.timestamp) revert LockExpired();
         if (_locked.amount == 0) revert CannotAddToLockWithZeroBalance();
-        if (unlockTimeNearestWeek <= _locked.end) revert CanOnlyModifyLockDuration();
-        if (unlockTimeNearestWeek > block.timestamp + MAXTIME) revert MaxTimeHit();
+        if (unlockTimeNearestWeek <= _locked.end)
+            revert CanOnlyModifyLockDuration();
+        if (unlockTimeNearestWeek > block.timestamp + MAXTIME)
+            revert MaxTimeHit();
 
-        _depositFor(msg.sender, 0, unlockTimeNearestWeek, _locked, INCREASE_UNLOCK_TIME);
+        _depositFor(
+            msg.sender,
+            0,
+            unlockTimeNearestWeek,
+            _locked,
+            INCREASE_UNLOCK_TIME
+        );
     }
 
     // """
