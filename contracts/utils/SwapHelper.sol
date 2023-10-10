@@ -21,7 +21,8 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     enum JobPurpose {
-        QUOTE, SWAP_CALLDATA
+        QUOTE,
+        SWAP_CALLDATA
     }
 
     enum StrategistInterference {
@@ -66,7 +67,8 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
     bytes32 public constant SWAP_AUTHORIZED_ROLE =
         keccak256("SWAP_AUTHORIZED_ROLE");
     bytes32 public constant STRATEGIST_ROLE = keccak256("STRATEGIST_ROLE");
-    bytes32 public constant QUOTE_AUTHORIZED_ROLE = keccak256("QUOTE_AUTHORIZED_ROLE");
+    bytes32 public constant QUOTE_AUTHORIZED_ROLE =
+        keccak256("QUOTE_AUTHORIZED_ROLE");
 
     address public immutable aggregationRouter;
 
@@ -100,16 +102,19 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         setChainlinkToken(chainlinkTokenAddress);
         setOracleAddress(chainlinkOracleAddress);
 
-        setJobInfo(JobPurpose.QUOTE, JobInfo({
-            jobId: bytes32(bytes(_quoteJobId)),
-            jobFeeInJuels: 0
-        }));
+        setJobInfo(
+            JobPurpose.QUOTE,
+            JobInfo({jobId: bytes32(bytes(_quoteJobId)), jobFeeInJuels: 0})
+        );
         setFeeInHundredthsOfLink(JobPurpose.QUOTE, _quoteJobFee);
 
-        setJobInfo(JobPurpose.SWAP_CALLDATA, JobInfo({
-            jobId: bytes32(bytes(_swapCalldataJobId)),
-            jobFeeInJuels: 0
-        }));
+        setJobInfo(
+            JobPurpose.SWAP_CALLDATA,
+            JobInfo({
+                jobId: bytes32(bytes(_swapCalldataJobId)),
+                jobFeeInJuels: 0
+            })
+        );
         setFeeInHundredthsOfLink(JobPurpose.SWAP_CALLDATA, _swapCalldataJobFee);
 
         aggregationRouter = _aggregationRouter;
@@ -135,7 +140,10 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         return oracleAddress;
     }
 
-    function setJobInfo(JobPurpose _purpose, JobInfo memory _info) public onlyRole(STRATEGIST_ROLE) {
+    function setJobInfo(
+        JobPurpose _purpose,
+        JobInfo memory _info
+    ) public onlyRole(STRATEGIST_ROLE) {
         jobInfos[uint256(_purpose)] = _info;
     }
 
@@ -143,18 +151,17 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         JobPurpose _purpose,
         uint256 _feeInHundredthsOfLink
     ) public onlyRole(STRATEGIST_ROLE) {
-        jobInfos[uint256(_purpose)].jobFeeInJuels = (_feeInHundredthsOfLink * LINK_DIVISIBILITY) / 100;
+        jobInfos[uint256(_purpose)].jobFeeInJuels =
+            (_feeInHundredthsOfLink * LINK_DIVISIBILITY) /
+            100;
     }
 
     function getFeeInHundredthsOfLink(
         JobPurpose _purpose
-    )
-        public
-        view
-        onlyRole(STRATEGIST_ROLE)
-        returns (uint256)
-    {
-        return (jobInfos[uint256(_purpose)].jobFeeInJuels * 100) / LINK_DIVISIBILITY;
+    ) public view onlyRole(STRATEGIST_ROLE) returns (uint256) {
+        return
+            (jobInfos[uint256(_purpose)].jobFeeInJuels * 100) /
+            LINK_DIVISIBILITY;
     }
 
     function addSubscriber(
@@ -212,7 +219,10 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         quoteBuffer.swapInfo.dstToken = dst;
         quoteBuffer.swapInfo.inAmount = amount;
         // Send the request to the Chainlink oracle
-        sendOperatorRequest(req, jobInfos[uint256(JobPurpose.QUOTE)].jobFeeInJuels);
+        sendOperatorRequest(
+            req,
+            jobInfos[uint256(JobPurpose.QUOTE)].jobFeeInJuels
+        );
     }
 
     function _fulfillQuoteRequest() internal {
@@ -245,15 +255,23 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         isReadyToFulfillQuote = false;
     }
 
-    function strategistFulfillQuote(uint256 toAmount) external onlyRole(STRATEGIST_ROLE) {
+    function strategistFulfillQuote(
+        uint256 toAmount
+    ) external onlyRole(STRATEGIST_ROLE) {
         isReadyToFulfillQuote = false; // reset the flag
         quoteBuffer.outAmount = toAmount;
         emit QuoteRegistered(toAmount);
         _fulfillQuoteRequest();
-        emit StrategistInterferred(StrategistInterference.QUOTE_REQUEST_PERFORMED_MANUALLY);
+        emit StrategistInterferred(
+            StrategistInterference.QUOTE_REQUEST_PERFORMED_MANUALLY
+        );
     }
 
-    function _setMaxAllowancesIfNeededAndCheckPayment(address src, uint256 amount, address sender) internal {
+    function _setMaxAllowancesIfNeededAndCheckPayment(
+        address src,
+        uint256 amount,
+        address sender
+    ) internal {
         IERC20 srcErc20 = IERC20(src);
         if (src == ONE_INCH_ETH_ADDRESS) {
             if (msg.value != amount) {
@@ -308,12 +326,11 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
             )
         );
         req.add("contact", "locus-finance");
-        swapBuffer = SwapInfo({
-            srcToken: src,
-            dstToken: dst,
-            inAmount: amount
-        });
-        sendOperatorRequest(req, jobInfos[uint256(JobPurpose.SWAP_CALLDATA)].jobFeeInJuels);
+        swapBuffer = SwapInfo({srcToken: src, dstToken: dst, inAmount: amount});
+        sendOperatorRequest(
+            req,
+            jobInfos[uint256(JobPurpose.SWAP_CALLDATA)].jobFeeInJuels
+        );
     }
 
     function registerSwapCalldata(
@@ -345,16 +362,20 @@ contract SwapHelper is AccessControl, ChainlinkClient, ISwapHelper {
         isReadyToFulfillSwap = false;
     }
 
-    function strategistFulfillSwap(bytes memory _swapCalldata) 
-        external 
-        payable 
-        onlyRole(STRATEGIST_ROLE)
-    {
+    function strategistFulfillSwap(
+        bytes memory _swapCalldata
+    ) external payable onlyRole(STRATEGIST_ROLE) {
         isReadyToFulfillSwap = false;
         _lastSwapCalldata = _swapCalldata;
-        _setMaxAllowancesIfNeededAndCheckPayment(swapBuffer.srcToken, swapBuffer.inAmount, _msgSender());
+        _setMaxAllowancesIfNeededAndCheckPayment(
+            swapBuffer.srcToken,
+            swapBuffer.inAmount,
+            _msgSender()
+        );
         _fulfillSwap();
-        emit StrategistInterferred(StrategistInterference.SWAP_CALLDATA_REQUEST_PEROFRMED_MANUALLY);
+        emit StrategistInterferred(
+            StrategistInterference.SWAP_CALLDATA_REQUEST_PEROFRMED_MANUALLY
+        );
     }
 
     function withdrawLink() public onlyRole(STRATEGIST_ROLE) {

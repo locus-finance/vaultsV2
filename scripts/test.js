@@ -80,7 +80,7 @@ async function main() {
 
   // console.log(`Your address: ${deployer}. Network: ${hre.network.name}`);
 
-  const config = bridgeConfig["optimism"];
+  const config = bridgeConfig.optimism;
   const Vault = await hre.ethers.getContractFactory("Vault");
   const TOKEN = "USDC";
 

@@ -17,9 +17,9 @@ contract Migration is Ownable, ReentrancyGuard {
 
     address[] public users;
 
-    mapping(address user => uint256 balance) userToBalance;
+    mapping(address user => uint256 balance) public userToBalance;
 
-    address[] public notWithdrawedUsers;
+    address[] public notWithdrawnUsers;
 
     constructor(
         address _vaultV1,
@@ -52,8 +52,8 @@ contract Migration is Ownable, ReentrancyGuard {
                 IERC20(address(vaultV1)).allowance(users[i], address(this)) <
                 userBalance
             ) {
-                if (!checkUserExistance(users[i])) {
-                    notWithdrawedUsers.push(users[i]);
+                if (!checkUserExistence(users[i])) {
+                    notWithdrawnUsers.push(users[i]);
                 }
                 continue;
             }
@@ -71,17 +71,17 @@ contract Migration is Ownable, ReentrancyGuard {
     }
 
     function withdrawUsersWithDetectedError() external nonReentrant {
-        for (uint256 i = 0; i < notWithdrawedUsers.length; i++) {
-            if (notWithdrawedUsers[i] == address(0)) {
+        for (uint256 i = 0; i < notWithdrawnUsers.length; i++) {
+            if (notWithdrawnUsers[i] == address(0)) {
                 continue;
             }
             uint256 userBalance = IERC20(address(vaultV1)).balanceOf(
-                notWithdrawedUsers[i]
+                notWithdrawnUsers[i]
             );
             if (
                 userBalance == 0 ||
                 IERC20(address(vaultV1)).allowance(
-                    notWithdrawedUsers[i],
+                    notWithdrawnUsers[i],
                     address(this)
                 ) <
                 userBalance
@@ -89,14 +89,14 @@ contract Migration is Ownable, ReentrancyGuard {
                 continue;
             }
             IERC20(address(vaultV1)).transferFrom(
-                notWithdrawedUsers[i],
+                notWithdrawnUsers[i],
                 address(this),
                 userBalance
             );
 
-            userToBalance[notWithdrawedUsers[i]] += userBalance;
+            userToBalance[notWithdrawnUsers[i]] += userBalance;
 
-            notWithdrawedUsers[i] = address(0);
+            notWithdrawnUsers[i] = address(0);
         }
         vaultV1.withdraw();
     }
@@ -119,9 +119,9 @@ contract Migration is Ownable, ReentrancyGuard {
         );
     }
 
-    function checkUserExistance(address _user) internal view returns (bool) {
-        for (uint256 i = 0; i < notWithdrawedUsers.length; i++) {
-            if (notWithdrawedUsers[i] == _user) {
+    function checkUserExistence(address _user) internal view returns (bool) {
+        for (uint256 i = 0; i < notWithdrawnUsers.length; i++) {
+            if (notWithdrawnUsers[i] == _user) {
                 return true;
             }
         }

@@ -99,12 +99,10 @@ contract Vault is
         governance = _newGovernance;
     }
 
-
     function setSgBridge(address _newSgBridge) external onlyAuthorized {
         token.approve(_newSgBridge, type(uint256).max);
         sgBridge = ISgBridge(_newSgBridge);
     }
-
 
     function setStrategist(
         uint16 _chainId,
@@ -113,7 +111,6 @@ contract Vault is
     ) external onlyAuthorized {
         strategies[_chainId][_strategy].strategist = _newStrategist;
     }
-
 
     function totalAssets() public view override returns (uint256) {
         return totalDebt + totalIdle();
@@ -144,7 +141,7 @@ contract Vault is
         uint256 _debtRatio,
         uint256 _performanceFee,
         address _strategist
-    ) external override onlyAuthorized nonAction(_chainId, _strategy){
+    ) external override onlyAuthorized nonAction(_chainId, _strategy) {
         require(totalDebtRatio + _debtRatio <= 10_000, "V5");
 
         strategies[_chainId][_strategy] = StrategyParams({
@@ -177,8 +174,12 @@ contract Vault is
         return _creditAvailable(_chainId, _strategy);
     }
 
-    function handleWithdrawals() external override onlyAuthorized WithdrawInProgress {
-
+    function handleWithdrawals()
+        external
+        override
+        onlyAuthorized
+        WithdrawInProgress
+    {
         uint256 withdrawValue = 0;
         for (
             uint256 i = 0;
@@ -274,7 +275,7 @@ contract Vault is
         uint16 _chainId,
         address _oldStrategy,
         address _newStrategy
-    ) external onlyAuthorized nonAction(_chainId, _newStrategy){
+    ) external onlyAuthorized nonAction(_chainId, _newStrategy) {
         StrategyParams memory params = strategies[_chainId][_oldStrategy];
         strategies[_chainId][_newStrategy] = StrategyParams({
             activation: params.lastReport,
@@ -454,8 +455,7 @@ contract Vault is
         uint256 _shares,
         address _recipient,
         uint256 _maxLoss
-    ) internal WithdrawInProgress{
-
+    ) internal WithdrawInProgress {
         _transfer(msg.sender, address(this), _shares);
         withdrawEpochs[withdrawEpoch].requests.push(
             WithdrawRequest({
@@ -496,7 +496,6 @@ contract Vault is
         address _strategy,
         bytes memory _payload
     ) internal isAction(_chainId, _strategy) {
-
         bytes memory remoteAndLocalAddresses = abi.encodePacked(
             _strategy,
             address(this)
@@ -613,8 +612,7 @@ contract Vault is
     function _handleWithdrawSomeResponse(
         uint16 _chainId,
         WithdrawSomeResponse memory _message
-    ) internal isAction(_chainId, _message.source){
-
+    ) internal isAction(_chainId, _message.source) {
         if (_message.loss > 0) {
             _reportLoss(_chainId, _message.source, _message.loss);
         }
