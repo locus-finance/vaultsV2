@@ -17,7 +17,6 @@ module.exports = async function ({ getNamedAccounts }) {
       deployer,
       config.lzEndpoint,
       config[TOKEN].address,
-      config.sgBridge,
       config.sgRouter,
     ],
     {

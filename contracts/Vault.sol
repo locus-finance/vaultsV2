@@ -44,6 +44,7 @@ contract Vault is
     error Vault__V15();
     error Vault__V16();
     error Vault__V17();
+
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
@@ -53,7 +54,6 @@ contract Vault is
         address _governance,
         address _lzEndpoint,
         IERC20 _token,
-        address _sgBridge,
         address _sgRouter
     ) external override initializer {
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
@@ -62,9 +62,7 @@ contract Vault is
 
         governance = _governance;
         token = _token;
-        sgBridge = ISgBridge(_sgBridge);
         sgRouter = _sgRouter;
-        token.approve(_sgBridge, type(uint256).max);
     }
 
     uint16 internal constant VAULT_CHAIN_ID = 116;
@@ -124,6 +122,11 @@ contract Vault is
         governance = _newGovernance;
     }
 
+    function setSgBridge(address _newSgBridge) external onlyAuthorized {
+        token.approve(_newSgBridge, type(uint256).max);
+        sgBridge = ISgBridge(_newSgBridge);
+    }
+
     function setStrategist(
         uint16 _chainId,
         address _strategy,
@@ -143,16 +146,29 @@ contract Vault is
     function deposit(
         uint256 _amount,
         address _recipient
-    ) external override returns (uint256) {
-        return _deposit(_amount, _recipient);
+    ) public override returns (uint256) {
+        if (emergencyShutdown) revert Vault__V11();
+        uint256 shares = _issueSharesForAmount(_recipient, _amount);
+        token.safeTransferFrom(msg.sender, address(this), _amount);
+        return shares;
     }
 
     function withdraw(
         uint256 _maxShares,
         address _recipient,
         uint256 _maxLoss
-    ) external override {
-        _initiateWithdraw(_maxShares, _recipient, _maxLoss);
+    ) public override WithdrawInProgress {
+        _transfer(msg.sender, address(this), _maxShares);
+        withdrawEpochs[withdrawEpoch].requests.push(
+            WithdrawRequest({
+                author: msg.sender,
+                user: _recipient,
+                shares: _maxShares,
+                maxLoss: _maxLoss,
+                expected: _shareValue(_maxShares),
+                success: false
+            })
+        );
     }
 
     function addStrategy(
@@ -183,8 +199,18 @@ contract Vault is
     function debtOutstanding(
         uint16 _chainId,
         address _strategy
-    ) external view returns (uint256) {
-        return _debtOutstanding(_chainId, _strategy);
+    ) public view returns (uint256) {
+        uint256 strategyDebtLimit = (strategies[_chainId][_strategy].debtRatio *
+            totalAssets()) / 10_000;
+        uint256 strategyTotalDebt = strategies[_chainId][_strategy].totalDebt;
+
+        if (emergencyShutdown) {
+            return strategyTotalDebt;
+        } else if (strategyTotalDebt <= strategyDebtLimit) {
+            return 0;
+        } else {
+            return strategyTotalDebt - strategyDebtLimit;
+        }
     }
 
     function creditAvailable(
@@ -362,16 +388,6 @@ contract Vault is
         _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
 
-    function _deposit(
-        uint256 _amount,
-        address _recipient
-    ) internal returns (uint256) {
-        if (emergencyShutdown) revert Vault__V11();
-        uint256 shares = _issueSharesForAmount(_recipient, _amount);
-        token.safeTransferFrom(msg.sender, address(this), _amount);
-        return shares;
-    }
-
     function _handlePayload(
         uint16 _chainId,
         bytes memory _payload,
@@ -405,7 +421,7 @@ contract Vault is
         }
 
         strategies[_chainId][_message.strategy].totalGain += _message.profit;
-        uint256 debt = _debtOutstanding(_chainId, _message.strategy);
+        uint256 debt = debtOutstanding(_chainId, _message.strategy);
         uint256 debtPayment = Math.min(debt, _message.debtPayment);
 
         if (debtPayment > 0) {
@@ -479,24 +495,6 @@ contract Vault is
         strategies[_chainId][_strategy].totalLoss += _loss;
         strategies[_chainId][_strategy].totalDebt -= _loss;
         totalDebt -= _loss;
-    }
-
-    function _initiateWithdraw(
-        uint256 _shares,
-        address _recipient,
-        uint256 _maxLoss
-    ) internal WithdrawInProgress {
-        _transfer(msg.sender, address(this), _shares);
-        withdrawEpochs[withdrawEpoch].requests.push(
-            WithdrawRequest({
-                author: msg.sender,
-                user: _recipient,
-                shares: _shares,
-                maxLoss: _maxLoss,
-                expected: _shareValue(_shares),
-                success: false
-            })
-        );
     }
 
     function _shareValue(uint256 _shares) internal view returns (uint256) {
@@ -583,22 +581,22 @@ contract Vault is
         return Math.min(totalIdle(), strategyDebtLimit - strategyTotalDebt);
     }
 
-    function _debtOutstanding(
-        uint16 _chainId,
-        address _strategy
-    ) internal view returns (uint256) {
-        uint256 strategyDebtLimit = (strategies[_chainId][_strategy].debtRatio *
-            totalAssets()) / 10_000;
-        uint256 strategyTotalDebt = strategies[_chainId][_strategy].totalDebt;
+    // function _debtOutstanding(
+    //     uint16 _chainId,
+    //     address _strategy
+    // ) internal view returns (uint256) {
+    //     uint256 strategyDebtLimit = (strategies[_chainId][_strategy].debtRatio *
+    //         totalAssets()) / 10_000;
+    //     uint256 strategyTotalDebt = strategies[_chainId][_strategy].totalDebt;
 
-        if (emergencyShutdown) {
-            return strategyTotalDebt;
-        } else if (strategyTotalDebt <= strategyDebtLimit) {
-            return 0;
-        } else {
-            return strategyTotalDebt - strategyDebtLimit;
-        }
-    }
+    //     if (emergencyShutdown) {
+    //         return strategyTotalDebt;
+    //     } else if (strategyTotalDebt <= strategyDebtLimit) {
+    //         return 0;
+    //     } else {
+    //         return strategyTotalDebt - strategyDebtLimit;
+    //     }
+    // }
 
     function _fulfillWithdrawEpoch() internal {
         uint256 requestsLength = withdrawEpochs[withdrawEpoch].requests.length;
