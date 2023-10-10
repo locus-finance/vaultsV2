@@ -37,7 +37,7 @@ describe("PIKA strategy", function () {
       `Your address: ${deployer.address}. Network: ${hre.network.name}`
     );
 
-    const config = networkConfig["optimism"];
+    const config = networkConfig.optimism;
 
     const SgBridge = await ethers.getContractFactory("SgBridge");
     const sgBridge = await upgrades.deployProxy(SgBridge, [config.sgRouter], {

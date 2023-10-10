@@ -23,19 +23,21 @@ const {
   PROD_DEPLOYER_PRIVATE_KEY,
   ETH_NODE,
   OPTIMISM_NODE,
-  BASE_NODE
+  ARBITRUM_NODE,
+  BASE_NODE,
+
 } = process.env;
 
 task("fork_reset", "Reset to local fork", async (taskArgs) => {
   await network.provider.request({
     method: "hardhat_reset",
-    params: []
+    params: [],
   });
 });
 
 module.exports = {
   mocha: {
-    timeout: 100000000
+    timeout: 100000000,
   },
   solidity: {
     compilers: [
@@ -44,16 +46,16 @@ module.exports = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 10
+            runs: 10,
           },
           outputSelection: {
             "*": {
-              "*": ["storageLayout"]
-            }
-          }
-        }
-      }
-    ]
+              "*": ["storageLayout"],
+            },
+          },
+        },
+      },
+    ],
   },
   namedAccounts: {
     deployer: {
@@ -61,20 +63,20 @@ module.exports = {
     }
   },
   networks: {
-    localhost: {},
+    // localhost: {},
     hardhat: {
       forking: {
-        url: BASE_NODE
-      }
+        url: ETH_NODE || "",
+      },
     },
     mainnet: {
       url: ETH_NODE,
       chainId: 1,
-      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
     },
     arbgoerli: {
       url: `https://goerli-rollup.arbitrum.io/rpc`,
-      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`]
+      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
     },
     optimismgoerli: {
       url: OPTIMISM_NODE,
@@ -83,57 +85,56 @@ module.exports = {
     },
     sepolia: {
       url: `https://rpc.ankr.com/eth_sepolia`,
-      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`]
+      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
     },
     optimism: {
       url: `https://rpc.ankr.com/optimism`,
-      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
     },
     bsctestnet: {
       url: `https://rpc.ankr.com/bsc_testnet_chapel`,
       chainId: 97,
-      accounts: [`${DEPLOYER_PRIVATE_KEY}`]
+      accounts: [`${DEPLOYER_PRIVATE_KEY}`],
     },
     polygonmumbai: {
       url: `https://rpc.ankr.com/polygon_mumbai`,
-      accounts: [`${DEPLOYER_PRIVATE_KEY}`]
+      accounts: [`${DEPLOYER_PRIVATE_KEY}`],
     },
     bsc_mainnet: {
       url: `https://bsc-dataseed.binance.org/`,
       chainId: 56,
-      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`]
+      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
     },
     fujiavax: {
       url: `https://rpc.ankr.com/avalanche_fuji`,
       chainId: 43113,
-      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`]
+      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
     },
     goerli: {
       url: `https://rpc.ankr.com/eth_goerli`,
       accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
-      gasPrice: 100_000_000_000
+      gasPrice: 100_000_000_000,
     },
     avalanche: {
       url: `https://api.avax.network/ext/bc/C/rpc`,
       chainId: 43114,
-      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
     },
     polygon: {
       url: `https://rpc.ankr.com/polygon`,
       chainId: 137,
-      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
     },
     arbitrumOne: {
       url: `https://arb1.arbitrum.io/rpc`,
       chainId: 42161,
-      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
     },
     base: {
-      url: BASE_NODE,
+      url: BASE_NODE || "",
       chainId: 8453,
-      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
-
-    }
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
+    },
   },
   etherscan: {
     apiKey: {
@@ -147,7 +148,7 @@ module.exports = {
       optimisticEthereum: process.env.OPTIMISM_API_KEY,
       goerli: process.env.ETHERSCAN_API_KEY,
       base: process.env.BASESCAN_API_KEY,
-      avalancheFujiTestnet: process.env.SNOWTRACE_API_KEY
+      avalancheFujiTestnet: process.env.SNOWTRACE_API_KEY,
     },
     customChains: [
       {
@@ -155,18 +156,18 @@ module.exports = {
         chainId: 8453,
         urls: {
           apiURL: "https://api.basescan.org/api",
-          browserURL: "https://basescan.org/"
-        }
-      }
-    ]
+          browserURL: "https://basescan.org/",
+        },
+      },
+    ],
   },
   gasReporter: {
     enable: true,
-    currency: "USD"
+    currency: "USD",
   },
   spdxLicenseIdentifier: {
     overwrite: false,
-    runOnCompile: true
+    runOnCompile: true,
   },
   abiExporter: {
     path: "./abi",
@@ -181,8 +182,10 @@ module.exports = {
     alphaSort: true,
     disambiguatePaths: false,
     runOnCompile: true,
+
     strict: true
   }
+
 };
 
 function getSortedFiles(dependenciesGraph) {

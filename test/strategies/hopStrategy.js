@@ -150,7 +150,7 @@ describe("JOEStrategy", function () {
     await ethers.provider.send("evm_increaseTime", [100 * 24 * 60 * 60]);
 
     await vault.connect(whale)["deposit(uint256)"](deposit);
-    let tx = await strategy.connect(deployer).harvest();
+    const tx = await strategy.connect(deployer).harvest();
 
     await tx.wait();
     // expect(Number(await strategy.rewardss())).to.be.greaterThan(0);
