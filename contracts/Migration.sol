@@ -2,16 +2,14 @@
 
 pragma solidity ^0.8.19;
 
-import "../contracts/interfaces/IVault.sol";
-import "../contracts/interfaces/IVaultV1.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "../contracts/interfaces/IBaseVault.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Migration is Ownable, ReentrancyGuard {
-    IVaultV1 public vaultV1;
-    IVault public vaultV2;
-
-    IERC20 public token;
+    IBaseVault public vaultV1;
+    IBaseVault public vaultV2;
 
     address public treasury;
 
@@ -27,13 +25,12 @@ contract Migration is Ownable, ReentrancyGuard {
         address[] memory _users,
         address _treasury
     ) {
-        vaultV1 = IVaultV1(_vaultV1);
-        vaultV2 = IVault(_vaultV2);
+        vaultV1 = IBaseVault(_vaultV1);
+        vaultV2 = IBaseVault(_vaultV2);
         users = _users;
-        token = vaultV1.token();
         treasury = _treasury;
-        token.approve(address(vaultV2), type(uint256).max);
-        token.approve(treasury, type(uint256).max);
+        vaultV1.token().approve(address(vaultV2), type(uint256).max);
+        vaultV1.token().approve(treasury, type(uint256).max);
     }
 
     function addUsers(address[] memory _newUsers) external onlyOwner {
@@ -103,12 +100,18 @@ contract Migration is Ownable, ReentrancyGuard {
 
     function deposit() external nonReentrant {
         //need to rethink, it is not safe to get all tokens on this account without ability to get this tokens back to users
-        vaultV2.deposit(token.balanceOf(address(this)), address(this));
+        vaultV2.deposit(
+            vaultV1.token().balanceOf(address(this)),
+            address(this)
+        );
     }
 
     function emergencyExit() external onlyOwner {
         //emergency case
-        token.transfer(treasury, token.balanceOf(address(this)));
+        vaultV1.token().transfer(
+            treasury,
+            vaultV1.token().balanceOf(address(this))
+        );
         IERC20(address(vaultV2)).transfer(
             treasury,
             IERC20(address(vaultV2)).balanceOf(address(this))

@@ -127,7 +127,6 @@ describe("Migration", function () {
     expect(await migration.vaultV1()).to.equal(vaultV1.address);
     expect(await migration.vaultV2()).to.equal(vaultV2.address);
 
-    expect(await migration.token()).to.equal(await vaultV1.token());
     expect(await migration.treasury()).to.equal(treasury.address);
     for (let index = 0; index < 10; index++) {
       expect(await migration.users(index)).to.equal(wallets[index]);
@@ -163,7 +162,7 @@ describe("Migration", function () {
       );
     }
     for (let index = 0; index < 10; index++) {
-      expect(await migration.notWithdrawedUsers(index)).to.eq(
+      expect(await migration.notWithdrawnUsers(index)).to.eq(
         wallets[index + 10]
       );
     }
