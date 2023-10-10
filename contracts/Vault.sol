@@ -36,7 +36,6 @@ contract Vault is
         address _governance,
         address _lzEndpoint,
         IERC20 _token,
-        address _sgBridge,
         address _sgRouter
     ) external override initializer {
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
@@ -45,9 +44,9 @@ contract Vault is
 
         governance = _governance;
         token = _token;
-        sgBridge = ISgBridge(_sgBridge);
         sgRouter = _sgRouter;
         token.approve(_sgBridge, type(uint256).max);
+
     }
 
     uint16 internal constant VAULT_CHAIN_ID = 116;
@@ -104,6 +103,11 @@ contract Vault is
 
     function setGovernance(address _newGovernance) external onlyAuthorized {
         governance = _newGovernance;
+    }
+
+    function setSgBridge(address _newSgBridge) external onlyAuthorized {
+        token.approve(_newSgBridge, type(uint256).max);
+        sgBridge = ISgBridge(_newSgBridge);
     }
 
     function setStrategist(
@@ -280,6 +284,7 @@ contract Vault is
         uint16 _chainId,
         address _oldStrategy,
         address _newStrategy
+
     ) external onlyAuthorized nonAction(_chainId, _newStrategy) {
         require(_newStrategy != address(0), "V7");
 
