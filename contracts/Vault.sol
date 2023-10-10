@@ -2,22 +2,22 @@
 
 pragma solidity ^0.8.19;
 
-import { ERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { ERC4626 } from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
-import { Initializable } from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
-import { BytesLib } from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
-import { NonblockingLzAppUpgradeable } from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
-import { ERC20Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ERC4626} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
+import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
+import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-import { ISgBridge } from "./interfaces/ISgBridge.sol";
-import { IStargateReceiver } from "./integrations/stargate/IStargate.sol";
-import { IStrategyMessages } from "./interfaces/IStrategyMessages.sol";
-import { StrategyParams, WithdrawRequest, WithdrawEpoch, IVault } from "./interfaces/IVault.sol";
-import { IBaseStrategy } from "./interfaces/IBaseStrategy.sol";
+import {ISgBridge} from "./interfaces/ISgBridge.sol";
+import {IStargateReceiver} from "./integrations/stargate/IStargate.sol";
+import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
+import {StrategyParams, WithdrawRequest, WithdrawEpoch, IVault} from "./interfaces/IVault.sol";
+import {IBaseStrategy} from "./interfaces/IBaseStrategy.sol";
 
 contract Vault is
     Initializable,
@@ -47,18 +47,10 @@ contract Vault is
         token = _token;
         sgBridge = ISgBridge(_sgBridge);
         sgRouter = _sgRouter;
-
         token.approve(_sgBridge, type(uint256).max);
-        //Optimism
-        _LzIdToNaturalId[111] = 10;
-        //polygon
-        _LzIdToNaturalId[109] = 137;
-        //arbitrum
-        _LzIdToNaturalId[110] = 42161;
-        //base
-        _LzIdToNaturalId[184] = 8453;
     }
 
+    uint16 internal constant VAULT_CHAIN_ID = 116;
     address public override governance;
     IERC20 public override token;
 
@@ -74,9 +66,6 @@ contract Vault is
     mapping(uint256 => WithdrawEpoch) public withdrawEpochs;
     mapping(uint16 => mapping(address => mapping(uint256 => bool)))
         internal _usedNonces;
-    mapping(uint16 lzChainId => uint256 nativeChainId)
-        internal _LzIdToNaturalId;
-
     address public sgRouter;
 
     modifier onlyAuthorized() {
@@ -113,11 +102,9 @@ contract Vault is
         emergencyShutdown = _emergencyShutdown;
     }
 
-
     function setGovernance(address _newGovernance) external onlyAuthorized {
         governance = _newGovernance;
     }
-
 
     function setStrategist(
         uint16 _chainId,
@@ -133,13 +120,6 @@ contract Vault is
 
     function totalIdle() public view returns (uint256) {
         return token.balanceOf(address(this));
-    }
-
-    function addChain(
-        uint16 _lzChainId,
-        uint256 _naturalChainId
-    ) external onlyAuthorized {
-        _LzIdToNaturalId[_lzChainId] = _naturalChainId;
     }
 
     function deposit(
@@ -163,7 +143,7 @@ contract Vault is
         uint256 _debtRatio,
         uint256 _performanceFee,
         address _strategist
-    ) external override onlyAuthorized nonAction(_chainId, _strategy){
+    ) external override onlyAuthorized nonAction(_chainId, _strategy) {
         require(totalDebtRatio + _debtRatio <= 10_000, "V5");
 
         strategies[_chainId][_strategy] = StrategyParams({
@@ -196,8 +176,12 @@ contract Vault is
         return _creditAvailable(_chainId, _strategy);
     }
 
-    function handleWithdrawals() external override onlyAuthorized WithdrawInProgress {
-
+    function handleWithdrawals()
+        external
+        override
+        onlyAuthorized
+        WithdrawInProgress
+    {
         uint256 withdrawValue = 0;
         for (
             uint256 i = 0;
@@ -243,10 +227,10 @@ contract Vault is
                     params.totalDebt
                 );
                 withdrawEpochs[withdrawEpoch].requestedAmount[chainId][
-                    strategy
-                ] = strategyRequest;
+                        strategy
+                    ] = strategyRequest;
                 amountNeeded -= strategyRequest;
-                if (block.chainid == _LzIdToNaturalId[chainId]) {
+                if (VAULT_CHAIN_ID == chainId) {
                     IBaseStrategy(strategy).withdraw(strategyRequest);
                 } else {
                     _sendMessageToStrategy(
@@ -296,7 +280,7 @@ contract Vault is
         uint16 _chainId,
         address _oldStrategy,
         address _newStrategy
-    ) external onlyAuthorized nonAction(_chainId, _newStrategy){
+    ) external onlyAuthorized nonAction(_chainId, _newStrategy) {
         require(_newStrategy != address(0), "V7");
 
         StrategyParams memory params = strategies[_chainId][_oldStrategy];
@@ -312,7 +296,7 @@ contract Vault is
         });
         strategies[_chainId][_oldStrategy].debtRatio = 0;
         strategies[_chainId][_oldStrategy].totalDebt = 0;
-        if (block.chainid == _LzIdToNaturalId[_chainId]) {
+        if (VAULT_CHAIN_ID == _chainId) {
             IBaseStrategy(_oldStrategy).migrate(_newStrategy);
         } else {
             _sendMessageToStrategy(
@@ -320,7 +304,7 @@ contract Vault is
                 _oldStrategy,
                 abi.encode(
                     MessageType.MigrateStrategyRequest,
-                    MigrateStrategyRequest({ newStrategy: _newStrategy })
+                    MigrateStrategyRequest({newStrategy: _newStrategy})
                 )
             );
         }
@@ -428,7 +412,7 @@ contract Vault is
         ) {
             debt = _message.totalAssets;
         }
-        if (block.chainid == _LzIdToNaturalId[_chainId]) {
+        if (VAULT_CHAIN_ID == _chainId) {
             IBaseStrategy(_message.strategy).adjustPosition(debt);
         } else {
             if (_message.giveToStrategy > 0) {
@@ -438,7 +422,7 @@ contract Vault is
                     _message.strategy,
                     abi.encode(
                         MessageType.AdjustPositionRequest,
-                        AdjustPositionRequest({ debtOutstanding: debt })
+                        AdjustPositionRequest({debtOutstanding: debt})
                     )
                 );
             } else {
@@ -447,7 +431,7 @@ contract Vault is
                     _message.strategy,
                     abi.encode(
                         MessageType.AdjustPositionRequest,
-                        AdjustPositionRequest({ debtOutstanding: debt })
+                        AdjustPositionRequest({debtOutstanding: debt})
                     )
                 );
             }
@@ -484,8 +468,7 @@ contract Vault is
         uint256 _shares,
         address _recipient,
         uint256 _maxLoss
-    ) internal WithdrawInProgress{
-
+    ) internal WithdrawInProgress {
         _transfer(msg.sender, address(this), _shares);
         withdrawEpochs[withdrawEpoch].requests.push(
             WithdrawRequest({
@@ -526,7 +509,6 @@ contract Vault is
         address _strategy,
         bytes memory _payload
     ) internal isAction(_chainId, _strategy) {
-
         bytes memory remoteAndLocalAddresses = abi.encodePacked(
             _strategy,
             address(this)
@@ -544,7 +526,7 @@ contract Vault is
             revert InsufficientFunds(nativeFee, address(this).balance);
         }
 
-        lzEndpoint.send{ value: nativeFee }(
+        lzEndpoint.send{value: nativeFee}(
             _chainId,
             remoteAndLocalAddresses,
             _payload,
@@ -643,8 +625,7 @@ contract Vault is
     function _handleWithdrawSomeResponse(
         uint16 _chainId,
         WithdrawSomeResponse memory _message
-    ) internal isAction(_chainId, _message.source){
-
+    ) internal isAction(_chainId, _message.source) {
         if (_message.loss > 0) {
             _reportLoss(_chainId, _message.source, _message.loss);
         }
@@ -690,7 +671,7 @@ contract Vault is
         bytes memory _payload
     ) internal {
         uint256 fee = sgBridge.feeForBridge(_destChainId, _dest, _payload);
-        sgBridge.bridge{ value: fee }(
+        sgBridge.bridge{value: fee}(
             address(token),
             _amount,
             _destChainId,
