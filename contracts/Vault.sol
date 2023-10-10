@@ -27,6 +27,23 @@ contract Vault is
     IStrategyMessages,
     IStargateReceiver
 {
+    error Vault__V1();
+    error Vault__V2();
+    error Vault__V3();
+    error Vault__V4();
+    error Vault__V5();
+    error Vault__V6();
+    error Vault__V7();
+    error Vault__V8();
+    error Vault__V9();
+    error Vault__V10();
+    error Vault__V11();
+    error Vault__V12();
+    error Vault__V13();
+    error Vault__V14();
+    error Vault__V15();
+    error Vault__V16();
+    error Vault__V17();
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
@@ -69,22 +86,23 @@ contract Vault is
     address public sgRouter;
 
     modifier onlyAuthorized() {
-        require(msg.sender == governance || msg.sender == owner(), "V1");
+        if (msg.sender != governance || msg.sender != owner())
+            revert Vault__V1();
         _;
     }
 
     modifier isAction(uint16 _chainId, address _strategy) {
-        require(strategies[_chainId][_strategy].activation > 0, "V2");
+        if (strategies[_chainId][_strategy].activation == 0) revert Vault__V2();
         _;
     }
 
     modifier nonAction(uint16 _chainId, address _strategy) {
-        require(strategies[_chainId][_strategy].activation == 0, "V3");
+        if (strategies[_chainId][_strategy].activation > 0) revert Vault__V3();
         _;
     }
 
     modifier WithdrawInProgress() {
-        require(!withdrawEpochs[withdrawEpoch].inProgress, "V4");
+        if (withdrawEpochs[withdrawEpoch].inProgress) revert Vault__V4();
         _;
     }
 
@@ -144,7 +162,7 @@ contract Vault is
         uint256 _performanceFee,
         address _strategist
     ) external override onlyAuthorized nonAction(_chainId, _strategy) {
-        require(totalDebtRatio + _debtRatio <= 10_000, "V5");
+        if (totalDebtRatio + _debtRatio > 10_000) revert Vault__V5();
 
         strategies[_chainId][_strategy] = StrategyParams({
             activation: block.timestamp,
@@ -271,8 +289,7 @@ contract Vault is
     ) external override onlyAuthorized {
         totalDebtRatio -= strategies[_chainId][_strategy].debtRatio;
         strategies[_chainId][_strategy].debtRatio = _debtRatio;
-
-        require(totalDebtRatio + _debtRatio <= 10_000, "V6");
+        if (totalDebtRatio + _debtRatio > 10_000) revert Vault__V6();
         totalDebtRatio += _debtRatio;
     }
 
@@ -281,7 +298,7 @@ contract Vault is
         address _oldStrategy,
         address _newStrategy
     ) external onlyAuthorized nonAction(_chainId, _newStrategy) {
-        require(_newStrategy != address(0), "V7");
+        if (_newStrategy == address(0)) revert Vault__V7();
 
         StrategyParams memory params = strategies[_chainId][_oldStrategy];
         strategies[_chainId][_newStrategy] = StrategyParams({
@@ -318,13 +335,12 @@ contract Vault is
         uint256 _amountLD,
         bytes memory _payload
     ) external override {
-        require(_token == address(token), "V8");
-        require(
-            msg.sender == address(sgRouter) ||
-                msg.sender == address(sgBridge) ||
-                msg.sender == owner(),
-            "V9"
-        );
+        if (_token != address(token)) revert Vault__V8();
+        if (
+            msg.sender != address(sgRouter) ||
+            msg.sender != address(sgBridge) ||
+            msg.sender != owner()
+        ) revert Vault__V9();
 
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
@@ -341,7 +357,7 @@ contract Vault is
         uint64 _nonce,
         bytes calldata _payload
     ) public virtual override {
-        require(msg.sender == address(lzEndpoint), "V10");
+        if (msg.sender != address(lzEndpoint)) revert Vault__V10();
 
         _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
@@ -350,7 +366,7 @@ contract Vault is
         uint256 _amount,
         address _recipient
     ) internal returns (uint256) {
-        require(!emergencyShutdown, "V11");
+        if (emergencyShutdown) revert Vault__V11();
         uint256 shares = _issueSharesForAmount(_recipient, _amount);
         token.safeTransferFrom(msg.sender, address(this), _amount);
         return shares;
@@ -458,7 +474,8 @@ contract Vault is
         address _strategy,
         uint256 _loss
     ) internal {
-        require(strategies[_chainId][_strategy].totalDebt >= _loss, "V12");
+        if (strategies[_chainId][_strategy].totalDebt < _loss)
+            revert Vault__V12();
         strategies[_chainId][_strategy].totalLoss += _loss;
         strategies[_chainId][_strategy].totalDebt -= _loss;
         totalDebt -= _loss;
@@ -499,7 +516,7 @@ contract Vault is
         } else {
             shares = (_amount * totalSupply()) / totalAssets();
         }
-        require(shares > 0, "V13");
+        if (shares == 0) revert Vault__V13();
         _mint(_to, shares);
         return shares;
     }
@@ -585,7 +602,7 @@ contract Vault is
 
     function _fulfillWithdrawEpoch() internal {
         uint256 requestsLength = withdrawEpochs[withdrawEpoch].requests.length;
-        require(requestsLength > 0, "V14");
+        if (requestsLength == 0) revert Vault__V14();
 
         uint256[] memory shareValues = new uint256[](requestsLength);
 
@@ -659,7 +676,8 @@ contract Vault is
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
-        require(strategies[_srcChainId][srcAddress].activation > 0, "V15");
+        if (strategies[_srcChainId][srcAddress].activation == 0)
+            revert Vault__V15();
 
         _handlePayload(_srcChainId, _payload, 0);
     }
@@ -684,21 +702,18 @@ contract Vault is
         uint16 _chainId,
         StrategyReport memory _report
     ) internal {
-        require(
-            _usedNonces[_chainId][_report.strategy][_report.nonce] == false,
-            "V16"
-        );
+        if (_usedNonces[_chainId][_report.strategy][_report.nonce] != false)
+            revert Vault__V16();
         bytes32 messageHash = keccak256(
             abi.encodePacked(_report.strategy, _report.nonce, _chainId)
         );
         bytes32 ethSignedMessageHash = keccak256(
             abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash)
         );
-        require(
-            ECDSA.recover(ethSignedMessageHash, _report.signature) ==
-                strategies[_chainId][_report.strategy].strategist,
-            "V17"
-        );
+        if (
+            ECDSA.recover(ethSignedMessageHash, _report.signature) !=
+            strategies[_chainId][_report.strategy].strategist
+        ) revert Vault__V17();
 
         _usedNonces[_chainId][_report.strategy][_report.nonce] = true;
     }
