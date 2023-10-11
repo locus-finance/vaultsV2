@@ -3,20 +3,13 @@
 pragma solidity ^0.8.18;
 
 interface IVeloRouter {
-<<<<<<< HEAD
-=======
-
->>>>>>> 8e46a3b (Velo done, test req)
     struct Route {
         address from;
         address to;
         bool stable;
         address factory;
     }
-<<<<<<< HEAD
 
-=======
->>>>>>> 8e46a3b (Velo done, test req)
     function addLiquidity(
         address tokenA,
         address tokenB,
@@ -27,11 +20,7 @@ interface IVeloRouter {
         uint256 amountBMin,
         address to,
         uint256 deadline
-<<<<<<< HEAD
     ) external returns (uint256 amountA, uint256 amountB, uint256 liquidity);
-=======
-    ) external  returns (uint256 amountA, uint256 amountB, uint256 liquidity);
->>>>>>> 8e46a3b (Velo done, test req)
 
     function removeLiquidity(
         address tokenA,
