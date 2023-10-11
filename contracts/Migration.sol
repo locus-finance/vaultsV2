@@ -36,6 +36,10 @@ contract Migration is Ownable, ReentrancyGuard {
         vaultV1.token().approve(treasury, type(uint256).max);
     }
 
+    function setVaultV2(address _vaultV2) external onlyOwner {
+        vaultV2 = IBaseVault(_vaultV2);
+    }
+
     function addUsers(address[] memory _newUsers) external onlyOwner {
         for (uint256 i = 0; i < _newUsers.length; i++) {
             users.push(_newUsers[i]);
