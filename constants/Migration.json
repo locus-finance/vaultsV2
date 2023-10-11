@@ -1,0 +1,8 @@
+{
+    "mainnet": {
+        "vaultV1": "0x3edbE670D03C4A71367dedA78E73EA4f8d68F2E4",
+        "vaultV2": "",
+        "accounts": [""],
+        "treasury": ""
+    }
+}

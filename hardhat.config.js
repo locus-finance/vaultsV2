@@ -23,7 +23,10 @@ const {
   PROD_DEPLOYER_PRIVATE_KEY,
   ETH_NODE,
   OPTIMISM_NODE,
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
   ARBITRUM_NODE,
   BASE_NODE,
 
@@ -64,10 +67,14 @@ module.exports = {
     }
   },
   networks: {
-    localhost: {},
+    // localhost: {},
     hardhat: {
       forking: {
+<<<<<<< HEAD
         url: ETH_NODE,
+=======
+        url: ETH_NODE || "",
+>>>>>>> main
       },
     },
     mainnet: {
@@ -183,9 +190,15 @@ module.exports = {
     alphaSort: true,
     disambiguatePaths: false,
     runOnCompile: true,
+<<<<<<< HEAD
     strict: true,
     only: [":Vault"],
   },
+=======
+
+    strict: true
+  }
+>>>>>>> main
 
 };
 

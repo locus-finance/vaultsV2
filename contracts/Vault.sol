@@ -325,7 +325,6 @@ contract Vault is
         address _newStrategy
     ) external onlyAuthorized nonAction(_chainId, _newStrategy) {
         if (_newStrategy == address(0)) revert Vault__V7();
-
         StrategyParams memory params = strategies[_chainId][_oldStrategy];
         strategies[_chainId][_newStrategy] = StrategyParams({
             activation: params.lastReport,
