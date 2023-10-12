@@ -1,7 +1,6 @@
 require("@openzeppelin/hardhat-upgrades");
 require("@nomiclabs/hardhat-vyper");
 require("@nomiclabs/hardhat-waffle");
-require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-truffle5");
 require("@nomiclabs/hardhat-ethers");
 require("hardhat-gas-reporter");
@@ -9,8 +8,6 @@ require("hardhat-log-remover");
 require("hardhat-abi-exporter");
 require("dotenv").config();
 require("solidity-coverage");
-require("hardhat-deploy");
-require("hardhat-deploy-ethers");
 require("hardhat-tracer");
 require("hardhat-contract-sizer");
 
@@ -27,7 +24,7 @@ const {
   BASE_NODE,
 } = process.env;
 
-task("fork_reset", "Reset to local fork", async (taskArgs) => {
+task("fork_reset", "Reset to local fork", async () => {
   await network.provider.request({
     method: "hardhat_reset",
     params: [],
@@ -62,7 +59,6 @@ module.exports = {
     },
   },
   networks: {
-    // localhost: {},
     hardhat: {
       forking: {
         url: ETH_NODE || "",
@@ -202,8 +198,6 @@ function getSortedFiles(dependenciesGraph) {
 
   const topologicalSortedNames = graph.sort();
 
-  // If an entry has no dependency it won't be included in the graph, so we
-  // add them and then dedup the array
   const withEntries = topologicalSortedNames.concat(
     resolvedFiles.map((f) => f.sourceName)
   );
@@ -258,7 +252,6 @@ subtask(
           !i++ ? m : ""
       )(0)
     );
-    // Remove every line started with "pragma abicoder v2;" except the first one
     flattened = flattened.replace(
       /pragma abicoder v2;\n/gm,
       (
@@ -266,7 +259,6 @@ subtask(
           !i++ ? m : ""
       )(0)
     );
-    // Remove every line started with "pragma solidity ****" except the first one
     flattened = flattened.replace(
       /pragma solidity .*$\n/gm,
       (
