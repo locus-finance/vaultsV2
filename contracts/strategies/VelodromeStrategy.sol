@@ -35,6 +35,8 @@ contract HopStrategy is Initializable, BaseStrategy {
     address internal constant POOL_FACTORY =
         0xF1046053aa5682b4F9a81b5481394DA16BE5FF5a;
 
+    uint32 internal constant TWAP_RANGE_SECS = 1800;
+
     function initialize(
         address _lzEndpoint,
         address _strategist,
