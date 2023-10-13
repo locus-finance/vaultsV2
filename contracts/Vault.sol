@@ -271,8 +271,8 @@ contract Vault is
                     params.totalDebt
                 );
                 withdrawEpochs[withdrawEpoch].requestedAmount[chainId][
-                        strategy
-                    ] = strategyRequest;
+                    strategy
+                ] = strategyRequest;
                 amountNeeded -= strategyRequest;
                 if (VAULT_CHAIN_ID == chainId) {
                     IBaseStrategy(strategy).withdraw(strategyRequest);

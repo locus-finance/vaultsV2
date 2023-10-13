@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.19;
 
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 struct StrategyParams {
     uint256 performanceFee;
@@ -13,7 +13,6 @@ struct StrategyParams {
     uint256 totalGain;
     uint256 totalLoss;
 }
-
 
 interface IOnChainVault {
     error Vault__OnlyAuthorized(address); //0x1748142d
@@ -51,9 +50,19 @@ interface IOnChainVault {
         uint256 debtRatio
     );
 
-    event Withdraw(address indexed recipient, uint256 indexed shares, uint256 indexed value);
+    event Withdraw(
+        address indexed recipient,
+        uint256 indexed shares,
+        uint256 indexed value
+    );
 
-    function initialize(IERC20 _token, address _governance, address treasury, string calldata name, string calldata symbol) external;
+    function initialize(
+        IERC20 _token,
+        address _governance,
+        address treasury,
+        string calldata name,
+        string calldata symbol
+    ) external;
 
     function token() external view returns (IERC20);
 
