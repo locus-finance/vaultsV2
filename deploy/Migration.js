@@ -10,7 +10,6 @@ module.exports = async function ({ getNamedAccounts }) {
   const Migration = await ethers.getContractFactory("Migration");
   const migration = await Migration.deploy(
     config.vaultV1,
-    config.vaultV2,
     config.accounts,
     config.treasury
   );
@@ -20,6 +19,7 @@ module.exports = async function ({ getNamedAccounts }) {
 
   await hre.run("verify:verify", {
     address: migration.address,
+    constructorArguments: [config.vaultV1, config.accounts, config.treasury],
   });
 };
 
