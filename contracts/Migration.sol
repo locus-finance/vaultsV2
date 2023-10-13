@@ -100,12 +100,10 @@ contract Migration is Ownable, ReentrancyGuard {
     }
 
     function deposit() external nonReentrant {
-        //need to rethink, it is not safe to get all tokens on this account without ability to get this tokens back to users
         vaultV2.deposit(token.balanceOf(address(this)), address(this));
     }
 
     function emergencyExit() external onlyOwner {
-        //emergency case
         vaultV1.token().transfer(treasury, token.balanceOf(address(this)));
         IERC20(address(vaultV2)).transfer(
             treasury,
