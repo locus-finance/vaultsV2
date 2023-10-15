@@ -9,6 +9,7 @@ interface IVeloRouter {
         bool stable;
         address factory;
     }
+
     function addLiquidity(
         address tokenA,
         address tokenB,
@@ -19,7 +20,7 @@ interface IVeloRouter {
         uint256 amountBMin,
         address to,
         uint256 deadline
-    ) external  returns (uint256 amountA, uint256 amountB, uint256 liquidity);
+    ) external returns (uint256 amountA, uint256 amountB, uint256 liquidity);
 
     function removeLiquidity(
         address tokenA,
@@ -48,7 +49,6 @@ interface IVeloRouter {
         uint256 deadline
     ) external returns (uint256[] memory amounts);
 
-<<<<<<< HEAD
     function getAmountsOut(
         uint256 amountIn,
         Route[] memory routes
@@ -65,8 +65,4 @@ interface IVeloRouter {
         external
         view
         returns (uint256 amountA, uint256 amountB, uint256 liquidity);
-=======
-    function getAmountsOut(uint256 amountIn, Route[] memory routes) external view returns (uint256[] memory amounts);
-    
->>>>>>> 8e46a3b734096e9237704461aeab5c389e4d1b96
 }

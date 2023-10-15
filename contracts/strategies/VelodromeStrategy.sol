@@ -76,7 +76,6 @@ contract HopStrategy is Initializable, BaseStrategy {
             VeloToWant(getRewards());
     }
 
-    //to refactor due to amount of tokens changed
     function _adjustPosition(uint256 _debtOutstanding) internal override {
         if (emergencyExit) {
             return;
@@ -208,15 +207,11 @@ contract HopStrategy is Initializable, BaseStrategy {
     }
 
     function _swapWantToUsdplus(uint256 amountToSell) internal {
-        IVeloRouter.Route[] memory routes = new IVeloRouter.Route[](2);
+        IVeloRouter.Route[] memory routes = new IVeloRouter.Route[](1);
         routes[0].from = USDC;
-        routes[0].to = DALA;
+        routes[0].to = USDPLUS;
         routes[0].stable = true;
         routes[0].factory = POOL_FACTORY;
-        routes[1].from = DALA;
-        routes[1].to = USDPLUS;
-        routes[1].stable = true;
-        routes[1].factory = POOL_FACTORY;
         //bigger slippage need to provide
         uint256 amountOutMinimum = (amountToSell * slippage) / 10000;
         (
@@ -231,15 +226,11 @@ contract HopStrategy is Initializable, BaseStrategy {
     }
 
     function _swapUsdplusToWant(uint256 amountToSell) internal {
-        IVeloRouter.Route[] memory routes = new IVeloRouter.Route[](2);
+        IVeloRouter.Route[] memory routes = new IVeloRouter.Route[](1);
         routes[0].from = USDPLUS;
-        routes[0].to = DALA;
+        routes[0].to = USDC;
         routes[0].stable = true;
         routes[0].factory = POOL_FACTORY;
-        routes[1].from = DALA;
-        routes[1].to = USDC;
-        routes[1].stable = true;
-        routes[1].factory = POOL_FACTORY;
         uint256 amountOutMinimum = (amountToSell * slippage) / 10000;
         (
             IVeloRouter(VELO_ROUTER).swapExactTokensForTokens(
@@ -290,7 +281,7 @@ contract HopStrategy is Initializable, BaseStrategy {
         IVeloRouter(VELO_ROUTER).removeLiquidity(
             USDC,
             USDPLUS,
-            false,
+            true,
             amountLpToWithdraw,
             minAmountA,
             minAmountB,
