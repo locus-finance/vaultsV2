@@ -1,4 +1,13 @@
 [
+  "error BaseStrategy__V1()",
+  "error BaseStrategy__V2()",
+  "error BaseStrategy__V3()",
+  "error BaseStrategy__V4()",
+  "error BaseStrategy__V5()",
+  "error BaseStrategy__V6()",
+  "error BaseStrategy__V7()",
+  "error BaseStrategy__V8()",
+  "error BaseStrategy__V9()",
   "error IncorrectMessageType(uint256)",
   "error InsufficientFunds(uint256,uint256)",
   "event AdjustedPosition(uint256)",
@@ -16,8 +25,6 @@
   "function DEFAULT_PAYLOAD_SIZE_LIMIT() view returns (uint256)",
   "function adjustPosition(uint256)",
   "function balanceOfWant() view returns (uint256)",
-  "function callMe(uint256)",
-  "function clearWant()",
   "function currentChainId() view returns (uint16)",
   "function emergencyExit() view returns (bool)",
   "function estimatedTotalAssets() view returns (uint256)",
@@ -62,5 +69,6 @@
   "function vault() view returns (address)",
   "function vaultChainId() view returns (uint16)",
   "function want() view returns (address)",
-  "function wantDecimals() view returns (uint8)"
+  "function wantDecimals() view returns (uint8)",
+  "function withdrawnInEpoch(uint256) view returns (bool)"
 ]

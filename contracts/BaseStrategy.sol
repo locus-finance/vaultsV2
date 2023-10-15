@@ -20,6 +20,16 @@ abstract contract BaseStrategy is
     IStrategyMessages,
     IStargateReceiver
 {
+    error BaseStrategy__V1();
+    error BaseStrategy__V2();
+    error BaseStrategy__V3();
+    error BaseStrategy__V4();
+    error BaseStrategy__V5();
+    error BaseStrategy__V6();
+    error BaseStrategy__V7();
+    error BaseStrategy__V8();
+    error BaseStrategy__V9();
+
     using BytesLib for bytes;
     using SafeERC20 for IERC20;
 
@@ -87,7 +97,7 @@ abstract contract BaseStrategy is
     ISgBridge public sgBridge;
     IStargateRouter public sgRouter;
 
-    mapping(uint256 => bool) withdrawnInEpoch;
+    mapping(uint256 => bool) public withdrawnInEpoch;
 
     uint256 internal _signNonce;
 
@@ -152,8 +162,8 @@ abstract contract BaseStrategy is
         uint256 debtPayment = 0;
 
         if (emergencyExit) {
-            require(_debtRatio == 0, "BaseStrategy::DebtRatioNotZero");
-
+            if (_debtRatio != 0)
+                revert BaseStrategy__V1();
             uint256 amountFreed = _liquidateAllPositions();
             if (amountFreed < _debtOutstanding) {
                 loss = _debtOutstanding - amountFreed;
@@ -229,10 +239,8 @@ abstract contract BaseStrategy is
         uint256 _amountLD,
         bytes memory
     ) external override {
-        require(
-            msg.sender == address(sgRouter) || msg.sender == address(sgBridge),
-            "SgBridge::RouterOrBridgeOnly"
-        );
+        if( msg.sender != address(sgRouter) || msg.sender != address(sgBridge))
+            revert BaseStrategy__V2();
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
@@ -246,11 +254,8 @@ abstract contract BaseStrategy is
         uint64 _nonce,
         bytes calldata _payload
     ) public virtual override {
-        require(
-            msg.sender == address(lzEndpoint),
-            "BaseStrategy::InvalidEndpointCaller"
-        );
-
+        if ( msg.sender != address(lzEndpoint))
+            revert BaseStrategy__V3();
         _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
 
@@ -258,10 +263,8 @@ abstract contract BaseStrategy is
         bytes32 messageHash = strategistSignMessageHash();
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
 
-        require(
-            ECDSA.recover(ethSignedMessageHash, _signature) == strategist,
-            "BaseStrategy::InvalidSignature"
-        );
+        if(ECDSA.recover(ethSignedMessageHash, _signature) != strategist)
+            revert BaseStrategy__V4();
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal virtual;
@@ -273,14 +276,13 @@ abstract contract BaseStrategy is
     }
 
     function _onlyStrategist() internal view {
-        require(msg.sender == strategist, "BaseStrategy::OnlyStrategist");
+        if (msg.sender != strategist)
+            revert BaseStrategy__V5();
     }
 
     function _onlyStrategistOrSelf() internal view {
-        require(
-            msg.sender == strategist || msg.sender == address(this),
-            "BaseStrategy::OnlyStrategistOrSelf"
-        );
+        if (msg.sender != strategist || msg.sender != address(this))
+            revert BaseStrategy__V6();
     }
 
     function _withSlippage(uint256 _amount) internal view returns (uint256) {
@@ -360,10 +362,8 @@ abstract contract BaseStrategy is
     function _handleWithdrawSomeRequest(
         WithdrawSomeRequest memory _request
     ) internal {
-        require(
-            !withdrawnInEpoch[_request.id],
-            "BaseStrategy::AlreadyWithdrawn"
-        );
+        if(withdrawnInEpoch[_request.id])
+            revert BaseStrategy__V7();
 
         (uint256 liquidatedAmount, uint256 loss) = _liquidatePosition(
             _request.amount
@@ -399,15 +399,15 @@ abstract contract BaseStrategy is
         uint64,
         bytes memory _payload
     ) internal override {
-        require(
-            _srcChainId == vaultChainId,
-            "BaseStrategy::VaultChainIdMismatch"
-        );
+
+        if(_srcChainId != vaultChainId)
+            revert BaseStrategy__V8();
+
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
-        require(srcAddress == vault, "BaseStrategy::VaultAddressMismatch");
-
+        if(srcAddress != vault)
+            revert BaseStrategy__V9();
         _handlePayload(_payload);
     }
 
@@ -456,14 +456,4 @@ abstract contract BaseStrategy is
     }
 
     receive() external payable {}
-
-    /* === DEBUG FUNCTIONS === */
-
-    function clearWant() external onlyStrategist {
-        want.safeTransfer(address(1), want.balanceOf(address(this)));
-    }
-
-    function callMe(uint256 epoch) external onlyOwner {
-        withdrawnInEpoch[epoch] = false;
-    }
 }
