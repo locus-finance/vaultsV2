@@ -1,7 +1,6 @@
 require("@openzeppelin/hardhat-upgrades");
 require("@nomiclabs/hardhat-vyper");
 require("@nomiclabs/hardhat-waffle");
-require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-truffle5");
 require("@nomiclabs/hardhat-ethers");
 require("hardhat-gas-reporter");
@@ -9,8 +8,6 @@ require("hardhat-log-remover");
 require("hardhat-abi-exporter");
 require("dotenv").config();
 require("solidity-coverage");
-require("hardhat-deploy");
-require("hardhat-deploy-ethers");
 require("hardhat-tracer");
 require("hardhat-contract-sizer");
 
@@ -23,21 +20,19 @@ const {
   PROD_DEPLOYER_PRIVATE_KEY,
   ETH_NODE,
   OPTIMISM_NODE,
-  ARBITRUM_NODE,
   BASE_NODE,
-
 } = process.env;
 
-task("fork_reset", "Reset to local fork", async (taskArgs) => {
+task("fork_reset", "Reset to local fork", async () => {
   await network.provider.request({
     method: "hardhat_reset",
-    params: [],
+    params: []
   });
 });
 
 module.exports = {
   mocha: {
-    timeout: 100000000,
+    timeout: 100000000
   },
   solidity: {
     compilers: [
@@ -46,16 +41,16 @@ module.exports = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 10,
+            runs: 10
           },
           outputSelection: {
             "*": {
-              "*": ["storageLayout"],
-            },
-          },
-        },
-      },
-    ],
+              "*": ["storageLayout"]
+            }
+          }
+        }
+      }
+    ]
   },
   namedAccounts: {
     deployer: {
@@ -63,20 +58,19 @@ module.exports = {
     }
   },
   networks: {
-    // localhost: {},
     hardhat: {
       forking: {
-        url: ETH_NODE || "",
-      },
+        url: ETH_NODE || ""
+      }
     },
     mainnet: {
       url: ETH_NODE,
       chainId: 1,
-      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
     },
     arbgoerli: {
       url: `https://goerli-rollup.arbitrum.io/rpc`,
-      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
+      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`]
     },
     optimismgoerli: {
       url: OPTIMISM_NODE,
@@ -85,56 +79,56 @@ module.exports = {
     },
     sepolia: {
       url: `https://rpc.ankr.com/eth_sepolia`,
-      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
+      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`]
     },
     optimism: {
       url: `https://rpc.ankr.com/optimism`,
-      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
     },
     bsctestnet: {
       url: `https://rpc.ankr.com/bsc_testnet_chapel`,
       chainId: 97,
-      accounts: [`${DEPLOYER_PRIVATE_KEY}`],
+      accounts: [`${DEPLOYER_PRIVATE_KEY}`]
     },
     polygonmumbai: {
       url: `https://rpc.ankr.com/polygon_mumbai`,
-      accounts: [`${DEPLOYER_PRIVATE_KEY}`],
+      accounts: [`${DEPLOYER_PRIVATE_KEY}`]
     },
     bsc_mainnet: {
       url: `https://bsc-dataseed.binance.org/`,
       chainId: 56,
-      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
+      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`]
     },
     fujiavax: {
       url: `https://rpc.ankr.com/avalanche_fuji`,
       chainId: 43113,
-      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
+      accounts: [`0x${DEPLOYER_PRIVATE_KEY}`]
     },
     goerli: {
       url: `https://rpc.ankr.com/eth_goerli`,
       accounts: [`0x${DEPLOYER_PRIVATE_KEY}`],
-      gasPrice: 100_000_000_000,
+      gasPrice: 100_000_000_000
     },
     avalanche: {
       url: `https://api.avax.network/ext/bc/C/rpc`,
       chainId: 43114,
-      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
     },
     polygon: {
       url: `https://rpc.ankr.com/polygon`,
       chainId: 137,
-      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
     },
     arbitrumOne: {
       url: `https://arb1.arbitrum.io/rpc`,
       chainId: 42161,
-      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
     },
     base: {
       url: BASE_NODE || "",
       chainId: 8453,
-      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
-    },
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
+    }
   },
   etherscan: {
     apiKey: {
@@ -148,7 +142,7 @@ module.exports = {
       optimisticEthereum: process.env.OPTIMISM_API_KEY,
       goerli: process.env.ETHERSCAN_API_KEY,
       base: process.env.BASESCAN_API_KEY,
-      avalancheFujiTestnet: process.env.SNOWTRACE_API_KEY,
+      avalancheFujiTestnet: process.env.SNOWTRACE_API_KEY
     },
     customChains: [
       {
@@ -156,18 +150,18 @@ module.exports = {
         chainId: 8453,
         urls: {
           apiURL: "https://api.basescan.org/api",
-          browserURL: "https://basescan.org/",
-        },
-      },
-    ],
+          browserURL: "https://basescan.org/"
+        }
+      }
+    ]
   },
   gasReporter: {
     enable: true,
-    currency: "USD",
+    currency: "USD"
   },
   spdxLicenseIdentifier: {
     overwrite: false,
-    runOnCompile: true,
+    runOnCompile: true
   },
   abiExporter: {
     path: "./abi",
@@ -176,16 +170,14 @@ module.exports = {
     flat: true,
     spacing: 2,
     format: "minimal",
-    only: [":Vault$", ":BaseStrategy$", ":SgBridge$", ":TestStrategy$"]
+    only: [":Vault$", ":BaseStrategy$", ":SgBridge$"]
   },
   contractSizer: {
     alphaSort: true,
     disambiguatePaths: false,
     runOnCompile: true,
-
     strict: true
   }
-
 };
 
 function getSortedFiles(dependenciesGraph) {
@@ -204,8 +196,6 @@ function getSortedFiles(dependenciesGraph) {
 
   const topologicalSortedNames = graph.sort();
 
-  // If an entry has no dependency it won't be included in the graph, so we
-  // add them and then dedup the array
   const withEntries = topologicalSortedNames.concat(
     resolvedFiles.map((f) => f.sourceName)
   );
@@ -260,7 +250,6 @@ subtask(
           !i++ ? m : ""
       )(0)
     );
-    // Remove every line started with "pragma abicoder v2;" except the first one
     flattened = flattened.replace(
       /pragma abicoder v2;\n/gm,
       (
@@ -268,7 +257,6 @@ subtask(
           !i++ ? m : ""
       )(0)
     );
-    // Remove every line started with "pragma solidity ****" except the first one
     flattened = flattened.replace(
       /pragma solidity .*$\n/gm,
       (
@@ -328,7 +316,7 @@ task("flat", "Flattens and prints contracts and their dependencies")
   });
 
 subtask("compile:solidity:transform-import-name").setAction(
-  async ({ importName }, _hre, runSuper) => {
+  async ({ importName }, _hre) => {
     const remappings = { "@yearn-protocol/": "lib/yearn-vaults/" };
     for (const [from, to] of Object.entries(remappings)) {
       if (importName.startsWith(from) && !importName.startsWith(".")) {

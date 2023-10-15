@@ -21,19 +21,17 @@ contract Migration is Ownable, ReentrancyGuard {
 
     address[] public notWithdrawnUsers;
 
-    constructor(
-        address _vaultV1,
-        address _vaultV2,
-        address[] memory _users,
-        address _treasury
-    ) {
+    constructor(address _vaultV1, address[] memory _users, address _treasury) {
         vaultV1 = IBaseVault(_vaultV1);
-        vaultV2 = IBaseVault(_vaultV2);
         users = _users;
         treasury = _treasury;
         token = vaultV1.token();
-        vaultV1.token().approve(address(vaultV2), type(uint256).max);
         vaultV1.token().approve(treasury, type(uint256).max);
+    }
+
+    function setVaultV2(address _vaultV2) external onlyOwner {
+        vaultV2 = IBaseVault(_vaultV2);
+        vaultV1.token().approve(address(vaultV2), type(uint256).max);
     }
 
     function addUsers(address[] memory _newUsers) external onlyOwner {
@@ -102,12 +100,10 @@ contract Migration is Ownable, ReentrancyGuard {
     }
 
     function deposit() external nonReentrant {
-        //need to rethink, it is not safe to get all tokens on this account without ability to get this tokens back to users
         vaultV2.deposit(token.balanceOf(address(this)), address(this));
     }
 
     function emergencyExit() external onlyOwner {
-        //emergency case
         vaultV1.token().transfer(treasury, token.balanceOf(address(this)));
         IERC20(address(vaultV2)).transfer(
             treasury,
