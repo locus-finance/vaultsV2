@@ -5,7 +5,6 @@ pragma solidity ^0.8.18;
 import {BaseStrategy} from "../BaseStrategy.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {OracleLibrary} from "@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol";
-import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
@@ -14,7 +13,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import "../integrations/velo/IVeloRouter.sol";
 import "../integrations/velo/IVeloGauge.sol";
 
-contract HopStrategy is Initializable, BaseStrategy {
+contract VelodromeStrategy is Initializable, BaseStrategy {
     using SafeERC20 for IERC20;
 
     uint256 public constant DEFAULT_SLIPPAGE = 9_800;
@@ -28,14 +27,9 @@ contract HopStrategy is Initializable, BaseStrategy {
         0x73cb180bf0521828d8849bc8CF2B920918e23032;
     address internal constant LP = 0xd95E98fc33670dC033424E7Aa0578D742D00f9C7;
     address internal constant VELO = 0x9560e827aF36c94D2Ac33a39bCE1Fe78631088Db;
-    address internal constant DALA = 0x8aE125E8653821E851F12A49F7765db9a9ce7384;
-
-    address internal constant WETH = 0x4200000000000000000000000000000000000006;
 
     address internal constant POOL_FACTORY =
         0xF1046053aa5682b4F9a81b5481394DA16BE5FF5a;
-
-    uint32 internal constant TWAP_RANGE_SECS = 1800;
 
     function initialize(
         address _lzEndpoint,

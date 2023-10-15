@@ -8,12 +8,12 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {FixedPointMathLib} from "solmate/src/utils/FixedPointMathLib.sol";
 
-import {IExchange} from "../integrations/usdr/IExchange.sol";
-import {Utils} from "../utils/Utils.sol";
-import {IV3SwapRouter} from "../integrations/uniswap/IV3SwapRouter.sol";
-import {IPearlRouter, IPearlPair} from "../integrations/pearl/IPearlRouter.sol";
-import {IPearlGaugeV2} from "../integrations/pearl/IPearlGaugeV2.sol";
-import {BaseStrategy} from "../BaseStrategy.sol";
+import {IExchange} from "../../integrations/usdr/IExchange.sol";
+import {Utils} from "../../utils/Utils.sol";
+import {IV3SwapRouter} from "../../integrations/uniswap/IV3SwapRouter.sol";
+import {IPearlRouter, IPearlPair} from "../../integrations/pearl/IPearlRouter.sol";
+import {IPearlGaugeV2} from "../../integrations/pearl/IPearlGaugeV2.sol";
+import {BaseStrategy} from "../../BaseStrategy.sol";
 
 contract PearlStrategy is Initializable, BaseStrategy {
     using SafeERC20 for IERC20;

@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.18;
 
-import {BaseStrategy} from "../BaseStrategy.sol";
+import {BaseStrategy} from "../../BaseStrategy.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {OracleLibrary} from "@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol";
 import {IUniswapV3Factory} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
@@ -11,10 +11,10 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "../integrations/pika/IPikaPerpV4.sol";
-import "../integrations/pika/IVaultFeeReward.sol";
-import "../integrations/pika/IVaultTokenReward.sol";
-import "../integrations/pika/IVester.sol";
+import "../../integrations/pika/IPikaPerpV4.sol";
+import "../../integrations/pika/IVaultFeeReward.sol";
+import "../../integrations/pika/IVaultTokenReward.sol";
+import "../../integrations/pika/IVester.sol";
 
 contract PikaStrategy is Initializable, BaseStrategy {
     function initialize(
