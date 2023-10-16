@@ -3,13 +3,16 @@ require("@nomiclabs/hardhat-vyper");
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-truffle5");
 require("@nomiclabs/hardhat-ethers");
+require("@nomiclabs/hardhat-etherscan");
+require("hardhat-tracer");
+require("hardhat-contract-sizer");
+require("hardhat-deploy");
+require("hardhat-deploy-ethers");
 require("hardhat-gas-reporter");
 require("hardhat-log-remover");
 require("hardhat-abi-exporter");
 require("dotenv").config();
 require("solidity-coverage");
-require("hardhat-tracer");
-require("hardhat-contract-sizer");
 
 require("./tasks");
 
@@ -23,7 +26,7 @@ const {
   BASE_NODE,
 } = process.env;
 
-task("fork_reset", "Reset to local fork", async () => {
+task("fork_reset", "Reset to local fork", async (taskArgs) => {
   await network.provider.request({
     method: "hardhat_reset",
     params: []
@@ -316,7 +319,7 @@ task("flat", "Flattens and prints contracts and their dependencies")
   });
 
 subtask("compile:solidity:transform-import-name").setAction(
-  async ({ importName }, _hre) => {
+  async ({ importName }, _hre, runSuper) => {
     const remappings = { "@yearn-protocol/": "lib/yearn-vaults/" };
     for (const [from, to] of Object.entries(remappings)) {
       if (importName.startsWith(from) && !importName.startsWith(".")) {
