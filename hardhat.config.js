@@ -131,6 +131,11 @@ module.exports = {
       url: BASE_NODE || "",
       chainId: 8453,
       accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
+    },
+    kava: {
+      url: "https://evm.kava.io/",
+      chainId: 2222,
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
     }
   },
   etherscan: {
