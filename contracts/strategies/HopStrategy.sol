@@ -208,7 +208,7 @@ contract HopStrategy is Initializable, BaseStrategy {
             _claimAndSellRewards();
         } else {
             uint256 _usdcToUnstake = Math.min(
-                balanceOfStaked(),
+                LpToWant(balanceOfStaked()),
                 _amountNeeded - HopToWant(rewardss())
             );
             _exitPosition(_usdcToUnstake);

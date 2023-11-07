@@ -5,6 +5,7 @@ pragma solidity ^0.8.19;
 import {ERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
+import {ILayerZeroEndpointUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/interfaces/ILayerZeroEndpointUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
@@ -25,6 +26,7 @@ abstract contract BaseStrategy is
 
     error InsufficientFunds(uint256 amount, uint256 balance);
     error IncorrectMessageType(uint256 messageType);
+    error BaseStrategy__UnAcceptableFee();
 
     event SgReceived(address indexed token, uint256 amount, address sender);
     event StrategyReported(
@@ -72,8 +74,6 @@ abstract contract BaseStrategy is
         currentChainId = _currentChainId;
         sgBridge = ISgBridge(_sgBridge);
         sgRouter = IStargateRouter(_sgRouter);
-
-        want.approve(_sgBridge, type(uint256).max);
     }
 
     address public strategist;
@@ -86,6 +86,13 @@ abstract contract BaseStrategy is
     bool public emergencyExit;
     ISgBridge public sgBridge;
     IStargateRouter public sgRouter;
+    uint256 public constant MAX_BPS = 10_000;
+    uint256 public performanceFee;
+    uint256 public managementFee;
+    uint256 public strategistFee;
+    uint256 public constant SECS_PER_YEAR = 31_556_952;
+    uint256 public lastReport;
+    address public treasury;
 
     mapping(uint256 => bool) withdrawnInEpoch;
 
@@ -99,12 +106,44 @@ abstract contract BaseStrategy is
         strategist = _strategist;
     }
 
+    function setLzEndpoint(address _endpoint) external onlyOwner {
+        lzEndpoint = ILayerZeroEndpointUpgradeable(_endpoint);
+    }
+
+    function setSgBridge(address _sgBridge) external onlyOwner {
+        sgBridge = ISgBridge(_sgBridge);
+    }
+
+    function setSgRouter(address _sgRouter) external onlyOwner {
+        sgRouter = IStargateRouter(_sgRouter);
+    }
+
     function setEmergencyExit(bool _emergencyExit) external onlyStrategist {
         emergencyExit = _emergencyExit;
     }
 
     function setSlippage(uint256 _slippage) external onlyStrategist {
+        require(_slippage < 10_000, "slippage above 100%");
         slippage = _slippage;
+    }
+
+    function setPerformanceFee(uint256 fee) external onlyOwner {
+        if (fee > MAX_BPS / 2) revert BaseStrategy__UnAcceptableFee();
+        performanceFee = fee;
+    }
+
+    function setManagementFee(uint256 fee) external onlyOwner {
+        if (fee > MAX_BPS) revert BaseStrategy__UnAcceptableFee();
+        managementFee = fee;
+    }
+
+    function setStrategistFee(uint256 fee) external onlyOwner {
+        if (fee > MAX_BPS) revert BaseStrategy__UnAcceptableFee();
+        strategistFee = fee;
+    }
+
+    function setTreasuryAddress(address _treasury) external onlyOwner {
+        treasury = _treasury;
     }
 
     function balanceOfWant() public view returns (uint256) {
@@ -193,6 +232,7 @@ abstract contract BaseStrategy is
             nonce: _signNonce++,
             signature: _signature
         });
+        lastReport = block.timestamp;
 
         if (requestFromStrategy > 0) {
             _bridge(
@@ -418,6 +458,7 @@ abstract contract BaseStrategy is
         bytes memory _payload
     ) internal {
         uint256 fee = sgBridge.feeForBridge(_destChainId, _dest, _payload);
+        want.safeApprove(address(sgBridge), _amount);
         sgBridge.bridge{value: fee}(
             address(want),
             _amount,
@@ -455,15 +496,64 @@ abstract contract BaseStrategy is
         );
     }
 
+    function withdraw(uint256 _amountNeeded) external returns (uint256 _loss) {
+        require(msg.sender == address(vault), "!vault");
+        uint256 amountFreed;
+        (amountFreed, _loss) = _liquidatePosition(_amountNeeded);
+        want.safeTransfer(msg.sender, amountFreed);
+    }
+
+    function migrate(address _newStrategy) external {
+        require(msg.sender == address(vault));
+        require(BaseStrategy(payable(_newStrategy)).vault() == vault);
+        _prepareMigration(_newStrategy);
+        want.safeTransfer(_newStrategy, want.balanceOf(address(this)));
+    }
+
+    function delegatedAssets() public view virtual returns (uint256) {
+        return 0;
+    }
+
+    function _assessFees(
+        address strategy,
+        uint256 totalDebt,
+        uint256 gain
+    ) internal returns (uint256) {
+        // if (strategies[strategy].activation == block.timestamp) {
+        //     return 0;
+        // }
+
+        uint256 duration = block.timestamp - lastReport;
+
+        require(duration != 0, "can't assessFees twice within the same block");
+
+        if (gain == 0) {
+            return 0;
+        }
+
+        uint256 _managementFee = ((totalDebt - delegatedAssets()) *
+            duration *
+            managementFee) /
+            MAX_BPS /
+            SECS_PER_YEAR;
+        uint256 _strategistFee = (gain * strategistFee) / MAX_BPS;
+        uint256 _performanceFee = (gain * performanceFee) / MAX_BPS;
+        uint256 totalFee = _managementFee + _strategistFee + _performanceFee;
+        if (totalFee > gain) {
+            totalFee = gain;
+        }
+        if (totalFee > 0) {
+            (uint256 amount, uint256 loss) = _liquidatePosition(totalFee);
+            // if (_strategistFee > 0) {
+            //     uint256 strategistReward = (_strategistFee * reward) / totalFee;
+            //     transfer(treasury, strategistReward);
+            // }
+            if (want.balanceOf(address(this)) >= amount) {
+                want.safeTransfer(treasury, amount);
+            }
+        }
+        return totalFee;
+    }
+
     receive() external payable {}
-
-    /* === DEBUG FUNCTIONS === */
-
-    function clearWant() external onlyStrategist {
-        want.safeTransfer(address(1), want.balanceOf(address(this)));
-    }
-
-    function callMe(uint256 epoch) external onlyOwner {
-        withdrawnInEpoch[epoch] = false;
-    }
 }
