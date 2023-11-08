@@ -12,6 +12,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 
 import "../integrations/curve/IFactory.sol";
 import "../integrations/curve/IPlainPool.sol";
+import "../integrations/beefy/IBeefyVault.sol";
 
 contract BeefyStrategy is Initializable, BaseStrategy {
     using SafeERC20 for IERC20;
@@ -47,7 +48,6 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         IERC20 _want,
         address _vault,
         uint16 _vaultChainId,
-        uint16 _currentChainId,
         address _sgBridge,
         address _router,
         string calldata _namePostfix
@@ -58,7 +58,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
             _want,
             _vault,
             _vaultChainId,
-            _currentChainId,
+            uint16(block.chainid),
             _sgBridge,
             _router,
             DEFAULT_SLIPPAGE
@@ -66,20 +66,20 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         namePostfix = _namePostfix;
 
         uint256[2] memory nCoinsInfo;
-        if (_currentChainId == BASE_CHAIN_ID) {
+        if (block.chainid == BASE_CHAIN_ID) {
             IERC20(BASE_USDBC).approve(BASE_CURVE_4POOL, type(uint256).max);
             baseCurveStableSwap4PoolLp = IERC20(IPlainPool(BASE_CURVE_4POOL).lp_token());
             baseCurveStableSwap4PoolLp.approve(BASE_BEEFY_VAULT, type(uint256).max);
             nCoinsInfo = IFactory(KAVA_CURVE_FACTORY).get_n_coins(address(baseCurveStableSwap4PoolLp));
             baseCurveStableSwap4PoolLpNCoins = nCoinsInfo[0];
-        } else if (_currentChainId == KAVA_CHAIN_ID) {
+        } else if (block.chainid == KAVA_CHAIN_ID) {
             IERC20(KAVA_USDT).approve(KAVA_CURVE_AXLUSD_USDT_POOL, type(uint256).max);
             kavaCurveStableSwapAxlusdUsdtPoolLp = IERC20(IPlainPool(KAVA_CURVE_AXLUSD_USDT_POOL).lp_token());
             kavaCurveStableSwapAxlusdUsdtPoolLp.approve(KAVA_BEEFY_VAULT, type(uint256).max);
             nCoinsInfo = IFactory(KAVA_CURVE_FACTORY).get_n_coins(address(kavaCurveStableSwapAxlusdUsdtPoolLp));
             kavaCurveStableSwapAxlusdUsdtPoolNCoins = nCoinsInfo[0];
         } else {
-            revert WrongChainId(_currentChainId);
+            revert WrongChainId(uint16(block.chainid));
         }
     }
 
@@ -87,34 +87,76 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         return string(abi.encodePacked("Beefy - Curve ", namePostfix));
     }
 
+    function _getBeefyVault() internal view returns (IBeefyVault beefyVault) {
+        if (block.chainid == BASE_CHAIN_ID) {
+            beefyVault = IBeefyVault(BASE_BEEFY_VAULT);                        
+        } else if (block.chainid == KAVA_CHAIN_ID) {
+            beefyVault = IBeefyVault(KAVA_BEEFY_VAULT);
+        } else {
+            revert WrongChainId(uint16(block.chainid));
+        }
+    }
+
+    function _getCurvePlainPool() internal view returns (IPlainPool curvePool) {
+        if (block.chainid == BASE_CHAIN_ID) {
+            curvePool = IPlainPool(BASE_CURVE_4POOL);
+        } else if (block.chainid == KAVA_CHAIN_ID) {
+            curvePool = IPlainPool(KAVA_CURVE_AXLUSD_USDT_POOL);
+        } else {
+            revert WrongChainId(uint16(block.chainid));
+        }
+    }
+
     function estimatedTotalAssets() public view override returns (uint256) {
-        // balance of staked equivalent in want tokens
-        // balance of want tokens
-        // amount of rewards in want tokens
+        IBeefyVault beefyVault = _getBeefyVault();
+        IPlainPool curvePool = _getCurvePlainPool();
+        uint256 curveLpTokens = beefyVault.balanceOf(address(this)) * beefyVault.getPricePerFullShare();
+        return balanceOfWant() + curvePool.calc_withdraw_one_coin(curveLpTokens, );
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal override {
         if (emergencyExit) {
             return;
         }
-
         uint256 unstakedBalance = balanceOfWant();
-
         uint256 excessWant;
         if (unstakedBalance > _debtOutstanding) {
             excessWant = unstakedBalance - _debtOutstanding;
         }
         if (excessWant > 0) {
-            
+            _depositToBeefyVaultWantTokens(excessWant);
         }
+    }
+
+    function _depositToBeefyVaultWantTokens(uint256 amount) internal returns (uint256 amountOfBeefyVaultTokensMinted) {
+        IBeefyVault beefyVault = _getBeefyVault();
+        IPlainPool curvePool = _getCurvePlainPool();
+        curvePool.add_liquidity();
+        beefyVault.deposit(amount);
+    }
+
+    function _withdrawFromBeefyVaultAndTransformToWantTokens(uint256 shares) internal returns (uint256 amountOfWantTokensWithdrawn) {
+        IBeefyVault beefyVault = _getBeefyVault();
+        beefyVault.withdraw(shares);
+        // withdraw from curve
     }
 
     function _liquidatePosition(
         uint256 _amountNeeded
     ) internal override returns (uint256 _liquidatedAmount, uint256 _loss) {
-        uint256 _wantBal = want.balanceOf(address(this));
-        if (_wantBal >= _amountNeeded) {
+        uint256 _wantBalance = balanceOfWant();
+        if (_wantBalance >= _amountNeeded) {
             return (_amountNeeded, 0);
+        }
+        
+        _withdrawFromBeefyVaultAndTransformToWantTokens(_amountNeeded - _wantBalance);
+        _wantBalance = balanceOfWant();
+
+        if (_amountNeeded > _wantBalance) {
+            _liquidatedAmount = _wantBalance;
+            _loss = _amountNeeded - _wantBalance;
+        } else {
+            _liquidatedAmount = _amountNeeded;
         }
     }
 
@@ -123,9 +165,13 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         override
         returns (uint256 _amountFreed)
     {
+        return _withdrawFromBeefyVaultAndTransformToWantTokens(
+            _getBeefyVault().balanceOf(address(this))
+        );
     }
 
     function _prepareMigration(address _newStrategy) internal override {
-
+        uint256 assets = _liquidateAllPositions();
+        want.safeTransfer(_newStrategy, assets);
     }
 }

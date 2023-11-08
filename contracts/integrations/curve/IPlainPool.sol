@@ -18,6 +18,6 @@ interface IPlainPool {
     /// @dev StableSwap.calc_token_amount(_amounts: uint256[N_COINS], _is_deposit: bool) → uint256: view
     function calc_token_amount(uint256[] memory _amounts, bool is_deposit) external view returns (uint256);
 
-    /// @dev StableSwap.lp_token()→ address: view
+    /// @dev StableSwap.lp_token() → address: view
     function lp_token() external view returns (address);
 }
