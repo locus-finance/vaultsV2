@@ -172,7 +172,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         }
     }
 
-    function _prepareAmountsArrayForCurveInteraction() internal returns (uint256[] memory amounts) {
+    function _prepareAmountsArrayForCurveInteraction() internal view returns (uint256[] memory amounts) {
         if (block.chainid == BASE_CHAIN_ID) {
             amounts = new uint256[](baseCurveStableSwap4PoolLpNCoins);
         } else if (block.chainid == KAVA_CHAIN_ID) {
@@ -227,7 +227,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         beefyVault.withdraw(amountToWithdrawFromBeefyVault);
 
         amountOfWantTokensWithdrawn = curvePool.remove_liquidity_one_coin(
-            wantTokensAmount, 
+            wantTokensAmount,
             _getIndexOfWantTokenInCurvePool((address(curvePool))), 
             (wantTokensAmount * DEFAULT_SLIPPAGE) / 10000
         );
