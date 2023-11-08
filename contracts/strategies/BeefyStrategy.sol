@@ -172,13 +172,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         }
     }
 
-    function _depositToBeefyVaultWantTokens(
-        uint256 amount
-    ) internal returns (uint256 amountOfBeefyVaultTokensMinted) {
-        IBeefyVault beefyVault = _getBeefyVault();
-        IPlainPool curvePool = _getCurvePlainPool();
-
-        uint256[] memory amounts;
+    function _prepareAmountsArrayForCurveInteraction() internal returns (uint256[] memory amounts) {
         if (block.chainid == BASE_CHAIN_ID) {
             amounts = new uint256[](baseCurveStableSwap4PoolLpNCoins);
         } else if (block.chainid == KAVA_CHAIN_ID) {
@@ -186,6 +180,15 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         } else {
             revert WrongChainId(uint16(block.chainid));
         }
+    }
+
+    function _depositToBeefyVaultWantTokens(
+        uint256 amount
+    ) internal returns (uint256 amountOfBeefyVaultTokensMinted) {
+        IBeefyVault beefyVault = _getBeefyVault();
+        IPlainPool curvePool = _getCurvePlainPool();
+
+        uint256[] memory amounts = _prepareAmountsArrayForCurveInteraction();
 
         uint256 wantTokenIndexInCurvePool = SafeCast.toUint256(
             _getIndexOfWantTokenInCurvePool(address(curvePool))
@@ -209,13 +212,25 @@ contract BeefyStrategy is Initializable, BaseStrategy {
     ) internal returns (uint256 amountOfWantTokensWithdrawn) {
         IBeefyVault beefyVault = _getBeefyVault();
         IPlainPool curvePool = _getCurvePlainPool();
-        uint256 sharesToWithdraw = curvePool.remove_liquidity_one_coin(
+
+        uint256[] memory amounts = _prepareAmountsArrayForCurveInteraction();
+        uint256 wantTokenIndexInCurvePool = SafeCast.toUint256(
+            _getIndexOfWantTokenInCurvePool(address(curvePool))
+        );
+        amounts[wantTokenIndexInCurvePool] = wantTokensAmount;
+
+        uint256 amountToWithdrawFromBeefyVault = curvePool.calc_token_amount(
+            amounts,
+            true
+        );
+
+        beefyVault.withdraw(amountToWithdrawFromBeefyVault);
+
+        amountOfWantTokensWithdrawn = curvePool.remove_liquidity_one_coin(
             wantTokensAmount, 
             _getIndexOfWantTokenInCurvePool((address(curvePool))), 
             (wantTokensAmount * DEFAULT_SLIPPAGE) / 10000
         );
-        // beefyVault.withdraw(shares);
-        // withdraw from curve
     }
 
     function _liquidatePosition(
