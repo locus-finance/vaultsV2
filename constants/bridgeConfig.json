@@ -41,7 +41,7 @@
             "address": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
             "poolId": 1
         },
-        "USDT": {
+        "USDbC": {
             "address": ""
         },
         "sgBridge": " ",
@@ -53,15 +53,11 @@
     },
     "kava": {
         "chainId": 184,
-        "USDC": {
-            "address": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
-            "poolId": 1
+        "USDT": {
+            "address": " "
         },
         "sgBridge": " ",
-        "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
-        "lzEndpoint": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7",
-        "AeroStrategy": " ",
-        "slippage": 9500,
-        "TestStrategy": " "
+        "sgRouter": " ",
+        "lzEndpoint": " "
     }
 }

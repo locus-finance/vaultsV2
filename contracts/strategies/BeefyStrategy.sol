@@ -24,14 +24,14 @@ contract BeefyStrategy is Initializable, BaseStrategy {
     error WantTokenIsNotInPool(address pool);
 
     address public constant KAVA_CURVE_FACTORY = address(0);
-    address public constant KAVA_USDT = address(0);
-    address public constant KAVA_CURVE_AXLUSD_USDT_POOL = address(0);
-    address public constant KAVA_BEEFY_VAULT = address(0);
+    address public constant KAVA_USDT = 0x919C1c267BC06a7039e03fcc2eF738525769109c;
+    address public constant KAVA_CURVE_AXLUSD_USDT_POOL = 0xAA3b055186f96dD29d0c2A17710d280Bc54290c7;
+    address public constant KAVA_BEEFY_VAULT = 0xd5BC6DEa24A93A542C0d3Aa7e4dFBD05d97AF0F8;
 
-    address public constant BASE_CURVE_FACTORY = address(0);
-    address public constant BASE_USDBC = address(0);
-    address public constant BASE_CURVE_4POOL = address(0);
-    address public constant BASE_BEEFY_VAULT = address(0);
+    address public constant BASE_CURVE_FACTORY = 0x3093f9B57A428F3EB6285a589cb35bEA6e78c336;
+    address public constant BASE_USDBC = 0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA;
+    address public constant BASE_CURVE_4POOL = 0xf6C5F01C7F3148891ad0e19DF78743D31E390D1f;
+    address public constant BASE_BEEFY_VAULT = 0xC3718d05478Edab1C40F84E8a7A65ca49D039A9f;
 
     uint256 public constant DEFAULT_SLIPPAGE = 9_800;
 
