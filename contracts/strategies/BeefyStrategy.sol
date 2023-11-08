@@ -108,43 +108,6 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         return string(abi.encodePacked("Beefy - Curve ", namePostfix));
     }
 
-    function _getBeefyVault() internal view returns (IBeefyVault beefyVault) {
-        if (block.chainid == BASE_CHAIN_ID) {
-            beefyVault = IBeefyVault(BASE_BEEFY_VAULT);
-        } else if (block.chainid == KAVA_CHAIN_ID) {
-            beefyVault = IBeefyVault(KAVA_BEEFY_VAULT);
-        } else {
-            revert WrongChainId(uint16(block.chainid));
-        }
-    }
-
-    function _getCurvePlainPool() internal view returns (IPlainPool curvePool) {
-        if (block.chainid == BASE_CHAIN_ID) {
-            curvePool = IPlainPool(BASE_CURVE_4POOL);
-        } else if (block.chainid == KAVA_CHAIN_ID) {
-            curvePool = IPlainPool(KAVA_CURVE_AXLUSD_USDT_POOL);
-        } else {
-            revert WrongChainId(uint16(block.chainid));
-        }
-    }
-
-    function _getIndexOfWantTokenInCurvePool(
-        address pool
-    ) internal view returns (int128) {
-        IFactory curvePoolsFactory;
-        if (block.chainid == BASE_CHAIN_ID) {
-            curvePoolsFactory = IFactory(BASE_CURVE_FACTORY);
-        } else if (block.chainid == KAVA_CHAIN_ID) {
-            curvePoolsFactory = IFactory(KAVA_CURVE_FACTORY);
-        } else {
-            revert WrongChainId(uint16(block.chainid));
-        }
-        address[2] memory coins = curvePoolsFactory.get_coins(pool);
-        if (coins[0] == address(want)) return 0;
-        if (coins[1] == address(want)) return 1;
-        revert WantTokenIsNotInPool(pool);
-    }
-
     function estimatedTotalAssets() public view override returns (uint256) {
         IBeefyVault beefyVault = _getBeefyVault();
         IPlainPool curvePool = _getCurvePlainPool();
@@ -169,16 +132,6 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         }
         if (excessWant > 0) {
             _depositToBeefyVaultWantTokens(excessWant);
-        }
-    }
-
-    function _prepareAmountsArrayForCurveInteraction() internal view returns (uint256[] memory amounts) {
-        if (block.chainid == BASE_CHAIN_ID) {
-            amounts = new uint256[](baseCurveStableSwap4PoolLpNCoins);
-        } else if (block.chainid == KAVA_CHAIN_ID) {
-            amounts = new uint256[](kavaCurveStableSwapAxlusdUsdtPoolNCoins);
-        } else {
-            revert WrongChainId(uint16(block.chainid));
         }
     }
 
@@ -268,5 +221,52 @@ contract BeefyStrategy is Initializable, BaseStrategy {
     function _prepareMigration(address _newStrategy) internal override {
         uint256 assets = _liquidateAllPositions();
         want.safeTransfer(_newStrategy, assets);
+    }
+
+    function _getBeefyVault() internal view returns (IBeefyVault beefyVault) {
+        if (block.chainid == BASE_CHAIN_ID) {
+            beefyVault = IBeefyVault(BASE_BEEFY_VAULT);
+        } else if (block.chainid == KAVA_CHAIN_ID) {
+            beefyVault = IBeefyVault(KAVA_BEEFY_VAULT);
+        } else {
+            revert WrongChainId(uint16(block.chainid));
+        }
+    }
+
+    function _getCurvePlainPool() internal view returns (IPlainPool curvePool) {
+        if (block.chainid == BASE_CHAIN_ID) {
+            curvePool = IPlainPool(BASE_CURVE_4POOL);
+        } else if (block.chainid == KAVA_CHAIN_ID) {
+            curvePool = IPlainPool(KAVA_CURVE_AXLUSD_USDT_POOL);
+        } else {
+            revert WrongChainId(uint16(block.chainid));
+        }
+    }
+
+    function _getIndexOfWantTokenInCurvePool(
+        address pool
+    ) internal view returns (int128) {
+        IFactory curvePoolsFactory;
+        if (block.chainid == BASE_CHAIN_ID) {
+            curvePoolsFactory = IFactory(BASE_CURVE_FACTORY);
+        } else if (block.chainid == KAVA_CHAIN_ID) {
+            curvePoolsFactory = IFactory(KAVA_CURVE_FACTORY);
+        } else {
+            revert WrongChainId(uint16(block.chainid));
+        }
+        address[2] memory coins = curvePoolsFactory.get_coins(pool);
+        if (coins[0] == address(want)) return 0;
+        if (coins[1] == address(want)) return 1;
+        revert WantTokenIsNotInPool(pool);
+    }
+
+    function _prepareAmountsArrayForCurveInteraction() internal view returns (uint256[] memory amounts) {
+        if (block.chainid == BASE_CHAIN_ID) {
+            amounts = new uint256[](baseCurveStableSwap4PoolLpNCoins);
+        } else if (block.chainid == KAVA_CHAIN_ID) {
+            amounts = new uint256[](kavaCurveStableSwapAxlusdUsdtPoolNCoins);
+        } else {
+            revert WrongChainId(uint16(block.chainid));
+        }
     }
 }
