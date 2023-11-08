@@ -16,7 +16,7 @@ import "../integrations/hop/IRouter.sol";
 contract HopStrategy is Initializable, BaseStrategy {
     using SafeERC20 for IERC20;
 
-    uint256 public constant DEFAULT_SLIPPAGE = 9_800;
+    uint256 public constant DEFAULT_SLIPPAGE = 9_500;
 
     address internal constant HOP_ROUTER =
         0x10541b07d8Ad2647Dc6cD67abd4c03575dade261;
