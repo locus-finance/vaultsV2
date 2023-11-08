@@ -93,6 +93,7 @@ abstract contract BaseStrategy is
     uint256 public constant SECS_PER_YEAR = 31_556_952;
     uint256 public lastReport;
     address public treasury;
+    uint256 public feeThreshold;
 
     mapping(uint256 => bool) withdrawnInEpoch;
 
@@ -120,6 +121,10 @@ abstract contract BaseStrategy is
 
     function setEmergencyExit(bool _emergencyExit) external onlyStrategist {
         emergencyExit = _emergencyExit;
+    }
+
+    function setFeeThreshold(uint256 _threshold) external onlyStrategist {
+        feeThreshold = _threshold;
     }
 
     function setSlippage(uint256 _slippage) external onlyStrategist {
@@ -218,6 +223,8 @@ abstract contract BaseStrategy is
             giveToStrategy = 0;
             requestFromStrategy = fundsAvailable - _creditAvailable;
         }
+
+        _assessFees(profit, _totalDebt);
 
         StrategyReport memory report = StrategyReport({
             strategy: address(this),
@@ -515,14 +522,9 @@ abstract contract BaseStrategy is
     }
 
     function _assessFees(
-        address strategy,
         uint256 totalDebt,
         uint256 gain
     ) internal returns (uint256) {
-        // if (strategies[strategy].activation == block.timestamp) {
-        //     return 0;
-        // }
-
         uint256 duration = block.timestamp - lastReport;
 
         require(duration != 0, "can't assessFees twice within the same block");
@@ -536,18 +538,13 @@ abstract contract BaseStrategy is
             managementFee) /
             MAX_BPS /
             SECS_PER_YEAR;
-        uint256 _strategistFee = (gain * strategistFee) / MAX_BPS;
         uint256 _performanceFee = (gain * performanceFee) / MAX_BPS;
-        uint256 totalFee = _managementFee + _strategistFee + _performanceFee;
+        uint256 totalFee = _managementFee + _performanceFee;
         if (totalFee > gain) {
             totalFee = gain;
         }
-        if (totalFee > 0) {
-            (uint256 amount, uint256 loss) = _liquidatePosition(totalFee);
-            // if (_strategistFee > 0) {
-            //     uint256 strategistReward = (_strategistFee * reward) / totalFee;
-            //     transfer(treasury, strategistReward);
-            // }
+        if (totalFee > feeThreshold) {
+            (uint256 amount, ) = _liquidatePosition(totalFee);
             if (want.balanceOf(address(this)) >= amount) {
                 want.safeTransfer(treasury, amount);
             }

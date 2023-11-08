@@ -67,7 +67,7 @@ contract Vault is
         __ReentrancyGuard_init();
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
         __Ownable_init();
-        __ERC20_init("Omnichain Vault", "OMV");
+        __ERC20_init("Locus Yield USD", "$lyUSD");
 
         governance = _governance;
         token = _token;
@@ -94,7 +94,7 @@ contract Vault is
     address public sgRouter;
 
     modifier onlyAuthorized() {
-        if (msg.sender != governance || msg.sender != owner())
+        if (msg.sender != governance && msg.sender != owner())
             revert Vault__V1();
         _;
     }
