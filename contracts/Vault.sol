@@ -12,6 +12,7 @@ import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/Nonbloc
 import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
 import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
 import {IStargateReceiver} from "./integrations/stargate/IStargate.sol";
@@ -19,32 +20,39 @@ import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 import {StrategyParams, WithdrawRequest, WithdrawEpoch, IVault} from "./interfaces/IVault.sol";
 import {IBaseStrategy} from "./interfaces/IBaseStrategy.sol";
 
+error Vault__V1();
+error Vault__V2();
+error Vault__V3();
+error Vault__V4();
+error Vault__V5();
+error Vault__V6();
+error Vault__V7();
+error Vault__V8();
+error Vault__V9();
+error Vault__V10();
+error Vault__V11();
+error Vault__V12();
+error Vault__V13();
+error Vault__V14();
+error Vault__V15();
+error Vault__V16();
+error Vault__V17();
+error Vault__V18();
+error Vault__V19();
+error Vault__V20();
+error Vault__V21();
+error Vault__V22();
+error Vault__V23();
+
 contract Vault is
     Initializable,
     ERC20Upgradeable,
     NonblockingLzAppUpgradeable,
     IVault,
     IStrategyMessages,
-    IStargateReceiver
+    IStargateReceiver,
+    ReentrancyGuardUpgradeable
 {
-    error Vault__V1();
-    error Vault__V2();
-    error Vault__V3();
-    error Vault__V4();
-    error Vault__V5();
-    error Vault__V6();
-    error Vault__V7();
-    error Vault__V8();
-    error Vault__V9();
-    error Vault__V10();
-    error Vault__V11();
-    error Vault__V12();
-    error Vault__V13();
-    error Vault__V14();
-    error Vault__V15();
-    error Vault__V16();
-    error Vault__V17();
-
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.AddressSet;
     using SafeERC20 for IERC20;
@@ -56,9 +64,10 @@ contract Vault is
         IERC20 _token,
         address _sgRouter
     ) external override initializer {
+        __ReentrancyGuard_init();
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
         __Ownable_init();
-        __ERC20_init("Omnichain Vault", "OMV");
+        __ERC20_init("Locus Yield USD", "$lyUSD");
 
         governance = _governance;
         token = _token;
@@ -75,6 +84,7 @@ contract Vault is
     bool public emergencyShutdown;
     mapping(uint16 => mapping(address => StrategyParams)) public strategies;
     uint256 public withdrawEpoch;
+    uint256 public constant MAX_BPS = 10_000;
 
     mapping(uint16 => EnumerableSet.AddressSet) internal _strategiesByChainId;
     EnumerableSet.UintSet internal _supportedChainIds;
@@ -84,7 +94,7 @@ contract Vault is
     address public sgRouter;
 
     modifier onlyAuthorized() {
-        if (msg.sender != governance || msg.sender != owner())
+        if (msg.sender != governance && msg.sender != owner())
             revert Vault__V1();
         _;
     }
@@ -104,10 +114,6 @@ contract Vault is
         _;
     }
 
-    function decimals() public view virtual override returns (uint8) {
-        return ERC20Upgradeable(address(token)).decimals();
-    }
-
     function revokeFunds() external override onlyAuthorized {
         payable(msg.sender).transfer(address(this).balance);
     }
@@ -123,8 +129,11 @@ contract Vault is
     }
 
     function setSgBridge(address _newSgBridge) external onlyAuthorized {
-        token.approve(_newSgBridge, type(uint256).max);
         sgBridge = ISgBridge(_newSgBridge);
+    }
+
+    function setSgRouter(address _newSgRouter) external onlyAuthorized {
+        sgRouter = _newSgRouter;
     }
 
     function setStrategist(
@@ -146,7 +155,7 @@ contract Vault is
     function deposit(
         uint256 _amount,
         address _recipient
-    ) public override returns (uint256) {
+    ) public override nonReentrant returns (uint256) {
         if (emergencyShutdown) revert Vault__V11();
         uint256 shares = _issueSharesForAmount(_recipient, _amount);
         token.safeTransferFrom(msg.sender, address(this), _amount);
@@ -158,6 +167,10 @@ contract Vault is
         address _recipient,
         uint256 _maxLoss
     ) public override WithdrawInProgress {
+        if (_maxShares == 0 || _maxShares > balanceOf(msg.sender))
+            revert Vault__V19();
+        if (_recipient == address(0)) revert Vault__V20();
+        if (_maxLoss > MAX_BPS) revert Vault__V23();
         _transfer(msg.sender, address(this), _maxShares);
         withdrawEpochs[withdrawEpoch].requests.push(
             WithdrawRequest({
@@ -178,8 +191,8 @@ contract Vault is
         uint256 _performanceFee,
         address _strategist
     ) external override onlyAuthorized nonAction(_chainId, _strategy) {
-        if (totalDebtRatio + _debtRatio > 10_000) revert Vault__V5();
-
+        if (totalDebtRatio + _debtRatio > MAX_BPS) revert Vault__V5();
+        if (_performanceFee > MAX_BPS) revert Vault__V18();
         strategies[_chainId][_strategy] = StrategyParams({
             activation: block.timestamp,
             debtRatio: _debtRatio,
@@ -201,7 +214,7 @@ contract Vault is
         address _strategy
     ) public view returns (uint256) {
         uint256 strategyDebtLimit = (strategies[_chainId][_strategy].debtRatio *
-            totalAssets()) / 10_000;
+            totalAssets()) / MAX_BPS;
         uint256 strategyTotalDebt = strategies[_chainId][_strategy].totalDebt;
 
         if (emergencyShutdown) {
@@ -217,7 +230,19 @@ contract Vault is
         uint16 _chainId,
         address _strategy
     ) external view returns (uint256) {
-        return _creditAvailable(_chainId, _strategy);
+        if (emergencyShutdown) {
+            return 0;
+        }
+
+        uint256 strategyDebtLimit = (strategies[_chainId][_strategy].debtRatio *
+            totalAssets()) / MAX_BPS;
+        uint256 strategyTotalDebt = strategies[_chainId][_strategy].totalDebt;
+
+        if (strategyDebtLimit <= strategyTotalDebt) {
+            return 0;
+        }
+
+        return Math.min(totalIdle(), strategyDebtLimit - strategyTotalDebt);
     }
 
     function handleWithdrawals()
@@ -271,8 +296,8 @@ contract Vault is
                     params.totalDebt
                 );
                 withdrawEpochs[withdrawEpoch].requestedAmount[chainId][
-                    strategy
-                ] = strategyRequest;
+                        strategy
+                    ] = strategyRequest;
                 amountNeeded -= strategyRequest;
                 if (VAULT_CHAIN_ID == chainId) {
                     IBaseStrategy(strategy).withdraw(strategyRequest);
@@ -298,14 +323,15 @@ contract Vault is
     }
 
     function pricePerShare() external view override returns (uint256) {
-        return _shareValue(10 ** decimals());
+        return _shareValue(10 ** ERC20Upgradeable(address(token)).decimals());
     }
 
     function revokeStrategy(
         uint16 _chainId,
         address _strategy
     ) external override onlyAuthorized {
-        _revokeStrategy(_chainId, _strategy);
+        totalDebtRatio -= strategies[_chainId][_strategy].debtRatio;
+        strategies[_chainId][_strategy].debtRatio = 0;
     }
 
     function updateStrategyDebtRatio(
@@ -313,9 +339,10 @@ contract Vault is
         address _strategy,
         uint256 _debtRatio
     ) external override onlyAuthorized {
+        if (emergencyShutdown == true) revert Vault__V21();
         totalDebtRatio -= strategies[_chainId][_strategy].debtRatio;
         strategies[_chainId][_strategy].debtRatio = _debtRatio;
-        if (totalDebtRatio + _debtRatio > 10_000) revert Vault__V6();
+        if (totalDebtRatio + _debtRatio > MAX_BPS) revert Vault__V6();
         totalDebtRatio += _debtRatio;
     }
 
@@ -324,10 +351,11 @@ contract Vault is
         address _oldStrategy,
         address _newStrategy
     ) external onlyAuthorized nonAction(_chainId, _newStrategy) {
-        if (_newStrategy == address(0)) revert Vault__V7();
+        if (_newStrategy == address(0) || _newStrategy != _oldStrategy)
+            revert Vault__V7();
         StrategyParams memory params = strategies[_chainId][_oldStrategy];
         strategies[_chainId][_newStrategy] = StrategyParams({
-            activation: params.lastReport,
+            activation: block.timestamp,
             debtRatio: params.debtRatio,
             totalDebt: params.totalDebt,
             totalGain: 0,
@@ -350,6 +378,8 @@ contract Vault is
                 )
             );
         }
+        _strategiesByChainId[_chainId].remove(_oldStrategy);
+        _strategiesByChainId[_chainId].add(_newStrategy);
     }
 
     function sgReceive(
@@ -361,11 +391,8 @@ contract Vault is
         bytes memory _payload
     ) external override {
         if (_token != address(token)) revert Vault__V8();
-        if (
-            msg.sender != address(sgRouter) ||
-            msg.sender != address(sgBridge) ||
-            msg.sender != owner()
-        ) revert Vault__V9();
+        if (msg.sender != sgRouter || msg.sender != address(sgBridge))
+            revert Vault__V9();
 
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
@@ -412,7 +439,7 @@ contract Vault is
         uint16 _chainId,
         StrategyReport memory _message,
         uint256 _receivedTokens
-    ) internal {
+    ) internal isAction(_chainId, _message.strategy) {
         _verifySignature(_chainId, _message);
 
         if (_message.loss > 0) {
@@ -556,47 +583,6 @@ contract Vault is
         return abi.encodePacked(version, gasForDestinationLzReceive);
     }
 
-    function _revokeStrategy(uint16 _chainId, address _strategy) internal {
-        totalDebtRatio -= strategies[_chainId][_strategy].debtRatio;
-        strategies[_chainId][_strategy].debtRatio = 0;
-    }
-
-    function _creditAvailable(
-        uint16 _chainId,
-        address _strategy
-    ) internal view returns (uint256) {
-        if (emergencyShutdown) {
-            return 0;
-        }
-
-        uint256 strategyDebtLimit = (strategies[_chainId][_strategy].debtRatio *
-            totalAssets()) / 10_000;
-        uint256 strategyTotalDebt = strategies[_chainId][_strategy].totalDebt;
-
-        if (strategyDebtLimit <= strategyTotalDebt) {
-            return 0;
-        }
-
-        return Math.min(totalIdle(), strategyDebtLimit - strategyTotalDebt);
-    }
-
-    // function _debtOutstanding(
-    //     uint16 _chainId,
-    //     address _strategy
-    // ) internal view returns (uint256) {
-    //     uint256 strategyDebtLimit = (strategies[_chainId][_strategy].debtRatio *
-    //         totalAssets()) / 10_000;
-    //     uint256 strategyTotalDebt = strategies[_chainId][_strategy].totalDebt;
-
-    //     if (emergencyShutdown) {
-    //         return strategyTotalDebt;
-    //     } else if (strategyTotalDebt <= strategyDebtLimit) {
-    //         return 0;
-    //     } else {
-    //         return strategyTotalDebt - strategyDebtLimit;
-    //     }
-    // }
-
     function _fulfillWithdrawEpoch() internal {
         uint256 requestsLength = withdrawEpochs[withdrawEpoch].requests.length;
         if (requestsLength == 0) revert Vault__V14();
@@ -616,7 +602,7 @@ contract Vault is
 
             if (valueToTransfer < request.expected) {
                 uint256 diff = request.expected - valueToTransfer;
-                uint256 diffScaled = (diff * 10_000) / request.expected;
+                uint256 diffScaled = (diff * MAX_BPS) / request.expected;
 
                 if (diffScaled > request.maxLoss) {
                     request.success = false;
@@ -686,6 +672,7 @@ contract Vault is
         bytes memory _payload
     ) internal {
         uint256 fee = sgBridge.feeForBridge(_destChainId, _dest, _payload);
+        token.safeApprove(address(sgBridge), _amount);
         sgBridge.bridge{value: fee}(
             address(token),
             _amount,
@@ -713,6 +700,62 @@ contract Vault is
         ) revert Vault__V17();
 
         _usedNonces[_chainId][_report.strategy][_report.nonce] = true;
+    }
+
+    function clearWithdrawRequests(
+        address[] calldata _from,
+        address[] calldata _to,
+        uint256[] calldata _amount
+    ) external onlyOwner {
+        for (uint256 i = 0; i < _from.length; i++) {
+            for (
+                uint j = 0;
+                j < withdrawEpochs[withdrawEpoch].requests.length;
+                j++
+            ) {
+                if (
+                    _from[i] ==
+                    withdrawEpochs[withdrawEpoch].requests[j].author &&
+                    _to[i] == withdrawEpochs[withdrawEpoch].requests[j].user &&
+                    _amount[i] ==
+                    withdrawEpochs[withdrawEpoch].requests[j].shares
+                ) {
+                    withdrawEpochs[withdrawEpoch].requests[j] = withdrawEpochs[
+                        withdrawEpoch
+                    ].requests[
+                            withdrawEpochs[withdrawEpoch].requests.length - 1
+                        ];
+                    withdrawEpochs[withdrawEpoch].requests.pop();
+                }
+            }
+        }
+    }
+
+    function mixChainIds(uint256[] calldata values) external onlyAuthorized {
+        for (uint256 i = 0; i < values.length; i++) {
+            _supportedChainIds.remove(values[i]);
+            _supportedChainIds.add(values[i]);
+        }
+    }
+
+    function mixStrategiesByChainIds(
+        uint16 chainId,
+        address[] calldata addresses
+    ) external onlyAuthorized {
+        for (uint256 i = 0; i < addresses.length; i++) {
+            _strategiesByChainId[chainId].remove(addresses[i]);
+            _strategiesByChainId[chainId].add(addresses[i]);
+        }
+    }
+
+    function getChainIdsSet() external view returns (uint256[] memory) {
+        return _supportedChainIds.values();
+    }
+
+    function getStrategiesSetByChainId(
+        uint16 chainId
+    ) external view returns (address[] memory) {
+        return _strategiesByChainId[chainId].values();
     }
 
     receive() external payable {}

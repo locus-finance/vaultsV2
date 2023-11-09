@@ -16,7 +16,7 @@ import "../integrations/velo/IVeloGauge.sol";
 contract VelodromeStrategy is Initializable, BaseStrategy {
     using SafeERC20 for IERC20;
 
-    uint256 public constant DEFAULT_SLIPPAGE = 9_800;
+    uint256 public constant DEFAULT_SLIPPAGE = 9_500;
 
     address internal constant VELO_ROUTER =
         0xa062aE8A9c5e11aaA026fc2670B0D65cCc8B2858;
