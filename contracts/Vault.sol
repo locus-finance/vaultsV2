@@ -74,7 +74,7 @@ contract Vault is
         sgRouter = _sgRouter;
     }
 
-    uint16 internal constant VAULT_CHAIN_ID = 111;
+    uint16 internal constant VAULT_CHAIN_ID = 110;
     address public override governance;
     IERC20 public override token;
 
