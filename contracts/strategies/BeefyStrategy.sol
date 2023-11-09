@@ -23,7 +23,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
     error WrongChainId(uint16 chainId);
     error WantTokenIsNotInPool(address pool);
 
-    address public constant KAVA_CURVE_FACTORY = address(0);
+    address public constant KAVA_CURVE_FACTORY = 0x1764ee18e8B3ccA4787249Ceb249356192594585;
     address public constant KAVA_USDT = 0x919C1c267BC06a7039e03fcc2eF738525769109c;
     address public constant KAVA_CURVE_AXLUSD_USDT_POOL = 0xAA3b055186f96dD29d0c2A17710d280Bc54290c7;
     address public constant KAVA_BEEFY_VAULT = 0xd5BC6DEa24A93A542C0d3Aa7e4dFBD05d97AF0F8;
