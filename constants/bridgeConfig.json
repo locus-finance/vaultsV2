@@ -34,7 +34,6 @@
         "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
         "HopStrategy": "0x0427eE06e5220BA8013d2A753109A57AD4020373",
-        "vault": "0xF4B4FAb9d8375bd12F06cD277F0eac8B8AE8208D",
         "slippage": 9500,
         "TestStrategy": "",
         "strategist": "0x27f52fd2E60B1153CBD00D465F97C05245D22B82",
