@@ -119,6 +119,14 @@ abstract contract BaseStrategy is
         sgRouter = IStargateRouter(_sgRouter);
     }
 
+    function setVault(
+        address _newVault,
+        uint16 _newChainId
+    ) external onlyOwner {
+        vault = _newVault;
+        vaultChainId = _newChainId;
+    }
+
     function setEmergencyExit(bool _emergencyExit) external onlyStrategist {
         emergencyExit = _emergencyExit;
     }

@@ -24,6 +24,7 @@ const {
   ETH_NODE,
   OPTIMISM_NODE,
   BASE_NODE,
+  ARBITRUM_NODE,
 } = process.env;
 
 task("fork_reset", "Reset to local fork", async (taskArgs) => {
@@ -63,9 +64,8 @@ module.exports = {
   },
   networks: {
     hardhat: {
-      chainId: 2222,
       forking: {
-        url: "https://evm.kava.io/", //ETH_NODE || "",
+        url: ARBITRUM_NODE || "",
       },
     },
     mainnet: {

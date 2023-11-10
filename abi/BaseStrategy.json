@@ -65,6 +65,7 @@
   "function setTreasuryAddress(address)",
   "function setTrustedRemote(uint16,bytes)",
   "function setTrustedRemoteAddress(uint16,bytes)",
+  "function setVault(address,uint16)",
   "function sgBridge() view returns (address)",
   "function sgReceive(uint16,bytes,uint256,address,uint256,bytes)",
   "function sgRouter() view returns (address)",
