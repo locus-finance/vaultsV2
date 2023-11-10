@@ -30,8 +30,15 @@ module.exports = {
             return "optimismgoerli";
         }
 
-        if (networkName === "optimism" || networkName === "polygon" || networkName === "arbitrumOne" || networkName === "base") {
+        if (networkName === "optimism" || 
+            networkName === "polygon" || 
+            networkName === "arbitrumOne"
+        ) {
             return "optimism";
+        }
+
+        if (networkName === "base" || networkName === "kava") {
+            return "arbitrumOne"
         }
 
         throw new Error("Vault not defined");

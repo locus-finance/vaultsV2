@@ -23,26 +23,31 @@ contract BeefyStrategy is Initializable, BaseStrategy {
     error WrongChainId(uint16 chainId);
     error WantTokenIsNotInPool(address pool);
 
-    address public constant KAVA_CURVE_FACTORY = 0x1764ee18e8B3ccA4787249Ceb249356192594585;
-    address public constant KAVA_USDT = 0x919C1c267BC06a7039e03fcc2eF738525769109c;
-    address public constant KAVA_CURVE_AXLUSD_USDT_POOL = 0xAA3b055186f96dD29d0c2A17710d280Bc54290c7;
-    address public constant KAVA_BEEFY_VAULT = 0xd5BC6DEa24A93A542C0d3Aa7e4dFBD05d97AF0F8;
+    address public constant KAVA_CURVE_FACTORY =
+        0x1764ee18e8B3ccA4787249Ceb249356192594585;
+    address public constant KAVA_USDT =
+        0x919C1c267BC06a7039e03fcc2eF738525769109c;
+    address public constant KAVA_CURVE_AXLUSD_USDT_POOL_LP =
+        0xAA3b055186f96dD29d0c2A17710d280Bc54290c7;
+    address public constant KAVA_BEEFY_VAULT =
+        0xd5BC6DEa24A93A542C0d3Aa7e4dFBD05d97AF0F8;
 
-    address public constant BASE_CURVE_FACTORY = 0x3093f9B57A428F3EB6285a589cb35bEA6e78c336;
-    address public constant BASE_USDBC = 0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA;
-    address public constant BASE_CURVE_4POOL = 0xf6C5F01C7F3148891ad0e19DF78743D31E390D1f;
-    address public constant BASE_BEEFY_VAULT = 0xC3718d05478Edab1C40F84E8a7A65ca49D039A9f;
+    address public constant BASE_CURVE_FACTORY =
+        0x3093f9B57A428F3EB6285a589cb35bEA6e78c336;
+    address public constant BASE_USDBC =
+        0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA;
+    address public constant BASE_CURVE_4POOL_LP =
+        0xf6C5F01C7F3148891ad0e19DF78743D31E390D1f;
+    address public constant BASE_BEEFY_VAULT =
+        0xC3718d05478Edab1C40F84E8a7A65ca49D039A9f;
 
     uint256 public constant DEFAULT_SLIPPAGE = 9_800;
 
-    uint16 public constant BASE_CHAIN_ID = 8453;
-    uint16 public constant KAVA_CHAIN_ID = 2222;
+    uint256 public constant BASE_CHAIN_ID = 8453;
+    uint256 public constant KAVA_CHAIN_ID = 2222;
 
-    IERC20 public baseCurveStableSwap4PoolLp;
-    IERC20 public kavaCurveStableSwapAxlusdUsdtPoolLp;
-
-    uint256 private baseCurveStableSwap4PoolLpNCoins;
-    uint256 private kavaCurveStableSwapAxlusdUsdtPoolNCoins;
+    uint256 public constant BASE_CURVE_STABLESWAP_FOR_POOL_LP_N_COINS = 2;
+    uint256 public constant KAVA_CURVE_STABLESWAP_AXLUSD_USDT_POOL_N_COINS = 2;
 
     string private namePostfix;
 
@@ -51,7 +56,8 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         address _strategist,
         IERC20 _want,
         address _vault,
-        uint16 _vaultChainId,
+        uint16 _strategyStargateChainId,
+        uint16 _vaultStargateChainId,
         address _sgBridge,
         address _router,
         string calldata _namePostfix
@@ -61,44 +67,29 @@ contract BeefyStrategy is Initializable, BaseStrategy {
             _strategist,
             _want,
             _vault,
-            _vaultChainId,
-            uint16(block.chainid),
+            _vaultStargateChainId,
+            _strategyStargateChainId,
             _sgBridge,
             _router,
             DEFAULT_SLIPPAGE
         );
         namePostfix = _namePostfix;
 
-        uint256[2] memory nCoinsInfo;
         if (block.chainid == BASE_CHAIN_ID) {
-            IERC20(BASE_USDBC).approve(BASE_CURVE_4POOL, type(uint256).max);
-            baseCurveStableSwap4PoolLp = IERC20(
-                IPlainPool(BASE_CURVE_4POOL).lp_token()
-            );
-            baseCurveStableSwap4PoolLp.approve(
+            IERC20(BASE_USDBC).approve(BASE_CURVE_4POOL_LP, type(uint256).max);
+            IERC20(BASE_CURVE_4POOL_LP).approve(
                 BASE_BEEFY_VAULT,
                 type(uint256).max
             );
-            nCoinsInfo = IFactory(KAVA_CURVE_FACTORY).get_n_coins(
-                address(baseCurveStableSwap4PoolLp)
-            );
-            baseCurveStableSwap4PoolLpNCoins = nCoinsInfo[0];
         } else if (block.chainid == KAVA_CHAIN_ID) {
             IERC20(KAVA_USDT).approve(
-                KAVA_CURVE_AXLUSD_USDT_POOL,
+                KAVA_CURVE_AXLUSD_USDT_POOL_LP,
                 type(uint256).max
             );
-            kavaCurveStableSwapAxlusdUsdtPoolLp = IERC20(
-                IPlainPool(KAVA_CURVE_AXLUSD_USDT_POOL).lp_token()
-            );
-            kavaCurveStableSwapAxlusdUsdtPoolLp.approve(
+            IERC20(KAVA_CURVE_AXLUSD_USDT_POOL_LP).approve(
                 KAVA_BEEFY_VAULT,
                 type(uint256).max
             );
-            nCoinsInfo = IFactory(KAVA_CURVE_FACTORY).get_n_coins(
-                address(kavaCurveStableSwapAxlusdUsdtPoolLp)
-            );
-            kavaCurveStableSwapAxlusdUsdtPoolNCoins = nCoinsInfo[0];
         } else {
             revert WrongChainId(uint16(block.chainid));
         }
@@ -181,7 +172,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
 
         amountOfWantTokensWithdrawn = curvePool.remove_liquidity_one_coin(
             wantTokensAmount,
-            _getIndexOfWantTokenInCurvePool((address(curvePool))), 
+            _getIndexOfWantTokenInCurvePool((address(curvePool))),
             (wantTokensAmount * DEFAULT_SLIPPAGE) / 10000
         );
     }
@@ -235,9 +226,9 @@ contract BeefyStrategy is Initializable, BaseStrategy {
 
     function _getCurvePlainPool() internal view returns (IPlainPool curvePool) {
         if (block.chainid == BASE_CHAIN_ID) {
-            curvePool = IPlainPool(BASE_CURVE_4POOL);
+            curvePool = IPlainPool(BASE_CURVE_4POOL_LP);
         } else if (block.chainid == KAVA_CHAIN_ID) {
-            curvePool = IPlainPool(KAVA_CURVE_AXLUSD_USDT_POOL);
+            curvePool = IPlainPool(KAVA_CURVE_AXLUSD_USDT_POOL_LP);
         } else {
             revert WrongChainId(uint16(block.chainid));
         }
@@ -260,11 +251,15 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         revert WantTokenIsNotInPool(pool);
     }
 
-    function _prepareAmountsArrayForCurveInteraction() internal view returns (uint256[] memory amounts) {
+    function _prepareAmountsArrayForCurveInteraction()
+        internal
+        view
+        returns (uint256[] memory amounts)
+    {
         if (block.chainid == BASE_CHAIN_ID) {
-            amounts = new uint256[](baseCurveStableSwap4PoolLpNCoins);
+            amounts = new uint256[](BASE_CURVE_STABLESWAP_FOR_POOL_LP_N_COINS);
         } else if (block.chainid == KAVA_CHAIN_ID) {
-            amounts = new uint256[](kavaCurveStableSwapAxlusdUsdtPoolNCoins);
+            amounts = new uint256[](KAVA_CURVE_STABLESWAP_AXLUSD_USDT_POOL_N_COINS);
         } else {
             revert WrongChainId(uint16(block.chainid));
         }

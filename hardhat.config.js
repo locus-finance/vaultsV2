@@ -63,8 +63,9 @@ module.exports = {
   },
   networks: {
     hardhat: {
+      chainId: 2222,
       forking: {
-        url: ETH_NODE || "",
+        url: "https://evm.kava.io/", //ETH_NODE || "",
       },
     },
     mainnet: {
@@ -152,6 +153,7 @@ module.exports = {
       goerli: process.env.ETHERSCAN_API_KEY,
       base: process.env.BASESCAN_API_KEY,
       avalancheFujiTestnet: process.env.SNOWTRACE_API_KEY,
+      kava: process.env.KAVA_API_KEY,
     },
     customChains: [
       {
