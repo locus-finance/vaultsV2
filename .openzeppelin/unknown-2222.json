@@ -1,25 +1,25 @@
 {
   "manifestVersion": "3.2",
   "admin": {
-    "address": "0x7FF5dCD6c730c8d14C4AF511B0A6af93079DAfdd",
-    "txHash": "0x0f12d1219d4bb327684252e96668f35913a619dedf6be56d34dd51e80f887e40"
+    "address": "0x13bf88e6d5105f7935C0A8F88d7e87716e9Bb535",
+    "txHash": "0x196b01bdb6125a513c246683c16a4d21b4237ef4ad855812cb61879365d99bab"
   },
   "proxies": [
     {
-      "address": "0x37EE9b268ee9F55C307B6a974496FA733f82C8B3",
-      "txHash": "0x2f01708309b1b282507fc4fe601331ceab0634e712f2ca3a4caa1f146b36e500",
+      "address": "0xb7C4683e42b60F0a0109d014956eA0321ca96a67",
+      "txHash": "0xa5381c2c4d7fd0d570f957fab66684d163aa3b84a941154037f0374af2895411",
       "kind": "transparent"
     },
     {
-      "address": "0x13bf88e6d5105f7935C0A8F88d7e87716e9Bb535",
-      "txHash": "0x77659659104466b12ac78c99f4d606b09641e401bb5143535fd024deb431b5ed",
+      "address": "0xD6D7673D94BAcDD1FA3D67D38B5A643Ba24F85b3",
+      "txHash": "0xfe97f987409497aaa8247d55a72be2d59479997b918932fefd2555711fd4924d",
       "kind": "transparent"
     }
   ],
   "impls": {
-    "f3f88ba63f02b75d2d396ff8255e77a8eff35d88f9404d24ea538bee660b75b7": {
-      "address": "0x99A4810E9c0DBD489EDABD009530bf5695731b23",
-      "txHash": "0xfb52c312356f0850f6692eff31b35d39c995bb22c70598ba59f7820996dd25f2",
+    "90ad8f1920ba8827ae6747dbc49b5827bf57b5021f30ba9670d1dfb4ee4a0d42": {
+      "address": "0x8491098d85190Dc7F47335895d45A62E8B6203Cc",
+      "txHash": "0x78c58fa054df3b423301be0951f8acd584940413e25200212e89895fa0099550",
       "layout": {
         "solcVersion": "0.8.19",
         "storage": [
@@ -29,7 +29,7 @@
             "slot": "0",
             "type": "t_uint8",
             "contract": "Initializable",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:63",
             "retypedFrom": "bool"
           },
           {
@@ -38,7 +38,7 @@
             "slot": "0",
             "type": "t_bool",
             "contract": "Initializable",
-            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:68"
           },
           {
             "label": "__gap",
@@ -46,7 +46,7 @@
             "slot": "1",
             "type": "t_array(t_uint256)50_storage",
             "contract": "ContextUpgradeable",
-            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:36"
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
           },
           {
             "label": "_owner",
@@ -54,7 +54,7 @@
             "slot": "51",
             "type": "t_address",
             "contract": "OwnableUpgradeable",
-            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
           },
           {
             "label": "__gap",
@@ -62,7 +62,7 @@
             "slot": "52",
             "type": "t_array(t_uint256)49_storage",
             "contract": "OwnableUpgradeable",
-            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:94"
           },
           {
             "label": "lzEndpoint",
@@ -70,7 +70,7 @@
             "slot": "101",
             "type": "t_contract(ILayerZeroEndpointUpgradeable)2320",
             "contract": "LzAppUpgradeable",
-            "src": "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/LzAppUpgradeable.sol:20"
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:20"
           },
           {
             "label": "trustedRemoteLookup",
@@ -78,7 +78,7 @@
             "slot": "102",
             "type": "t_mapping(t_uint16,t_bytes_storage)",
             "contract": "LzAppUpgradeable",
-            "src": "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/LzAppUpgradeable.sol:21"
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:21"
           },
           {
             "label": "minDstGasLookup",
@@ -86,7 +86,7 @@
             "slot": "103",
             "type": "t_mapping(t_uint16,t_mapping(t_uint16,t_uint256))",
             "contract": "LzAppUpgradeable",
-            "src": "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/LzAppUpgradeable.sol:22"
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:22"
           },
           {
             "label": "payloadSizeLimitLookup",
@@ -94,7 +94,7 @@
             "slot": "104",
             "type": "t_mapping(t_uint16,t_uint256)",
             "contract": "LzAppUpgradeable",
-            "src": "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/LzAppUpgradeable.sol:23"
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:23"
           },
           {
             "label": "precrime",
@@ -102,7 +102,7 @@
             "slot": "105",
             "type": "t_address",
             "contract": "LzAppUpgradeable",
-            "src": "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/LzAppUpgradeable.sol:24"
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:24"
           },
           {
             "label": "__gap",
@@ -110,7 +110,7 @@
             "slot": "106",
             "type": "t_array(t_uint256)45_storage",
             "contract": "LzAppUpgradeable",
-            "src": "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/LzAppUpgradeable.sol:150"
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:150"
           },
           {
             "label": "failedMessages",
@@ -118,7 +118,7 @@
             "slot": "151",
             "type": "t_mapping(t_uint16,t_mapping(t_bytes_memory_ptr,t_mapping(t_uint64,t_bytes32)))",
             "contract": "NonblockingLzAppUpgradeable",
-            "src": "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol:23"
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\NonblockingLzAppUpgradeable.sol:23"
           },
           {
             "label": "__gap",
@@ -126,7 +126,7 @@
             "slot": "152",
             "type": "t_array(t_uint256)49_storage",
             "contract": "NonblockingLzAppUpgradeable",
-            "src": "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol:68"
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\NonblockingLzAppUpgradeable.sol:68"
           },
           {
             "label": "strategist",
@@ -134,15 +134,15 @@
             "slot": "201",
             "type": "t_address",
             "contract": "BaseStrategy",
-            "src": "contracts/BaseStrategy.sol:79"
+            "src": "contracts\\BaseStrategy.sol:79"
           },
           {
             "label": "want",
             "offset": 0,
             "slot": "202",
-            "type": "t_contract(IERC20)7333",
+            "type": "t_contract(IERC20)7482",
             "contract": "BaseStrategy",
-            "src": "contracts/BaseStrategy.sol:80"
+            "src": "contracts\\BaseStrategy.sol:80"
           },
           {
             "label": "vault",
@@ -150,7 +150,7 @@
             "slot": "203",
             "type": "t_address",
             "contract": "BaseStrategy",
-            "src": "contracts/BaseStrategy.sol:81"
+            "src": "contracts\\BaseStrategy.sol:81"
           },
           {
             "label": "vaultChainId",
@@ -158,7 +158,7 @@
             "slot": "203",
             "type": "t_uint16",
             "contract": "BaseStrategy",
-            "src": "contracts/BaseStrategy.sol:82"
+            "src": "contracts\\BaseStrategy.sol:82"
           },
           {
             "label": "currentChainId",
@@ -166,7 +166,7 @@
             "slot": "203",
             "type": "t_uint16",
             "contract": "BaseStrategy",
-            "src": "contracts/BaseStrategy.sol:83"
+            "src": "contracts\\BaseStrategy.sol:83"
           },
           {
             "label": "wantDecimals",
@@ -174,7 +174,7 @@
             "slot": "203",
             "type": "t_uint8",
             "contract": "BaseStrategy",
-            "src": "contracts/BaseStrategy.sol:84"
+            "src": "contracts\\BaseStrategy.sol:84"
           },
           {
             "label": "slippage",
@@ -182,7 +182,7 @@
             "slot": "204",
             "type": "t_uint256",
             "contract": "BaseStrategy",
-            "src": "contracts/BaseStrategy.sol:85"
+            "src": "contracts\\BaseStrategy.sol:85"
           },
           {
             "label": "emergencyExit",
@@ -190,39 +190,127 @@
             "slot": "205",
             "type": "t_bool",
             "contract": "BaseStrategy",
-            "src": "contracts/BaseStrategy.sol:86"
+            "src": "contracts\\BaseStrategy.sol:86"
           },
           {
             "label": "sgBridge",
             "offset": 1,
             "slot": "205",
-            "type": "t_contract(ISgBridge)17580",
+            "type": "t_contract(ISgBridge)20686",
             "contract": "BaseStrategy",
-            "src": "contracts/BaseStrategy.sol:87"
+            "src": "contracts\\BaseStrategy.sol:87"
           },
           {
             "label": "sgRouter",
             "offset": 0,
             "slot": "206",
-            "type": "t_contract(IStargateRouter)17215",
+            "type": "t_contract(IStargateRouter)20102",
             "contract": "BaseStrategy",
-            "src": "contracts/BaseStrategy.sol:88"
+            "src": "contracts\\BaseStrategy.sol:88"
           },
           {
-            "label": "withdrawnInEpoch",
+            "label": "performanceFee",
             "offset": 0,
             "slot": "207",
-            "type": "t_mapping(t_uint256,t_bool)",
+            "type": "t_uint256",
             "contract": "BaseStrategy",
-            "src": "contracts/BaseStrategy.sol:90"
+            "src": "contracts\\BaseStrategy.sol:90"
           },
           {
-            "label": "_signNonce",
+            "label": "managementFee",
             "offset": 0,
             "slot": "208",
             "type": "t_uint256",
             "contract": "BaseStrategy",
-            "src": "contracts/BaseStrategy.sol:92"
+            "src": "contracts\\BaseStrategy.sol:91"
+          },
+          {
+            "label": "strategistFee",
+            "offset": 0,
+            "slot": "209",
+            "type": "t_uint256",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:92"
+          },
+          {
+            "label": "lastReport",
+            "offset": 0,
+            "slot": "210",
+            "type": "t_uint256",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:94"
+          },
+          {
+            "label": "treasury",
+            "offset": 0,
+            "slot": "211",
+            "type": "t_address",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:95"
+          },
+          {
+            "label": "feeThreshold",
+            "offset": 0,
+            "slot": "212",
+            "type": "t_uint256",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:96"
+          },
+          {
+            "label": "withdrawnInEpoch",
+            "offset": 0,
+            "slot": "213",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:98"
+          },
+          {
+            "label": "_signNonce",
+            "offset": 0,
+            "slot": "214",
+            "type": "t_uint256",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:100"
+          },
+          {
+            "label": "baseCurveStableSwap4PoolLp",
+            "offset": 0,
+            "slot": "215",
+            "type": "t_contract(IERC20)7482",
+            "contract": "BeefyStrategy",
+            "src": "contracts\\strategies\\BeefyStrategy.sol:41"
+          },
+          {
+            "label": "kavaCurveStableSwapAxlusdUsdtPoolLp",
+            "offset": 0,
+            "slot": "216",
+            "type": "t_contract(IERC20)7482",
+            "contract": "BeefyStrategy",
+            "src": "contracts\\strategies\\BeefyStrategy.sol:42"
+          },
+          {
+            "label": "baseCurveStableSwap4PoolLpNCoins",
+            "offset": 0,
+            "slot": "217",
+            "type": "t_uint256",
+            "contract": "BeefyStrategy",
+            "src": "contracts\\strategies\\BeefyStrategy.sol:44"
+          },
+          {
+            "label": "kavaCurveStableSwapAxlusdUsdtPoolNCoins",
+            "offset": 0,
+            "slot": "218",
+            "type": "t_uint256",
+            "contract": "BeefyStrategy",
+            "src": "contracts\\strategies\\BeefyStrategy.sol:45"
+          },
+          {
+            "label": "namePostfix",
+            "offset": 0,
+            "slot": "219",
+            "type": "t_string_storage",
+            "contract": "BeefyStrategy",
+            "src": "contracts\\strategies\\BeefyStrategy.sol:47"
           }
         ],
         "types": {
@@ -258,7 +346,7 @@
             "label": "bytes",
             "numberOfBytes": "32"
           },
-          "t_contract(IERC20)7333": {
+          "t_contract(IERC20)7482": {
             "label": "contract IERC20",
             "numberOfBytes": "20"
           },
@@ -266,11 +354,11 @@
             "label": "contract ILayerZeroEndpointUpgradeable",
             "numberOfBytes": "20"
           },
-          "t_contract(ISgBridge)17580": {
+          "t_contract(ISgBridge)20686": {
             "label": "contract ISgBridge",
             "numberOfBytes": "20"
           },
-          "t_contract(IStargateRouter)17215": {
+          "t_contract(IStargateRouter)20102": {
             "label": "contract IStargateRouter",
             "numberOfBytes": "20"
           },
@@ -302,6 +390,10 @@
             "label": "mapping(uint64 => bytes32)",
             "numberOfBytes": "32"
           },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
           "t_uint16": {
             "label": "uint16",
             "numberOfBytes": "2"
@@ -322,8 +414,8 @@
       }
     },
     "3ae941331d909ff414b5ddffc743af9f9ae2a7c9eec35f192f1af151fea46e00": {
-      "address": "0x8491098d85190Dc7F47335895d45A62E8B6203Cc",
-      "txHash": "0xe98130f99d06c83ceb913e4337f1f47fde2b228506ebb457d82f97884090248e",
+      "address": "0x59271d480eCF72EF8c8a88cAdb3E8b830df9e233",
+      "txHash": "0x7753eb0a6c42ccdbe966f0546115bf009d23bfbe85c29d4ef90a565aef11bb79",
       "layout": {
         "solcVersion": "0.8.19",
         "storage": [
