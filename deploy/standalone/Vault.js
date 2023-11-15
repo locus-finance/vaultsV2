@@ -3,21 +3,18 @@ const { ethers, upgrades } = require("hardhat");
 const bridgeConfig = require("../../constants/bridgeConfig.json");
 
 const TOKEN = "USDC";
-
-module.exports = async function ({ getNamedAccounts }) {
+async function main() {
   const { deployer } = await getNamedAccounts();
 
   console.log(`Your address: ${deployer}. Network: ${hre.network.name}`);
-
   const config = bridgeConfig[hre.network.name];
   const Vault = await ethers.getContractFactory("Vault");
   const vault = await upgrades.deployProxy(
     Vault,
     [
-      deployer,
+      config.governance,
       config.lzEndpoint,
       config[TOKEN].address,
-      config.sgBridge,
       config.sgRouter,
     ],
     {
@@ -32,6 +29,7 @@ module.exports = async function ({ getNamedAccounts }) {
   await hre.run("verify:verify", {
     address: vault.address,
   });
-};
+}
+main();
 
 module.exports.tags = ["Vault"];

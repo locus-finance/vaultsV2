@@ -1,17 +1,18 @@
 require("@openzeppelin/hardhat-upgrades");
 require("@nomiclabs/hardhat-vyper");
 require("@nomiclabs/hardhat-waffle");
-require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-truffle5");
 require("@nomiclabs/hardhat-ethers");
+require("@nomiclabs/hardhat-etherscan");
+require("hardhat-tracer");
+require("hardhat-contract-sizer");
+require("hardhat-deploy");
+require("hardhat-deploy-ethers");
 require("hardhat-gas-reporter");
 require("hardhat-log-remover");
 require("hardhat-abi-exporter");
 require("dotenv").config();
 require("solidity-coverage");
-require("hardhat-deploy");
-require("hardhat-deploy-ethers");
-require("hardhat-tracer");
 
 require("./tasks");
 
@@ -25,6 +26,7 @@ const {
   PROD_DEPLOYER_PRIVATE_KEY,
   ETH_NODE,
   OPTIMISM_NODE,
+  BASE_NODE,
   ARBITRUM_NODE,
 } = process.env;
 
@@ -35,8 +37,6 @@ task("fork_reset", "Reset to local fork", async (taskArgs) => {
   });
 });
 
-const polygonMumbaiUrl = `https://rpc.ankr.com/polygon_mumbai`;
-
 module.exports = {
   mocha: {
     timeout: 100000000,
@@ -46,6 +46,7 @@ module.exports = {
       {
         version: "0.8.19",
         settings: {
+          viaIR: true,
           optimizer: {
             enabled: true,
             runs: 1,
@@ -65,11 +66,12 @@ module.exports = {
     },
   },
   networks: {
-    localhost: {},
     hardhat: {
-      forking: {
-        url: ARBITRUM_NODE
-      }
+      chainId: 1,
+      // forking: {
+      //   url: ARBITRUM_NODE || "",
+      //   blockNumber: 150339363,
+      // },
     },
     mainnet: {
       url: ETH_NODE,
@@ -129,9 +131,18 @@ module.exports = {
     },
     arbitrumOne: {
       url: `https://arb1.arbitrum.io/rpc`,
-      chainId: 42161,
       accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
     },
+    base: {
+      url: BASE_NODE || "",
+      chainId: 8453,
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
+    },
+    kava: {
+      url: "https://evm.kava.io/",
+      chainId: 2222,
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
+    }
   },
   etherscan: {
     apiKey: {
@@ -139,11 +150,25 @@ module.exports = {
       sepolia: process.env.ETHERSCAN_API_KEY,
       arbitrumOne: process.env.ARBISCAN_API_KEY,
       polygonMumbai: process.env.POLYGONSCAN_API_KEY,
+      polygon: process.env.POLYGONSCAN_API_KEY,
       arbitrumGoerli: process.env.ARBISCAN_API_KEY,
       optimisticGoerli: process.env.OPTIMISM_API_KEY,
+      optimisticEthereum: process.env.OPTIMISM_API_KEY,
       goerli: process.env.ETHERSCAN_API_KEY,
+      base: process.env.BASESCAN_API_KEY,
       avalancheFujiTestnet: process.env.SNOWTRACE_API_KEY,
+      kava: process.env.KAVA_API_KEY,
     },
+    customChains: [
+      {
+        network: "base",
+        chainId: 8453,
+        urls: {
+          apiURL: "https://api.basescan.org/api",
+          browserURL: "https://basescan.org/",
+        },
+      },
+    ],
   },
   gasReporter: {
     enable: true,
@@ -160,7 +185,13 @@ module.exports = {
     flat: true,
     spacing: 2,
     format: "minimal",
-    only: [":Vault$", ":BaseStrategy$", ":SgBridge$", ":TestStrategy$"],
+    only: [":Vault$", ":BaseStrategy$", ":SgBridge$"],
+  },
+  contractSizer: {
+    alphaSort: true,
+    disambiguatePaths: false,
+    runOnCompile: true,
+    strict: true,
   },
 };
 
@@ -180,8 +211,6 @@ function getSortedFiles(dependenciesGraph) {
 
   const topologicalSortedNames = graph.sort();
 
-  // If an entry has no dependency it won't be included in the graph, so we
-  // add them and then dedup the array
   const withEntries = topologicalSortedNames.concat(
     resolvedFiles.map((f) => f.sourceName)
   );
@@ -236,7 +265,6 @@ subtask(
           !i++ ? m : ""
       )(0)
     );
-    // Remove every line started with "pragma abicoder v2;" except the first one
     flattened = flattened.replace(
       /pragma abicoder v2;\n/gm,
       (
@@ -244,7 +272,6 @@ subtask(
           !i++ ? m : ""
       )(0)
     );
-    // Remove every line started with "pragma solidity ****" except the first one
     flattened = flattened.replace(
       /pragma solidity .*$\n/gm,
       (

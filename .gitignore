@@ -8,8 +8,7 @@ typechain
 #Hardhat files
 cache
 cache_hardhat
-artifacts/@layerzerolabs
-artifacts/@openzeppelin
+artifacts
 process.env
 deployments
 artifacts

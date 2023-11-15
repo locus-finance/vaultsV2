@@ -10,14 +10,13 @@ library RolesManagementLib {
 
     // roles to check with EOA
     bytes32 public constant PAUSER_ROLE = keccak256('PAUSER_ROLE');
-    bytes32 public constant STRATEGIST_ROLE = keccak256('STRATEGIST_ROLE');
     bytes32 public constant OWNER_ROLE = keccak256('OWNER_ROLE');
 
     // A special role - must not be removed.
     bytes32 public constant INTERNAL_ROLE = keccak256('INTERNAL_ROLE');
 
     // roles to check with smart-contracts
-    // Example: bytes32 public constant ALLOWED_TOKEN_ROLE = keccak256('ALLOWED_TOKEN_ROLE');
+    bytes32 public constant ALLOWED_TOKEN_ROLE = keccak256('ALLOWED_TOKEN_ROLE');
 
     struct Storage {
         mapping(bytes32 => mapping(address => bool)) roles;
@@ -41,6 +40,10 @@ library RolesManagementLib {
         
     }
 
+    function hasRole(address who, bytes32 role) internal view returns(bool) {
+        return get().roles[role][who];
+    }
+
     function enforceSenderRole(bytes32 role) internal view {
         enforceRole(msg.sender, role);
     }
@@ -57,7 +60,7 @@ library RolesManagementLib {
         bool result;
         for (uint256 i = 0; i < roles.length; i++) {
             if (roles[i] == INTERNAL_ROLE) {
-                result == result || who == address(this);
+                result = result || who == address(this);
             } else {
                 result = result || get().roles[roles[i]][who];
             }

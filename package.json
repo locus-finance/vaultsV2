@@ -19,6 +19,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.4",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
     "@nomiclabs/hardhat-ethers": "^2.2.2",
     "@nomiclabs/hardhat-vyper": "^3.0.3",
@@ -26,18 +27,19 @@
     "@nomiclabs/hardhat-web3": "^2.0.0",
     "@openzeppelin/contracts": "^4.8.2",
     "chai": "^4.3.7",
-    "ethereum-waffle": "^3.4.4",
+    "ethereum-waffle": "^4.0.10",
     "ethers": "^5.7.2",
     "hardhat": "^2.17.1",
     "hardhat-abi-exporter": "^2.10.1",
+    "hardhat-contract-sizer": "^2.10.0",
     "web3": "^1.9.0"
   },
   "dependencies": {
-    "@chainlink/contracts": "^0.6.1",
+    "@chainlink/contracts": "^0.5.1",
     "@layerzerolabs/solidity-examples": "^0.0.10",
     "@nomiclabs/hardhat-truffle5": "^2.0.7",
     "@openzeppelin/contracts-upgradeable": "^4.8.2",
-    "@openzeppelin/hardhat-upgrades": "^1.28.0",
+    "@openzeppelin/hardhat-upgrades": "^2.4.0",
     "@openzeppelin/test-helpers": "^0.5.16",
     "@uniswap/v3-periphery": "github:Uniswap/v3-periphery#0.8",
     "axios": "^1.5.0",
@@ -64,7 +66,7 @@
     "prompt-sync": "^4.2.0",
     "solhint": "^3.4.1",
     "solhint-plugin-prettier": "^0.0.5",
-    "solidity-code-metrics": "^0.0.23",
+    "solidity-code-metrics": "^0.0.25",
     "solidity-coverage": "^0.8.2",
     "solmate": "^6.1.0"
   }

@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.18;
 
+import "../libraries/PausabilityLib.sol";
 import "../libraries/InitializerLib.sol";
 import "../libraries/RolesManagementLib.sol";
 

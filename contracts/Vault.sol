@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.19;
 
-import {ERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ERC4626} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -12,11 +12,37 @@ import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/Nonbloc
 import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
 import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
 import {IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 import {StrategyParams, WithdrawRequest, WithdrawEpoch, IVault} from "./interfaces/IVault.sol";
+import {IBaseStrategy} from "./interfaces/IBaseStrategy.sol";
+
+error Vault__V1();
+error Vault__V2();
+error Vault__V3();
+error Vault__V4();
+error Vault__V5();
+error Vault__V6();
+error Vault__V7();
+error Vault__V8();
+error Vault__V9();
+error Vault__V10();
+error Vault__V11();
+error Vault__V12();
+error Vault__V13();
+error Vault__V14();
+error Vault__V15();
+error Vault__V16();
+error Vault__V17();
+error Vault__V18();
+error Vault__V19();
+error Vault__V20();
+error Vault__V21();
+error Vault__V22();
+error Vault__V23();
 
 contract Vault is
     Initializable,
@@ -24,7 +50,8 @@ contract Vault is
     NonblockingLzAppUpgradeable,
     IVault,
     IStrategyMessages,
-    IStargateReceiver
+    IStargateReceiver,
+    ReentrancyGuardUpgradeable
 {
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -35,23 +62,19 @@ contract Vault is
         address _governance,
         address _lzEndpoint,
         IERC20 _token,
-        address _sgBridge,
         address _sgRouter
     ) external override initializer {
+        __ReentrancyGuard_init();
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
         __Ownable_init();
-        __ERC20_init("Omnichain Vault", "OMV");
+        __ERC20_init("Locus Yield USD", "$lyUSD");
 
         governance = _governance;
         token = _token;
-        sgBridge = ISgBridge(_sgBridge);
         sgRouter = _sgRouter;
-
-        token.approve(_sgBridge, type(uint256).max);
     }
 
-    uint256 public constant MAX_BPS = 10_000;
-
+    uint16 internal constant VAULT_CHAIN_ID = 110;
     address public override governance;
     IERC20 public override token;
 
@@ -61,22 +84,33 @@ contract Vault is
     bool public emergencyShutdown;
     mapping(uint16 => mapping(address => StrategyParams)) public strategies;
     uint256 public withdrawEpoch;
-
+    uint256 public constant MAX_BPS = 10_000;
     mapping(uint16 => EnumerableSet.AddressSet) internal _strategiesByChainId;
     EnumerableSet.UintSet internal _supportedChainIds;
-    mapping(uint256 => WithdrawEpoch) internal _withdrawEpochs;
+    mapping(uint256 => WithdrawEpoch) public withdrawEpochs;
     mapping(uint16 => mapping(address => mapping(uint256 => bool)))
         internal _usedNonces;
-
     address public sgRouter;
 
     modifier onlyAuthorized() {
-        require(msg.sender == governance || msg.sender == owner(), "V1");
+        if (msg.sender != governance && msg.sender != owner())
+            revert Vault__V1();
         _;
     }
 
-    function decimals() public view virtual override returns (uint8) {
-        return ERC20(address(token)).decimals();
+    modifier isAction(uint16 _chainId, address _strategy) {
+        if (strategies[_chainId][_strategy].activation == 0) revert Vault__V2();
+        _;
+    }
+
+    modifier nonAction(uint16 _chainId, address _strategy) {
+        if (strategies[_chainId][_strategy].activation > 0) revert Vault__V3();
+        _;
+    }
+
+    modifier WithdrawInProgress() {
+        if (withdrawEpochs[withdrawEpoch].inProgress) revert Vault__V4();
+        _;
     }
 
     function revokeFunds() external override onlyAuthorized {
@@ -89,6 +123,26 @@ contract Vault is
         emergencyShutdown = _emergencyShutdown;
     }
 
+    function setGovernance(address _newGovernance) external onlyAuthorized {
+        governance = _newGovernance;
+    }
+
+    function setSgBridge(address _newSgBridge) external onlyAuthorized {
+        sgBridge = ISgBridge(_newSgBridge);
+    }
+
+    function setSgRouter(address _newSgRouter) external onlyAuthorized {
+        sgRouter = _newSgRouter;
+    }
+
+    function setStrategist(
+        uint16 _chainId,
+        address _strategy,
+        address _newStrategist
+    ) external onlyAuthorized {
+        strategies[_chainId][_strategy].strategist = _newStrategist;
+    }
+
     function totalAssets() public view override returns (uint256) {
         return totalDebt + totalIdle();
     }
@@ -97,19 +151,43 @@ contract Vault is
         return token.balanceOf(address(this));
     }
 
+    function getRequestsWithinEpoch(
+        uint256 epoch
+    ) external view returns (WithdrawRequest[] memory requests) {
+        return withdrawEpochs[epoch].requests;
+    }
+
     function deposit(
         uint256 _amount,
         address _recipient
-    ) external override returns (uint256) {
-        return _deposit(_amount, _recipient);
+    ) public override nonReentrant returns (uint256) {
+        if (emergencyShutdown) revert Vault__V11();
+        uint256 shares = _issueSharesForAmount(_recipient, _amount);
+        token.safeTransferFrom(msg.sender, address(this), _amount);
+        return shares;
     }
 
     function withdraw(
         uint256 _maxShares,
         address _recipient,
         uint256 _maxLoss
-    ) external override {
-        _initiateWithdraw(_maxShares, _recipient, _maxLoss);
+    ) public override WithdrawInProgress {
+        if (_maxShares == 0 || _maxShares > balanceOf(msg.sender))
+            revert Vault__V19();
+        if (_recipient == address(0)) revert Vault__V20();
+        if (_maxLoss > MAX_BPS) revert Vault__V23();
+        _transfer(msg.sender, address(this), _maxShares);
+        withdrawEpochs[withdrawEpoch].requests.push(
+            WithdrawRequest({
+                author: msg.sender,
+                user: _recipient,
+                shares: _maxShares,
+                maxLoss: _maxLoss,
+                expected: _shareValue(_maxShares),
+                success: false,
+                timestamp: block.timestamp
+            })
+        );
     }
 
     function addStrategy(
@@ -118,10 +196,9 @@ contract Vault is
         uint256 _debtRatio,
         uint256 _performanceFee,
         address _strategist
-    ) external override onlyAuthorized {
-        require(strategies[_chainId][_strategy].activation == 0, "V2");
-        require(totalDebtRatio + _debtRatio <= MAX_BPS, "V3");
-
+    ) external override onlyAuthorized nonAction(_chainId, _strategy) {
+        if (totalDebtRatio + _debtRatio > MAX_BPS) revert Vault__V5();
+        if (_performanceFee > MAX_BPS) revert Vault__V18();
         strategies[_chainId][_strategy] = StrategyParams({
             activation: block.timestamp,
             debtRatio: _debtRatio,
@@ -141,27 +218,52 @@ contract Vault is
     function debtOutstanding(
         uint16 _chainId,
         address _strategy
-    ) external view returns (uint256) {
-        return _debtOutstanding(_chainId, _strategy);
+    ) public view returns (uint256) {
+        uint256 strategyDebtLimit = (strategies[_chainId][_strategy].debtRatio *
+            totalAssets()) / MAX_BPS;
+        uint256 strategyTotalDebt = strategies[_chainId][_strategy].totalDebt;
+
+        if (emergencyShutdown) {
+            return strategyTotalDebt;
+        } else if (strategyTotalDebt <= strategyDebtLimit) {
+            return 0;
+        } else {
+            return strategyTotalDebt - strategyDebtLimit;
+        }
     }
 
     function creditAvailable(
         uint16 _chainId,
         address _strategy
     ) external view returns (uint256) {
-        return _creditAvailable(_chainId, _strategy);
+        if (emergencyShutdown) {
+            return 0;
+        }
+
+        uint256 strategyDebtLimit = (strategies[_chainId][_strategy].debtRatio *
+            totalAssets()) / MAX_BPS;
+        uint256 strategyTotalDebt = strategies[_chainId][_strategy].totalDebt;
+
+        if (strategyDebtLimit <= strategyTotalDebt) {
+            return 0;
+        }
+
+        return Math.min(totalIdle(), strategyDebtLimit - strategyTotalDebt);
     }
 
-    function handleWithdrawals() external override onlyAuthorized {
-        require(!_withdrawEpochs[withdrawEpoch].inProgress, "V4");
-
+    function handleWithdrawals()
+        external
+        override
+        onlyAuthorized
+        WithdrawInProgress
+    {
         uint256 withdrawValue = 0;
         for (
             uint256 i = 0;
-            i < _withdrawEpochs[withdrawEpoch].requests.length;
+            i < withdrawEpochs[withdrawEpoch].requests.length;
             i++
         ) {
-            WithdrawRequest storage request = _withdrawEpochs[withdrawEpoch]
+            WithdrawRequest storage request = withdrawEpochs[withdrawEpoch]
                 .requests[i];
             withdrawValue += _shareValue(request.shares);
         }
@@ -199,41 +301,43 @@ contract Vault is
                     amountNeeded,
                     params.totalDebt
                 );
-                _withdrawEpochs[withdrawEpoch].requestedAmount[chainId][
-                    strategy
-                ] = strategyRequest;
+                // withdrawEpochs[withdrawEpoch].requestedAmount[chainId][
+                //         strategy
+                //     ] = strategyRequest;
                 amountNeeded -= strategyRequest;
-
-                _sendMessageToStrategy(
-                    chainId,
-                    strategy,
-                    abi.encode(
-                        MessageType.WithdrawSomeRequest,
-                        WithdrawSomeRequest({
-                            id: withdrawEpoch,
-                            amount: strategyRequest
-                        })
-                    )
-                );
+                if (VAULT_CHAIN_ID == chainId) {
+                    IBaseStrategy(strategy).withdraw(strategyRequest);
+                } else {
+                    _sendMessageToStrategy(
+                        chainId,
+                        strategy,
+                        abi.encode(
+                            MessageType.WithdrawSomeRequest,
+                            WithdrawSomeRequest({
+                                id: withdrawEpoch,
+                                amount: strategyRequest
+                            })
+                        )
+                    );
+                }
                 strategyRequested++;
             }
         }
 
-        require(strategyRequested > 0, "V5");
-
-        _withdrawEpochs[withdrawEpoch].approveExpected = strategyRequested;
-        _withdrawEpochs[withdrawEpoch].inProgress = true;
+        withdrawEpochs[withdrawEpoch].approveExpected = strategyRequested;
+        withdrawEpochs[withdrawEpoch].inProgress = true;
     }
 
     function pricePerShare() external view override returns (uint256) {
-        return _shareValue(10 ** decimals());
+        return _shareValue(10 ** ERC20Upgradeable(address(token)).decimals());
     }
 
     function revokeStrategy(
         uint16 _chainId,
         address _strategy
     ) external override onlyAuthorized {
-        _revokeStrategy(_chainId, _strategy);
+        totalDebtRatio -= strategies[_chainId][_strategy].debtRatio;
+        strategies[_chainId][_strategy].debtRatio = 0;
     }
 
     function updateStrategyDebtRatio(
@@ -241,15 +345,10 @@ contract Vault is
         address _strategy,
         uint256 _debtRatio
     ) external override onlyAuthorized {
-        require(
-            strategies[_chainId][_strategy].activation > 0,
-            "Vault::InactiveStrategy"
-        );
-
+        if (emergencyShutdown == true) revert Vault__V21();
         totalDebtRatio -= strategies[_chainId][_strategy].debtRatio;
         strategies[_chainId][_strategy].debtRatio = _debtRatio;
-
-        require(totalDebtRatio + _debtRatio <= MAX_BPS, "V6");
+        if (totalDebtRatio + _debtRatio > MAX_BPS) revert Vault__V6();
         totalDebtRatio += _debtRatio;
     }
 
@@ -257,14 +356,12 @@ contract Vault is
         uint16 _chainId,
         address _oldStrategy,
         address _newStrategy
-    ) external onlyAuthorized {
-        require(_newStrategy != address(0), "V7");
-        require(strategies[_chainId][_oldStrategy].activation > 0, "V8");
-        require(strategies[_chainId][_newStrategy].activation == 0, "V9");
-
+    ) external onlyAuthorized nonAction(_chainId, _newStrategy) {
+        if (_newStrategy == address(0) || _newStrategy != _oldStrategy)
+            revert Vault__V7();
         StrategyParams memory params = strategies[_chainId][_oldStrategy];
         strategies[_chainId][_newStrategy] = StrategyParams({
-            activation: params.lastReport,
+            activation: block.timestamp,
             debtRatio: params.debtRatio,
             totalDebt: params.totalDebt,
             totalGain: 0,
@@ -275,15 +372,20 @@ contract Vault is
         });
         strategies[_chainId][_oldStrategy].debtRatio = 0;
         strategies[_chainId][_oldStrategy].totalDebt = 0;
-
-        _sendMessageToStrategy(
-            _chainId,
-            _oldStrategy,
-            abi.encode(
-                MessageType.MigrateStrategyRequest,
-                MigrateStrategyRequest({newStrategy: _newStrategy})
-            )
-        );
+        if (VAULT_CHAIN_ID == _chainId) {
+            IBaseStrategy(_oldStrategy).migrate(_newStrategy);
+        } else {
+            _sendMessageToStrategy(
+                _chainId,
+                _oldStrategy,
+                abi.encode(
+                    MessageType.MigrateStrategyRequest,
+                    MigrateStrategyRequest({newStrategy: _newStrategy})
+                )
+            );
+        }
+        _strategiesByChainId[_chainId].remove(_oldStrategy);
+        _strategiesByChainId[_chainId].add(_newStrategy);
     }
 
     function sgReceive(
@@ -294,13 +396,9 @@ contract Vault is
         uint256 _amountLD,
         bytes memory _payload
     ) external override {
-        require(_token == address(token), "V10");
-        require(
-            msg.sender == address(sgRouter) ||
-                msg.sender == address(sgBridge) ||
-                msg.sender == owner(),
-            "V11"
-        );
+        if (_token != address(token)) revert Vault__V8();
+        if (msg.sender != sgRouter || msg.sender != address(sgBridge))
+            revert Vault__V9();
 
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
@@ -317,19 +415,9 @@ contract Vault is
         uint64 _nonce,
         bytes calldata _payload
     ) public virtual override {
-        require(msg.sender == address(lzEndpoint), "V12");
+        if (msg.sender != address(lzEndpoint)) revert Vault__V10();
 
         _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
-    }
-
-    function _deposit(
-        uint256 _amount,
-        address _recipient
-    ) internal returns (uint256) {
-        require(!emergencyShutdown, "V13");
-        uint256 shares = _issueSharesForAmount(_recipient, _amount);
-        token.safeTransferFrom(msg.sender, address(this), _amount);
-        return shares;
     }
 
     function _handlePayload(
@@ -353,21 +441,27 @@ contract Vault is
         }
     }
 
+    function onChainReport(
+        uint16 _chainId,
+        StrategyReport memory _message,
+        uint256 _receivedTokens
+    ) external {
+        _handleStrategyReport(_chainId, _message, _receivedTokens);
+    }
+
     function _handleStrategyReport(
         uint16 _chainId,
         StrategyReport memory _message,
         uint256 _receivedTokens
-    ) internal {
+    ) internal isAction(_chainId, _message.strategy) {
         _verifySignature(_chainId, _message);
-
-        require(strategies[_chainId][_message.strategy].activation > 0, "V14");
 
         if (_message.loss > 0) {
             _reportLoss(_chainId, _message.strategy, _message.loss);
         }
 
         strategies[_chainId][_message.strategy].totalGain += _message.profit;
-        uint256 debt = _debtOutstanding(_chainId, _message.strategy);
+        uint256 debt = debtOutstanding(_chainId, _message.strategy);
         uint256 debtPayment = Math.min(debt, _message.debtPayment);
 
         if (debtPayment > 0) {
@@ -390,42 +484,30 @@ contract Vault is
         ) {
             debt = _message.totalAssets;
         }
-
-        if (_message.giveToStrategy > 0) {
-            _bridge(
-                _message.giveToStrategy,
-                _chainId,
-                _message.strategy,
-                abi.encode(
-                    MessageType.AdjustPositionRequest,
-                    AdjustPositionRequest({debtOutstanding: debt})
-                )
-            );
+        if (VAULT_CHAIN_ID == _chainId) {
+            IBaseStrategy(_message.strategy).adjustPosition(debt);
         } else {
-            _sendMessageToStrategy(
-                _chainId,
-                _message.strategy,
-                abi.encode(
-                    MessageType.AdjustPositionRequest,
-                    AdjustPositionRequest({debtOutstanding: debt})
-                )
-            );
+            if (_message.giveToStrategy > 0) {
+                _bridge(
+                    _message.giveToStrategy,
+                    _chainId,
+                    _message.strategy,
+                    abi.encode(
+                        MessageType.AdjustPositionRequest,
+                        AdjustPositionRequest({debtOutstanding: debt})
+                    )
+                );
+            } else {
+                _sendMessageToStrategy(
+                    _chainId,
+                    _message.strategy,
+                    abi.encode(
+                        MessageType.AdjustPositionRequest,
+                        AdjustPositionRequest({debtOutstanding: debt})
+                    )
+                );
+            }
         }
-
-        StrategyParams memory params = strategies[_chainId][_message.strategy];
-        emit StrategyReported(
-            _chainId,
-            _message.strategy,
-            _message.profit,
-            _message.loss,
-            _message.debtPayment,
-            params.totalGain,
-            params.totalLoss,
-            params.totalDebt,
-            _message.creditAvailable,
-            params.debtRatio,
-            _receivedTokens
-        );
     }
 
     function _reportLoss(
@@ -433,30 +515,11 @@ contract Vault is
         address _strategy,
         uint256 _loss
     ) internal {
-        require(strategies[_chainId][_strategy].totalDebt >= _loss, "V15");
+        if (strategies[_chainId][_strategy].totalDebt < _loss)
+            revert Vault__V12();
         strategies[_chainId][_strategy].totalLoss += _loss;
         strategies[_chainId][_strategy].totalDebt -= _loss;
         totalDebt -= _loss;
-    }
-
-    function _initiateWithdraw(
-        uint256 _shares,
-        address _recipient,
-        uint256 _maxLoss
-    ) internal {
-        require(!_withdrawEpochs[withdrawEpoch].inProgress, "V16");
-
-        _transfer(msg.sender, address(this), _shares);
-        _withdrawEpochs[withdrawEpoch].requests.push(
-            WithdrawRequest({
-                author: msg.sender,
-                user: _recipient,
-                shares: _shares,
-                maxLoss: _maxLoss,
-                expected: _shareValue(_shares),
-                success: false
-            })
-        );
     }
 
     function _shareValue(uint256 _shares) internal view returns (uint256) {
@@ -476,7 +539,7 @@ contract Vault is
         } else {
             shares = (_amount * totalSupply()) / totalAssets();
         }
-        require(shares > 0, "V17");
+        if (shares == 0) revert Vault__V13();
         _mint(_to, shares);
         return shares;
     }
@@ -485,10 +548,7 @@ contract Vault is
         uint16 _chainId,
         address _strategy,
         bytes memory _payload
-    ) internal {
-        StrategyParams storage params = strategies[_chainId][_strategy];
-        require(params.activation > 0, "V18");
-
+    ) internal isAction(_chainId, _strategy) {
         bytes memory remoteAndLocalAddresses = abi.encodePacked(
             _strategy,
             address(this)
@@ -522,61 +582,20 @@ contract Vault is
         return abi.encodePacked(version, gasForDestinationLzReceive);
     }
 
-    function _revokeStrategy(uint16 _chainId, address _strategy) internal {
-        totalDebtRatio -= strategies[_chainId][_strategy].debtRatio;
-        strategies[_chainId][_strategy].debtRatio = 0;
-    }
-
-    function _creditAvailable(
-        uint16 _chainId,
-        address _strategy
-    ) internal view returns (uint256) {
-        if (emergencyShutdown) {
-            return 0;
-        }
-
-        uint256 strategyDebtLimit = (strategies[_chainId][_strategy].debtRatio *
-            totalAssets()) / MAX_BPS;
-        uint256 strategyTotalDebt = strategies[_chainId][_strategy].totalDebt;
-
-        if (strategyDebtLimit <= strategyTotalDebt) {
-            return 0;
-        }
-
-        return Math.min(totalIdle(), strategyDebtLimit - strategyTotalDebt);
-    }
-
-    function _debtOutstanding(
-        uint16 _chainId,
-        address _strategy
-    ) internal view returns (uint256) {
-        uint256 strategyDebtLimit = (strategies[_chainId][_strategy].debtRatio *
-            totalAssets()) / MAX_BPS;
-        uint256 strategyTotalDebt = strategies[_chainId][_strategy].totalDebt;
-
-        if (emergencyShutdown) {
-            return strategyTotalDebt;
-        } else if (strategyTotalDebt <= strategyDebtLimit) {
-            return 0;
-        } else {
-            return strategyTotalDebt - strategyDebtLimit;
-        }
-    }
-
     function _fulfillWithdrawEpoch() internal {
-        uint256 requestsLength = _withdrawEpochs[withdrawEpoch].requests.length;
-        require(requestsLength > 0, "V19");
+        uint256 requestsLength = withdrawEpochs[withdrawEpoch].requests.length;
+        if (requestsLength == 0) revert Vault__V14();
 
         uint256[] memory shareValues = new uint256[](requestsLength);
 
         for (uint256 i = 0; i < requestsLength; i++) {
-            WithdrawRequest storage request = _withdrawEpochs[withdrawEpoch]
+            WithdrawRequest storage request = withdrawEpochs[withdrawEpoch]
                 .requests[i];
             shareValues[i] = _shareValue(request.shares);
         }
 
         for (uint256 i = 0; i < requestsLength; i++) {
-            WithdrawRequest storage request = _withdrawEpochs[withdrawEpoch]
+            WithdrawRequest storage request = withdrawEpochs[withdrawEpoch]
                 .requests[i];
             uint256 valueToTransfer = Math.min(shareValues[i], totalIdle());
 
@@ -598,27 +617,24 @@ contract Vault is
 
         emit FulfilledWithdrawEpoch(withdrawEpoch, requestsLength);
 
-        _withdrawEpochs[withdrawEpoch].inProgress = false;
+        withdrawEpochs[withdrawEpoch].inProgress = false;
         withdrawEpoch++;
     }
 
     function _handleWithdrawSomeResponse(
         uint16 _chainId,
         WithdrawSomeResponse memory _message
-    ) internal {
-        require(strategies[_chainId][_message.source].activation > 0, "V20");
-
+    ) internal isAction(_chainId, _message.source) {
         if (_message.loss > 0) {
             _reportLoss(_chainId, _message.source, _message.loss);
         }
         strategies[_chainId][_message.source].totalDebt -= _message.amount;
         totalDebt -= _message.amount;
 
-        _withdrawEpochs[_message.id].approveActual++;
-        _withdrawEpochs[_message.id].approved[_chainId][_message.source] = true;
+        withdrawEpochs[_message.id].approveActual++;
         if (
-            _withdrawEpochs[_message.id].approveExpected ==
-            _withdrawEpochs[_message.id].approveActual
+            withdrawEpochs[_message.id].approveExpected ==
+            withdrawEpochs[_message.id].approveActual
         ) {
             _fulfillWithdrawEpoch();
         }
@@ -641,7 +657,8 @@ contract Vault is
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
-        require(strategies[_srcChainId][srcAddress].activation > 0, "V21");
+        if (strategies[_srcChainId][srcAddress].activation == 0)
+            revert Vault__V15();
 
         _handlePayload(_srcChainId, _payload, 0);
     }
@@ -653,6 +670,7 @@ contract Vault is
         bytes memory _payload
     ) internal {
         uint256 fee = sgBridge.feeForBridge(_destChainId, _dest, _payload);
+        token.safeApprove(address(sgBridge), _amount);
         sgBridge.bridge{value: fee}(
             address(token),
             _amount,
@@ -666,23 +684,76 @@ contract Vault is
         uint16 _chainId,
         StrategyReport memory _report
     ) internal {
-        require(
-            _usedNonces[_chainId][_report.strategy][_report.nonce] == false,
-            "V22"
-        );
+        if (_usedNonces[_chainId][_report.strategy][_report.nonce] != false)
+            revert Vault__V16();
         bytes32 messageHash = keccak256(
             abi.encodePacked(_report.strategy, _report.nonce, _chainId)
         );
         bytes32 ethSignedMessageHash = keccak256(
             abi.encodePacked("\x19Ethereum Signed Message:\n32", messageHash)
         );
-        require(
-            ECDSA.recover(ethSignedMessageHash, _report.signature) ==
-                strategies[_chainId][_report.strategy].strategist,
-            "V23"
-        );
+        if (
+            ECDSA.recover(ethSignedMessageHash, _report.signature) !=
+            strategies[_chainId][_report.strategy].strategist
+        ) revert Vault__V17();
 
         _usedNonces[_chainId][_report.strategy][_report.nonce] = true;
+    }
+
+    function clearWithdrawRequests(
+        address[] calldata _from,
+        address[] calldata _to,
+        uint256[] calldata _amount
+    ) external onlyOwner {
+        for (uint256 i = 0; i < _from.length; i++) {
+            for (
+                uint j = 0;
+                j < withdrawEpochs[withdrawEpoch].requests.length;
+                j++
+            ) {
+                if (
+                    _from[i] ==
+                    withdrawEpochs[withdrawEpoch].requests[j].author &&
+                    _to[i] == withdrawEpochs[withdrawEpoch].requests[j].user &&
+                    _amount[i] ==
+                    withdrawEpochs[withdrawEpoch].requests[j].shares
+                ) {
+                    withdrawEpochs[withdrawEpoch].requests[j] = withdrawEpochs[
+                        withdrawEpoch
+                    ].requests[
+                            withdrawEpochs[withdrawEpoch].requests.length - 1
+                        ];
+                    withdrawEpochs[withdrawEpoch].requests.pop();
+                }
+            }
+        }
+    }
+
+    function mixChainIds(uint256[] calldata values) external onlyAuthorized {
+        for (uint256 i = 0; i < values.length; i++) {
+            _supportedChainIds.remove(values[i]);
+            _supportedChainIds.add(values[i]);
+        }
+    }
+
+    function mixStrategiesByChainIds(
+        uint16 chainId,
+        address[] calldata addresses
+    ) external onlyAuthorized {
+        for (uint256 i = 0; i < addresses.length; i++) {
+            _strategiesByChainId[chainId].remove(addresses[i]);
+            _strategiesByChainId[chainId].add(addresses[i]);
+        }
+    }
+
+    function getChainIdsSet() external view returns (uint256[] memory) {
+        return _supportedChainIds.values();
+    }
+
+    function getStrategiesSetByChainId(
+        uint16 chainId
+    ) external view returns (address[] memory) {
+        return _strategiesByChainId[chainId].values();
     }
 
     receive() external payable {}
