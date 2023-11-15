@@ -85,7 +85,6 @@ contract Vault is
     mapping(uint16 => mapping(address => StrategyParams)) public strategies;
     uint256 public withdrawEpoch;
     uint256 public constant MAX_BPS = 10_000;
-
     mapping(uint16 => EnumerableSet.AddressSet) internal _strategiesByChainId;
     EnumerableSet.UintSet internal _supportedChainIds;
     mapping(uint256 => WithdrawEpoch) public withdrawEpochs;
@@ -152,6 +151,12 @@ contract Vault is
         return token.balanceOf(address(this));
     }
 
+    function getRequestsWithinEpoch(
+        uint256 epoch
+    ) external view returns (WithdrawRequest[] memory requests) {
+        return withdrawEpochs[epoch].requests;
+    }
+
     function deposit(
         uint256 _amount,
         address _recipient
@@ -179,7 +184,8 @@ contract Vault is
                 shares: _maxShares,
                 maxLoss: _maxLoss,
                 expected: _shareValue(_maxShares),
-                success: false
+                success: false,
+                timestamp: block.timestamp
             })
         );
     }
@@ -295,9 +301,9 @@ contract Vault is
                     amountNeeded,
                     params.totalDebt
                 );
-                withdrawEpochs[withdrawEpoch].requestedAmount[chainId][
-                        strategy
-                    ] = strategyRequest;
+                // withdrawEpochs[withdrawEpoch].requestedAmount[chainId][
+                //         strategy
+                //     ] = strategyRequest;
                 amountNeeded -= strategyRequest;
                 if (VAULT_CHAIN_ID == chainId) {
                     IBaseStrategy(strategy).withdraw(strategyRequest);
@@ -435,6 +441,14 @@ contract Vault is
         }
     }
 
+    function onChainReport(
+        uint16 _chainId,
+        StrategyReport memory _message,
+        uint256 _receivedTokens
+    ) external {
+        _handleStrategyReport(_chainId, _message, _receivedTokens);
+    }
+
     function _handleStrategyReport(
         uint16 _chainId,
         StrategyReport memory _message,
@@ -494,21 +508,6 @@ contract Vault is
                 );
             }
         }
-
-        StrategyParams memory params = strategies[_chainId][_message.strategy];
-        emit StrategyReported(
-            _chainId,
-            _message.strategy,
-            _message.profit,
-            _message.loss,
-            _message.debtPayment,
-            params.totalGain,
-            params.totalLoss,
-            params.totalDebt,
-            _message.creditAvailable,
-            params.debtRatio,
-            _receivedTokens
-        );
     }
 
     function _reportLoss(
@@ -633,7 +632,6 @@ contract Vault is
         totalDebt -= _message.amount;
 
         withdrawEpochs[_message.id].approveActual++;
-        withdrawEpochs[_message.id].approved[_chainId][_message.source] = true;
         if (
             withdrawEpochs[_message.id].approveExpected ==
             withdrawEpochs[_message.id].approveActual

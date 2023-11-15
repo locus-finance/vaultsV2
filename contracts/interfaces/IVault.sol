@@ -22,6 +22,7 @@ struct WithdrawRequest {
     uint256 maxLoss;
     uint256 expected;
     bool success;
+    uint256 timestamp;
 }
 
 struct WithdrawEpoch {
@@ -29,8 +30,6 @@ struct WithdrawEpoch {
     bool inProgress;
     uint256 approveExpected;
     uint256 approveActual;
-    mapping(uint16 => mapping(address => bool)) approved;
-    mapping(uint16 => mapping(address => uint256)) requestedAmount;
 }
 
 interface IVault {
