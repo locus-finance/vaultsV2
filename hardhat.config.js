@@ -64,9 +64,11 @@ module.exports = {
   },
   networks: {
     hardhat: {
-      forking: {
-        url: ARBITRUM_NODE || "",
-      },
+      chainId: 1,
+      // forking: {
+      //   url: ARBITRUM_NODE || "",
+      //   blockNumber: 150339363,
+      // },
     },
     mainnet: {
       url: ETH_NODE,
@@ -126,7 +128,6 @@ module.exports = {
     },
     arbitrumOne: {
       url: `https://arb1.arbitrum.io/rpc`,
-      chainId: 42161,
       accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
     },
     base: {

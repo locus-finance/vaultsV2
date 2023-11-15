@@ -1,127 +1,99 @@
-// const { ethers } = require("ethers");
-
-const lzRouterAbi = require("./LzRouter.json");
-const ethers = require("ethers");
 const hre = require("hardhat");
 const bridgeConfig = require("../constants/bridgeConfig.json");
 
-const factoryAbi = [
-  "function getPool(address token1, address token2, uint24 fee) external view returns (address pool)",
-];
-
 const ABI = [
-  "function balanceOf(address) external view returns (uint256)",
-  "function symbol() external view returns (string memory)",
-  "function withdraw() external",
-  "function approve(address,uint256) external",
-];
-
-const ABI2 = ["function factory() external view returns (address)"];
-
-const ABI3 = [
-  "function hasStoredPayload(uint16 _srcChainId, bytes calldata _srcAddress) external view returns (bool)",
+  "function harvest(uint256,uint256,uint256,uint256,bytes) external",
+  "function name() external view returns (string memory)",
 ];
 
 async function main() {
-  // const sgRouter = await ethers.getContractAt(
-  //     ABI2,
-  //     "0xb850873f4c993Ac2405A1AdD71F6ca5D4d4d6b4f"
-  // );
-  // const factory = await ethers.getContractAt(
-  //     FACTORY_ABI,
-  //     await sgRouter.factory()
-  // );
-  // const k = await ethers.getContractAt(ABI, await factory.getPool(3));
-  // console.log(await k.poolId(), await k.symbol());
-
-  // const factory = await ethers.getContractAt(
-  //   factoryAbi,
-  //   "0x1F98431c8aD98523631AE4a59f267346ea31F984"
-  // );
-  // console.log(
-  //   await factory.getPool(
-  //     "0x4200000000000000000000000000000000000006",
-  //     "0x9a601c5bb360811d96a23689066af316a30c3027",
-  //     10000
-  //   )
-  // );
-
-  // Create a random mnemonic to use as the seed for the HDNode
-  const mnemonic =
-    "embark uncover mean anger scatter pill team fence energy harvest away topple";
-
-  // Use the mnemonic to create an HDNode instance
-  const localProvider = new ethers.providers.JsonRpcProvider(
+  const sigs = await hre.ethers.getSigners();
+  const provider = new hre.ethers.providers.JsonRpcProvider(
     "http://127.0.0.1:8545"
   );
-
-  const node = ethers.utils.HDNode.fromMnemonic(mnemonic);
-  const vaultV1 = new ethers.Contract(
-    "0x3edbE670D03C4A71367dedA78E73EA4f8d68F2E4",
-    ABI,
-    localProvider
+  // console.log(sigs[0].address);
+  console.log(
+    "BALANCE: ",
+    await provider.getBalance("0xf712eE1C45C84aEC0bfA1581f34B9dc9a54D7e60")
   );
+
+  // const tx = await sigs[0].sendTransaction({
+  //   to: "0x27f52fd2E60B1153CBD00D465F97C05245D22B82",
+  //   value: hre.ethers.utils.parseEther("1000"),
+  // });
+  // console.log(await provider.getBalance(sigs[0].address));
+
+  // 108000000
+  // 2400
+  // 0xdeee509e572a298b176fb5180cc3d8df2748466ac671eee900691ccf74edefe437738a2741b6b328fcd29f9f759e5adff25726823e48d70a70c438faadfe7af41c
+
+  // const signer = await hre.ethers.provider.getSigner(
+  //   "0x27f52fd2E60B1153CBD00D465F97C05245D22B82"
+  // );
+
+  // const impersonatedSigner = await ethers.getImpersonatedSigner(
+  //   "0x27f52fd2E60B1153CBD00D465F97C05245D22B82"
+  // );
+  // await upgradeVault();
+
+  // const signer1 = await network.provider.request({
+  //   method: "hardhat_impersonateAccount",
+  //   params: ["0x27f52fd2E60B1153CBD00D465F97C05245D22B82"],
+  // });
+  // console.log(signer1.address);
+
+  // const impersonatedSigner = await ethers.getImpersonatedSigner(
+  //   "0x27f52fd2E60B1153CBD00D465F97C05245D22B82"
+  // );
+  // console.log(await signer.address());
+
+  // const node = ethers.utils.HDNode.fromMnemonic(mnemonic);
+  // const targetContract = await hre.ethers.getContractAt(
+  //   ABI,
+  //   "0x0427eE06e5220BA8013d2A753109A57AD4020373"
+  // );
+  // console.log(await targetContract.connect(signer).name());
+  // const tx1 = await targetContract
+  //   .connect(impersonatedSigner)
+  //   .harvest(
+  //     0,
+  //     0,
+  //     108000000,
+  //     2400,
+  //     "0xdeee509e572a298b176fb5180cc3d8df2748466ac671eee900691ccf74edefe437738a2741b6b328fcd29f9f759e5adff25726823e48d70a70c438faadfe7af41c",
+  //     { gasLimit: 30000000 }
+  //   );
+
+  // console.log(tx1);
   // const factory = await ethers.getContractAt(
   //   ABI,
   //   "0x3edbE670D03C4A71367dedA78E73EA4f8d68F2E4"
   // );
-  // Generate multiple wallets from the HDNode instance
-  const wallets = [];
-  const walletsPK = [];
-  for (let i = 0; i < 20; i++) {
-    const path = "m/44'/60'/0'/0/" + i;
-    const wallet = node.derivePath(path);
-    console.log(wallet.address);
-    wallets.push(wallet.address);
-    walletsPK.push(wallet.privateKey);
-    console.log((await vaultV1.balanceOf(wallet.address)).toNumber());
-  }
-  // const { deployer } = await getNamedAccounts();
+}
 
-  // console.log(`Your address: ${deployer}. Network: ${hre.network.name}`);
-
-  const config = bridgeConfig.optimism;
-  const Vault = await hre.ethers.getContractFactory("Vault");
-  const TOKEN = "USDC";
-
-  const vault = await upgrades.deployProxy(
-    Vault,
-    [
-      wallets[0],
-      config.lzEndpoint,
-      "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-      config.sgBridge,
-      config.sgRouter,
-    ],
-    {
-      initializer: "initialize",
-      kind: "transparent",
-    }
+async function upgradeVault() {
+  // const abiProxy = [
+  //   "function transferOwnership(address) external",
+  //   "function owner() external view returns(address)",
+  // ];
+  // const proxy = await hre.ethers.getContractAt(
+  //   abiProxy,
+  //   "0x4F202835B6E12B51ef6C4ac87d610c83E9830dD9"
+  // );
+  // console.log(await proxy.owner());
+  // const owner = await ethers.getImpersonatedSigner(
+  //   "0x729F2222aaCD99619B8B660b412baE9fCEa3d90F"
+  // );
+  // await proxy
+  //   .connect(owner)
+  //   .transferOwnership("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
+  // console.log(await proxy.owner());
+  const vault = await hre.ethers.getContractFactory("OnChainVault");
+  const upgraded = await hre.upgrades.upgradeProxy(
+    "0x0f094f6deb056af1fa1299168188fd8c78542a07",
+    vault
   );
-  await vault.deployed();
-
-  console.log("Vault deployed to:", vault.address);
-
-  // new ethers.Wallet()
-  const Migration = await hre.ethers.getContractFactory("Migration");
-  const migration = await Migration.deploy(
-    "0x3edbE670D03C4A71367dedA78E73EA4f8d68F2E4",
-    vault.address,
-    wallets
-  );
-  await migration.deployed();
-  console.log("Migration deployed to:", migration.address);
-  console.log(await migration.users(0));
-
-  for (let index = 0; index < 10; index++) {
-    const user = new ethers.Wallet(walletsPK[index], localProvider);
-    await vaultV1
-      .connect(user)
-      .approve(migration.address, await vaultV1.balanceOf(user.address));
-  }
-  console.log("aaproved");
-  await migration.withdraw({ gasLimit: 10000000 });
-  console.log("Withdrawed");
+  console.log("Successfully upgraded implementation of", upgraded.address);
 }
 
 main()
@@ -129,4 +101,6 @@ main()
     console.error(error);
     process.exitCode = 1;
   })
-  .then(() => {});
+  .then(() => {
+    process.exitCode = 1;
+  });

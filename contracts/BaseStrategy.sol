@@ -14,6 +14,7 @@ import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
+import "./interfaces/ISimpleVault.sol";
 
 abstract contract BaseStrategy is
     Initializable,
@@ -27,6 +28,19 @@ abstract contract BaseStrategy is
     error InsufficientFunds(uint256 amount, uint256 balance);
     error IncorrectMessageType(uint256 messageType);
     error BaseStrategy__UnAcceptableFee();
+    error OnlyStrategist();
+    error OnlyStrategistOrSelf();
+    error TooHighSlippage();
+    error DebtRatioShouldBeZero();
+    error RouterOrBridgeOnly();
+    error InvalidEndpointCaller();
+    error InvalidSignature();
+    error AlreadyWithdrawn();
+    error VaultChainIdMismatch();
+    error NotAVault();
+    error VaultAddressMismatch();
+    error DurationIsZero();
+    error OnlyStrategistOrVault();
 
     event SgReceived(address indexed token, uint256 amount, address sender);
     event StrategyReported(
@@ -42,12 +56,19 @@ abstract contract BaseStrategy is
     event StrategyMigrated(address newStrategy);
 
     modifier onlyStrategist() {
-        _onlyStrategist();
+        if (msg.sender != strategist) revert OnlyStrategist();
+        _;
+    }
+
+    modifier onlyStrategistOrVault() {
+        if (msg.sender != strategist && msg.sender != vault)
+            revert OnlyStrategistOrVault();
         _;
     }
 
     modifier onlyStrategistOrSelf() {
-        _onlyStrategistOrSelf();
+        if (msg.sender != strategist && msg.sender != address(this))
+            revert OnlyStrategistOrSelf();
         _;
     }
 
@@ -136,7 +157,7 @@ abstract contract BaseStrategy is
     }
 
     function setSlippage(uint256 _slippage) external onlyStrategist {
-        require(_slippage < 10_000, "slippage above 100%");
+        if (_slippage > 10_000) revert TooHighSlippage();
         slippage = _slippage;
     }
 
@@ -204,7 +225,7 @@ abstract contract BaseStrategy is
         uint256 debtPayment = 0;
 
         if (emergencyExit) {
-            require(_debtRatio == 0, "BaseStrategy::DebtRatioNotZero");
+            if (_debtRatio != 0) revert DebtRatioShouldBeZero();
 
             uint256 amountFreed = _liquidateAllPositions();
             if (amountFreed < _debtOutstanding) {
@@ -249,15 +270,25 @@ abstract contract BaseStrategy is
         });
         lastReport = block.timestamp;
 
-        if (requestFromStrategy > 0) {
-            _bridge(
-                requestFromStrategy,
-                vaultChainId,
-                vault,
-                abi.encode(MessageType.StrategyReport, report)
+        if (vaultChainId == currentChainId) {
+            ISimpleVault(vault).onChainReport(
+                currentChainId,
+                report,
+                requestFromStrategy
             );
         } else {
-            _sendMessageToVault(abi.encode(MessageType.StrategyReport, report));
+            if (requestFromStrategy > 0) {
+                _bridge(
+                    requestFromStrategy,
+                    vaultChainId,
+                    vault,
+                    abi.encode(MessageType.StrategyReport, report)
+                );
+            } else {
+                _sendMessageToVault(
+                    abi.encode(MessageType.StrategyReport, report)
+                );
+            }
         }
 
         emit StrategyReported(
@@ -271,7 +302,9 @@ abstract contract BaseStrategy is
         );
     }
 
-    function adjustPosition(uint256 _debtOutstanding) public onlyStrategist {
+    function adjustPosition(
+        uint256 _debtOutstanding
+    ) public onlyStrategistOrVault {
         _adjustPosition(_debtOutstanding);
         emit AdjustedPosition(_debtOutstanding);
     }
@@ -284,10 +317,8 @@ abstract contract BaseStrategy is
         uint256 _amountLD,
         bytes memory
     ) external override {
-        require(
-            msg.sender == address(sgRouter) || msg.sender == address(sgBridge),
-            "SgBridge::RouterOrBridgeOnly"
-        );
+        if (msg.sender != address(sgRouter) && msg.sender != address(sgBridge))
+            revert RouterOrBridgeOnly();
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
@@ -301,10 +332,7 @@ abstract contract BaseStrategy is
         uint64 _nonce,
         bytes calldata _payload
     ) public virtual override {
-        require(
-            msg.sender == address(lzEndpoint),
-            "BaseStrategy::InvalidEndpointCaller"
-        );
+        if (msg.sender != address(lzEndpoint)) revert InvalidEndpointCaller();
 
         _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
@@ -313,10 +341,8 @@ abstract contract BaseStrategy is
         bytes32 messageHash = strategistSignMessageHash();
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
 
-        require(
-            ECDSA.recover(ethSignedMessageHash, _signature) == strategist,
-            "BaseStrategy::InvalidSignature"
-        );
+        if (ECDSA.recover(ethSignedMessageHash, _signature) != strategist)
+            revert InvalidSignature();
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal virtual;
@@ -325,17 +351,6 @@ abstract contract BaseStrategy is
         uint16 version = 1;
         uint256 gasForDestinationLzReceive = 1_000_000;
         return abi.encodePacked(version, gasForDestinationLzReceive);
-    }
-
-    function _onlyStrategist() internal view {
-        require(msg.sender == strategist, "BaseStrategy::OnlyStrategist");
-    }
-
-    function _onlyStrategistOrSelf() internal view {
-        require(
-            msg.sender == strategist || msg.sender == address(this),
-            "BaseStrategy::OnlyStrategistOrSelf"
-        );
     }
 
     function _withSlippage(uint256 _amount) internal view returns (uint256) {
@@ -415,10 +430,7 @@ abstract contract BaseStrategy is
     function _handleWithdrawSomeRequest(
         WithdrawSomeRequest memory _request
     ) internal {
-        require(
-            !withdrawnInEpoch[_request.id],
-            "BaseStrategy::AlreadyWithdrawn"
-        );
+        if (withdrawnInEpoch[_request.id]) revert AlreadyWithdrawn();
 
         (uint256 liquidatedAmount, uint256 loss) = _liquidatePosition(
             _request.amount
@@ -454,14 +466,11 @@ abstract contract BaseStrategy is
         uint64,
         bytes memory _payload
     ) internal override {
-        require(
-            _srcChainId == vaultChainId,
-            "BaseStrategy::VaultChainIdMismatch"
-        );
+        if (_srcChainId != vaultChainId) revert VaultChainIdMismatch();
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
-        require(srcAddress == vault, "BaseStrategy::VaultAddressMismatch");
+        if (srcAddress != vault) revert VaultAddressMismatch();
 
         _handlePayload(_payload);
     }
@@ -512,15 +521,16 @@ abstract contract BaseStrategy is
     }
 
     function withdraw(uint256 _amountNeeded) external returns (uint256 _loss) {
-        require(msg.sender == address(vault), "!vault");
+        if (msg.sender != address(vault)) revert NotAVault();
         uint256 amountFreed;
         (amountFreed, _loss) = _liquidatePosition(_amountNeeded);
         want.safeTransfer(msg.sender, amountFreed);
     }
 
     function migrate(address _newStrategy) external {
-        require(msg.sender == address(vault));
-        require(BaseStrategy(payable(_newStrategy)).vault() == vault);
+        if (msg.sender != address(vault)) revert NotAVault();
+        if (BaseStrategy(payable(_newStrategy)).vault() != vault)
+            revert NotAVault();
         _prepareMigration(_newStrategy);
         want.safeTransfer(_newStrategy, want.balanceOf(address(this)));
     }
@@ -534,13 +544,10 @@ abstract contract BaseStrategy is
         uint256 gain
     ) internal returns (uint256) {
         uint256 duration = block.timestamp - lastReport;
-
-        require(duration != 0, "can't assessFees twice within the same block");
-
+        if (duration == 0) revert DurationIsZero();
         if (gain == 0) {
             return 0;
         }
-
         uint256 _managementFee = ((totalDebt - delegatedAssets()) *
             duration *
             managementFee) /

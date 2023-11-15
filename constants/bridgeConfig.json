@@ -37,7 +37,7 @@
         "slippage": 9500,
         "TestStrategy": "",
         "strategist": "0x27f52fd2E60B1153CBD00D465F97C05245D22B82",
-        "vault": "0xF4B4FAb9d8375bd12F06cD277F0eac8B8AE8208D",
+        "vault": "0xf712eE1C45C84aEC0bfA1581f34B9dc9a54D7e60",
         "governance": "0x27f52fd2E60B1153CBD00D465F97C05245D22B82"
 
     },
