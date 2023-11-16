@@ -10,6 +10,7 @@
   "error NotAVault()",
   "error OnlyStrategist()",
   "error OnlyStrategistOrSelf()",
+  "error OnlyStrategistOrVault()",
   "error RouterOrBridgeOnly()",
   "error TooHighSlippage()",
   "error VaultAddressMismatch()",
