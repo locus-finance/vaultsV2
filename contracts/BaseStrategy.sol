@@ -315,14 +315,14 @@ abstract contract BaseStrategy is
         uint,
         address _token,
         uint256 _amountLD,
-        bytes memory
+        bytes memory _payload
     ) external override {
         if (msg.sender != address(sgRouter) && msg.sender != address(sgBridge))
             revert RouterOrBridgeOnly();
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
-
+        _handlePayload(_payload);
         emit SgReceived(_token, _amountLD, srcAddress);
     }
 

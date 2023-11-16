@@ -485,6 +485,7 @@ contract Vault is
             debt = _message.totalAssets;
         }
         if (VAULT_CHAIN_ID == _chainId) {
+            token.safeTransfer(_message.strategy, _message.giveToStrategy);
             IBaseStrategy(_message.strategy).adjustPosition(debt);
         } else {
             if (_message.giveToStrategy > 0) {
