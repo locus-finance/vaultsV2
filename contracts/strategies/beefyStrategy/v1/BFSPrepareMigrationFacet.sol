@@ -10,11 +10,9 @@ import "../../baseStrategy/v1/interfaces/forSpecificStrategies/IBSPrepareMigrati
 import "../../baseStrategy/BSLib.sol";
 import "../../diamondBase/facets/BaseFacet.sol";
 
-contract HSPrepareMigrationFacet is BaseFacet, IBSPrepareMigrationFacet {
+contract BFSPrepareMigrationFacet is BaseFacet, IBSPrepareMigrationFacet {
     using SafeERC20 for IERC20;
 
     function prepareMigration(address _newStrategy) external internalOnly override {
-        uint256 assets = IBSLiquidatePositionFacet(address(this)).liquidateAllPositions();
-        BSLib.get().p.want.safeTransfer(_newStrategy, assets);
     }
 }

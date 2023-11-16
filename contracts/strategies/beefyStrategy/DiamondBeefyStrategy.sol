@@ -12,14 +12,13 @@ import "../baseStrategy/v1/interfaces/IBSOneInchQuoteFacet.sol";
 import "../baseStrategy/v1/interfaces/IBSOneInchSwapFacet.sol";
 
 import "../baseStrategy/v1/interfaces/forSpecificStrategies/IBSAdjustPositionFacet.sol";
-import "../baseStrategy/v1/interfaces/forSpecificStrategies/IBSEmergencySwapOrQuoteFacet.sol";
 import "../baseStrategy/v1/interfaces/forSpecificStrategies/IBSLiquidatePositionFacet.sol";
 import "../baseStrategy/v1/interfaces/forSpecificStrategies/IBSPrepareMigrationFacet.sol";
 
-import "./v1/interfaces/IHSStatsFacet.sol";
-import "./v1/interfaces/IHSInitializerFacet.sol";
-import "./v1/interfaces/IHSUtilsFacet.sol";
-import "./v1/interfaces/IHSWithdrawAndExitFacet.sol";
+import "./v1/interfaces/IBFSStatsFacet.sol";
+import "./v1/interfaces/IBFSInitializerFacet.sol";
+import "./v1/interfaces/IBFSUtilsFacet.sol";
+import "./v1/interfaces/IBFSWithdrawAndExitFacet.sol";
 
 /// @notice IMPORTANT: all of the collective diamond interfaces MUST be prefixed with "Diamond" word.
 /// @dev This MUST aggregate all of the faucets interfaces, to be able to grasp a full view of ABI in one place.
@@ -33,12 +32,10 @@ interface DiamondBeefyStrategy is
     IBSOneInchQuoteFacet,
     IBSOneInchSwapFacet,
     IBSAdjustPositionFacet,
-    IBSEmergencySwapOrQuoteFacet,
     IBSLiquidatePositionFacet,
     IBSPrepareMigrationFacet,
-    IBSQuoteNotifiableFacet,
-    IHSUtilsFacet,
-    IHSInitializerFacet,
-    IHSStatsFacet,
-    IHSWithdrawAndExitFacet
+    IBFSUtilsFacet,
+    IBFSInitializerFacet,
+    IBFSStatsFacet,
+    IBFSWithdrawAndExitFacet
 {}

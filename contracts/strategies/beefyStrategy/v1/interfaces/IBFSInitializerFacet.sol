@@ -4,7 +4,7 @@ pragma solidity ^0.8.18;
 
 import "../../../baseStrategy/v1/interfaces/IBSInitializerFacet.sol" ;
 
-interface IHSInitializerFacet {
+interface IBFSInitializerFacet {
     function initialize(
         IBSInitializerFacet.LayerZeroParams calldata layerZeroParams,
         IBSInitializerFacet.StrategyParams calldata strategyParams,

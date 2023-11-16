@@ -5,7 +5,7 @@ pragma solidity ^0.8.18;
 import "../../baseStrategy/v1/interfaces/forSpecificStrategies/IBSEmergencySwapOrQuoteFacet.sol";
 import "../../diamondBase/facets/BaseFacet.sol";
 
-contract HSEmergencySwapOrQuoteFacet is BaseFacet, IBSEmergencySwapOrQuoteFacet {
+contract BFSEmergencySwapOrQuoteFacet is BaseFacet, IBSEmergencySwapOrQuoteFacet {
     function emergencyRequestQuote(
         address src,
         address dst,
