@@ -44,7 +44,7 @@ error Vault__V21();
 error Vault__V22();
 error Vault__V23();
 
-contract Vault is
+contract CrossChainVault is
     Initializable,
     ERC20Upgradeable,
     NonblockingLzAppUpgradeable,
