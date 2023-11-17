@@ -64,10 +64,9 @@ module.exports = {
   },
   networks: {
     hardhat: {
-      chainId: 1,
+      // chainId: 1,
       // forking: {
       //   url: ARBITRUM_NODE || "",
-      //   blockNumber: 150339363,
       // },
     },
     mainnet: {
@@ -133,13 +132,13 @@ module.exports = {
     base: {
       url: BASE_NODE || "",
       chainId: 8453,
-      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
     },
     kava: {
       url: "https://evm.kava.io/",
       chainId: 2222,
-      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`]
-    }
+      accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
+    },
   },
   etherscan: {
     apiKey: {
@@ -154,7 +153,7 @@ module.exports = {
       goerli: process.env.ETHERSCAN_API_KEY,
       base: process.env.BASESCAN_API_KEY,
       avalancheFujiTestnet: process.env.SNOWTRACE_API_KEY,
-      kava: process.env.KAVA_API_KEY,
+      kava: "api key is not required by the Kava explorer, but can't be empty",
     },
     customChains: [
       {
@@ -163,6 +162,14 @@ module.exports = {
         urls: {
           apiURL: "https://api.basescan.org/api",
           browserURL: "https://basescan.org/",
+        },
+      },
+      {
+        network: "kava",
+        chainId: 2222,
+        urls: {
+          apiURL: "https://kavascan.com/api",
+          browserURL: "https://kavascan.com",
         },
       },
     ],

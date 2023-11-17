@@ -59,6 +59,11 @@
       "address": "0xf712eE1C45C84aEC0bfA1581f34B9dc9a54D7e60",
       "txHash": "0xf659547f715a123d46775a363236c1981dc97457f930f0d740a3f28c3a8f4d32",
       "kind": "transparent"
+    },
+    {
+      "address": "0xF0d8994CaCF3A9DF463b8b557FCa86539a5DA4d4",
+      "txHash": "0x41334a901f810d5dfc093c1787c60f5952245979a82b413859df731a4ae9cbdc",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -5644,6 +5649,184 @@
           "t_uint64": {
             "label": "uint64",
             "numberOfBytes": "8"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "c5cfdf902e200be7734a7bb89ea99fe69e3e9db5dc2c66a7ea2cc46ba7034763": {
+      "address": "0xba85B024AF4Cca2d67315aC3A2b154c3910C4183",
+      "txHash": "0x5ac61ce8dc61e03ec38a49ece813a6b0d0dc0e7427596ec938b8d7065e036bd7",
+      "layout": {
+        "solcVersion": "0.8.19",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "router",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_contract(IStargateRouter)2418",
+            "contract": "SgBridge",
+            "src": "contracts\\SgBridge.sol:23"
+          },
+          {
+            "label": "slippage",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_uint256",
+            "contract": "SgBridge",
+            "src": "contracts\\SgBridge.sol:25"
+          },
+          {
+            "label": "dstGasForCall",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_uint256",
+            "contract": "SgBridge",
+            "src": "contracts\\SgBridge.sol:26"
+          },
+          {
+            "label": "currentChainId",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_uint16",
+            "contract": "SgBridge",
+            "src": "contracts\\SgBridge.sol:27"
+          },
+          {
+            "label": "poolIds",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_mapping(t_address,t_mapping(t_uint16,t_uint256))",
+            "contract": "SgBridge",
+            "src": "contracts\\SgBridge.sol:29"
+          },
+          {
+            "label": "swapRouting",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_mapping(t_uint16,t_struct(SwapInfo)1798_storage)",
+            "contract": "SgBridge",
+            "src": "contracts\\SgBridge.sol:31"
+          },
+          {
+            "label": "swapRouter",
+            "offset": 0,
+            "slot": "107",
+            "type": "t_contract(ISwapRouter)1606",
+            "contract": "SgBridge",
+            "src": "contracts\\SgBridge.sol:33"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IStargateRouter)2418": {
+            "label": "contract IStargateRouter",
+            "numberOfBytes": "20"
+          },
+          "t_contract(ISwapRouter)1606": {
+            "label": "contract ISwapRouter",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_mapping(t_uint16,t_uint256))": {
+            "label": "mapping(address => mapping(uint16 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_struct(SwapInfo)1798_storage)": {
+            "label": "mapping(uint16 => struct SwapInfo)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_uint256)": {
+            "label": "mapping(uint16 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(SwapInfo)1798_storage": {
+            "label": "struct SwapInfo",
+            "members": [
+              {
+                "label": "poolFee",
+                "type": "t_uint24",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "tokenToSwap",
+                "type": "t_address",
+                "offset": 3,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint24": {
+            "label": "uint24",
+            "numberOfBytes": "3"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
           },
           "t_uint8": {
             "label": "uint8",
