@@ -64,11 +64,15 @@ module.exports = {
   },
   networks: {
     hardhat: {
-      chainId: 1,
+      // chainId: 8453,
       // forking: {
-      //   url: ARBITRUM_NODE || "",
-      //   blockNumber: 150339363,
-      // },
+      //   url: BASE_NODE || ""
+      // }
+      chainId: 2222,
+      forking: {
+        url: "https://evm.kava.io/"//ARBITRUM_NODE || "",
+        // blockNumber: 150339363,
+      },
     },
     mainnet: {
       url: ETH_NODE,

@@ -21,10 +21,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
     using SafeERC20 for IERC20;
 
     error WrongChainId(uint16 chainId);
-    error WantTokenIsNotInPool(address pool);
 
-    address public constant KAVA_CURVE_FACTORY =
-        0x1764ee18e8B3ccA4787249Ceb249356192594585;
     address public constant KAVA_USDT =
         0x919C1c267BC06a7039e03fcc2eF738525769109c;
     address public constant KAVA_CURVE_AXLUSD_USDT_POOL_LP =
@@ -32,8 +29,6 @@ contract BeefyStrategy is Initializable, BaseStrategy {
     address public constant KAVA_BEEFY_VAULT =
         0xd5BC6DEa24A93A542C0d3Aa7e4dFBD05d97AF0F8;
 
-    address public constant BASE_CURVE_FACTORY =
-        0x3093f9B57A428F3EB6285a589cb35bEA6e78c336;
     address public constant BASE_USDBC =
         0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA;
     address public constant BASE_CURVE_4POOL_LP =
@@ -45,6 +40,8 @@ contract BeefyStrategy is Initializable, BaseStrategy {
 
     uint256 public constant BASE_CHAIN_ID = 8453;
     uint256 public constant KAVA_CHAIN_ID = 2222;
+    int128 public constant BASE_WANT_TOKEN_INDEX_IN_CURVE_POOL = 1;
+    int128 public constant KAVA_WANT_TOKEN_INDEX_IN_CURVE_POOL = 0;
 
     uint256 public constant BASE_CURVE_STABLESWAP_FOR_POOL_LP_N_COINS = 2;
     uint256 public constant KAVA_CURVE_STABLESWAP_AXLUSD_USDT_POOL_N_COINS = 2;
@@ -104,12 +101,14 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         IPlainPool curvePool = _getCurvePlainPool();
         uint256 curveLpTokens = beefyVault.balanceOf(address(this)) *
             beefyVault.getPricePerFullShare();
-        return
-            balanceOfWant() +
-            curvePool.calc_withdraw_one_coin(
+        uint256 wantTokensInCurvePool;
+        if (curveLpTokens > 0) {
+            wantTokensInCurvePool = curvePool.calc_withdraw_one_coin(
                 curveLpTokens,
-                _getIndexOfWantTokenInCurvePool(address(curvePool))
+                _getIndexOfWantTokenInCurvePool()
             );
+        }
+        return balanceOfWant() + curveLpTokens;
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal override {
@@ -135,7 +134,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         uint256[] memory amounts = _prepareAmountsArrayForCurveInteraction();
 
         uint256 wantTokenIndexInCurvePool = SafeCast.toUint256(
-            _getIndexOfWantTokenInCurvePool(address(curvePool))
+            _getIndexOfWantTokenInCurvePool()
         );
         amounts[wantTokenIndexInCurvePool] = amount;
         uint256 curveSharesMinted = curvePool.add_liquidity(
@@ -159,7 +158,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
 
         uint256[] memory amounts = _prepareAmountsArrayForCurveInteraction();
         uint256 wantTokenIndexInCurvePool = SafeCast.toUint256(
-            _getIndexOfWantTokenInCurvePool(address(curvePool))
+            _getIndexOfWantTokenInCurvePool()
         );
         amounts[wantTokenIndexInCurvePool] = wantTokensAmount;
 
@@ -172,7 +171,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
 
         amountOfWantTokensWithdrawn = curvePool.remove_liquidity_one_coin(
             wantTokensAmount,
-            _getIndexOfWantTokenInCurvePool((address(curvePool))),
+            _getIndexOfWantTokenInCurvePool(),
             (wantTokensAmount * DEFAULT_SLIPPAGE) / 10000
         );
     }
@@ -234,21 +233,18 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         }
     }
 
-    function _getIndexOfWantTokenInCurvePool(
-        address pool
-    ) internal view returns (int128) {
-        IFactory curvePoolsFactory;
+    function _getIndexOfWantTokenInCurvePool() 
+        internal 
+        view 
+        returns (int128)
+    {
         if (block.chainid == BASE_CHAIN_ID) {
-            curvePoolsFactory = IFactory(BASE_CURVE_FACTORY);
+            return BASE_WANT_TOKEN_INDEX_IN_CURVE_POOL; 
         } else if (block.chainid == KAVA_CHAIN_ID) {
-            curvePoolsFactory = IFactory(KAVA_CURVE_FACTORY);
+            return KAVA_WANT_TOKEN_INDEX_IN_CURVE_POOL;
         } else {
             revert WrongChainId(uint16(block.chainid));
         }
-        address[2] memory coins = curvePoolsFactory.get_coins(pool);
-        if (coins[0] == address(want)) return 0;
-        if (coins[1] == address(want)) return 1;
-        revert WantTokenIsNotInPool(pool);
     }
 
     function _prepareAmountsArrayForCurveInteraction()
