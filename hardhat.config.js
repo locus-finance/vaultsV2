@@ -158,7 +158,7 @@ module.exports = {
       goerli: process.env.ETHERSCAN_API_KEY,
       base: process.env.BASESCAN_API_KEY,
       avalancheFujiTestnet: process.env.SNOWTRACE_API_KEY,
-      kava: process.env.KAVA_API_KEY,
+      kava: "not empty",
     },
     customChains: [
       {
@@ -167,6 +167,14 @@ module.exports = {
         urls: {
           apiURL: "https://api.basescan.org/api",
           browserURL: "https://basescan.org/",
+        },
+      },
+      {
+        network: "kava",
+        chainId: 2222,
+        urls: {
+          apiURL: "https://kavascan.com/api",
+          browserURL: "https://kavascan.com",
         },
       },
     ],

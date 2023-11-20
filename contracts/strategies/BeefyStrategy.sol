@@ -13,7 +13,6 @@ import {BaseStrategy} from "../BaseStrategy.sol";
 
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
-import "../integrations/curve/IFactory.sol";
 import "../integrations/curve/IPlainPool.sol";
 import "../integrations/beefy/IBeefyVault.sol";
 
@@ -108,7 +107,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
                 _getIndexOfWantTokenInCurvePool()
             );
         }
-        return balanceOfWant() + curveLpTokens;
+        return balanceOfWant() + wantTokensInCurvePool;
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal override {
