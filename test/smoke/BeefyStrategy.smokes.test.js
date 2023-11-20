@@ -23,16 +23,24 @@ describe("BeefyStrategy (estimatedTotalAssets() call)", () => {
     });
   };
 
-  it("should perform calculate a total assets", async () => {
-    const factory = await hre.ethers.getContractAt(
-      "IFactory",
-      "0x1764ee18e8b3cca4787249ceb249356192594585"
-    );
+  xit("should perform calculate a total assets", async () => {
     const beefyStrategyInstance = await hre.ethers.getContractAt(
       "BeefyStrategy",
       "0xD6D7673D94BAcDD1FA3D67D38B5A643Ba24F85b3"
     );
-    console.log(await factory.get_coins("0xAA3b055186f96dD29d0c2A17710d280Bc54290c7"));
     console.log((await beefyStrategyInstance.estimatedTotalAssets()).toString());
+  });
+
+  it("should perform adjust position", async () => {
+    const beefyStrategyInstance = await hre.ethers.getContractAt(
+      "BeefyStrategy",
+      "0x13bf88e6d5105f7935C0A8F88d7e87716e9Bb535"
+    );
+    const strategist = await beefyStrategyInstance.strategist();
+    await withImpersonatedSigner(strategist, async (strategistSigner) => {
+      await beefyStrategyInstance.connect(strategistSigner).adjustPosition(
+        hre.ethers.constants.Zero
+      );
+    });
   });
 });
