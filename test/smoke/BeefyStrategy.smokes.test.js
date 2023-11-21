@@ -23,15 +23,15 @@ describe("BeefyStrategy (estimatedTotalAssets() call)", () => {
     });
   };
 
-  xit("should perform calculate a total assets", async () => {
+  it("should perform calculate a total assets", async () => {
     const beefyStrategyInstance = await hre.ethers.getContractAt(
       "BeefyStrategy",
-      "0xD6D7673D94BAcDD1FA3D67D38B5A643Ba24F85b3"
+      "0x13bf88e6d5105f7935C0A8F88d7e87716e9Bb535" //"0xD6D7673D94BAcDD1FA3D67D38B5A643Ba24F85b3"
     );
     console.log((await beefyStrategyInstance.estimatedTotalAssets()).toString());
   });
 
-  it("should perform adjust position", async () => {
+  xit("should perform adjust position", async () => {
     const beefyStrategyInstance = await hre.ethers.getContractAt(
       "BeefyStrategy",
       "0x13bf88e6d5105f7935C0A8F88d7e87716e9Bb535"

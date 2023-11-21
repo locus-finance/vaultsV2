@@ -98,8 +98,9 @@ contract BeefyStrategy is Initializable, BaseStrategy {
     function estimatedTotalAssets() public view override returns (uint256) {
         IBeefyVault beefyVault = _getBeefyVault();
         IPlainPool2Or4Coins curvePool = _getCurvePlainPool();
-        uint256 curveLpTokens = beefyVault.balanceOf(address(this)) *
-            beefyVault.getPricePerFullShare();
+        // The calculation has precision equal to 1 ether in wei.
+        uint256 curveLpTokens = ((beefyVault.balanceOf(address(this)) * 1 ether) /
+            beefyVault.getPricePerFullShare()) / 1 ether;
         uint256 wantTokensInCurvePool;
         if (curveLpTokens > 0) {
             wantTokensInCurvePool = curvePool.calc_withdraw_one_coin(
