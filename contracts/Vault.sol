@@ -251,12 +251,7 @@ contract Vault is
         return Math.min(totalIdle(), strategyDebtLimit - strategyTotalDebt);
     }
 
-    function handleWithdrawals()
-        external
-        override
-        onlyAuthorized
-        WithdrawInProgress
-    {
+    function handleWithdrawals() external override onlyAuthorized {
         uint256 withdrawValue = 0;
         for (
             uint256 i = 0;

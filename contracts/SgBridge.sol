@@ -132,8 +132,21 @@ contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge {
                 swapRouting[_destChainId].poolFee,
                 _amount
             );
+            uint256 newSourcePool = poolIds[
+                swapRouting[_destChainId].tokenToSwap
+            ][currentChainId];
             _bridgeInternal(
                 swappedAmount,
+                newSourcePool,
+                _destChainId,
+                destinationPool,
+                _destinationAddress,
+                _message
+            );
+        } else {
+            IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+            _bridgeInternal(
+                _amount,
                 sourcePool,
                 _destChainId,
                 destinationPool,
@@ -141,16 +154,6 @@ contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge {
                 _message
             );
         }
-
-        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
-        _bridgeInternal(
-            _amount,
-            sourcePool,
-            _destChainId,
-            destinationPool,
-            _destinationAddress,
-            _message
-        );
     }
 
     function feeForBridge(
@@ -230,7 +233,7 @@ contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge {
                 tokenIn: _tokenIn,
                 tokenOut: _tokenOut,
                 fee: _poolFee,
-                recipient: msg.sender,
+                recipient: address(this),
                 deadline: block.timestamp,
                 amountIn: _amountIn,
                 amountOutMinimum: (_amountIn * slippage) / 10_000,
