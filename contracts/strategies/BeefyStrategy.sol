@@ -13,7 +13,7 @@ import {BaseStrategy} from "../BaseStrategy.sol";
 
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
-import "../integrations/curve/IPlainPool.sol";
+import "../integrations/curve/IPlainPool2Or4Coins.sol";
 import "../integrations/beefy/IBeefyVault.sol";
 
 contract BeefyStrategy is Initializable, BaseStrategy {
@@ -97,7 +97,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
 
     function estimatedTotalAssets() public view override returns (uint256) {
         IBeefyVault beefyVault = _getBeefyVault();
-        IPlainPool curvePool = _getCurvePlainPool();
+        IPlainPool2Or4Coins curvePool = _getCurvePlainPool();
         uint256 curveLpTokens = beefyVault.balanceOf(address(this)) *
             beefyVault.getPricePerFullShare();
         uint256 wantTokensInCurvePool;
@@ -128,23 +128,43 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         uint256 amount
     ) internal returns (uint256 amountOfBeefyVaultTokensMinted) {
         IBeefyVault beefyVault = _getBeefyVault();
-        IPlainPool curvePool = _getCurvePlainPool();
+        IPlainPool2Or4Coins curvePool = _getCurvePlainPool();
 
-        uint256[] memory amounts = _prepareAmountsArrayForCurveInteraction();
+        uint256[KAVA_CURVE_STABLESWAP_AXLUSD_USDT_POOL_N_COINS] memory kavaAmounts;
+        uint256[BASE_CURVE_STABLESWAP_FOR_POOL_LP_N_COINS] memory baseAmounts;
 
         uint256 wantTokenIndexInCurvePool = SafeCast.toUint256(
             _getIndexOfWantTokenInCurvePool()
         );
-        amounts[wantTokenIndexInCurvePool] = amount;
-        uint256 amountOfCurveLpsToBeAcquired = curvePool.calc_token_amount(
-            amounts,
-            true
-        );
-        uint256 curveSharesMinted = curvePool.add_liquidity(
-            amounts,
-            (amountOfCurveLpsToBeAcquired * DEFAULT_SLIPPAGE) / 10000,
-            address(this)
-        );
+
+        uint256 curveSharesMinted;
+
+        if (block.chainid == BASE_CHAIN_ID) {
+            baseAmounts[wantTokenIndexInCurvePool] = amount;
+            uint256 amountOfCurveLpsToBeAcquired = curvePool.calc_token_amount(
+                baseAmounts,
+                true
+            );
+            curveSharesMinted = curvePool.add_liquidity(
+                baseAmounts,
+                (amountOfCurveLpsToBeAcquired * DEFAULT_SLIPPAGE) / 10000,
+                address(this)
+            );
+        } else if (block.chainid == KAVA_CHAIN_ID) {
+            kavaAmounts[wantTokenIndexInCurvePool] = amount;
+            uint256 amountOfCurveLpsToBeAcquired = curvePool.calc_token_amount(
+                kavaAmounts,
+                true
+            );
+            curveSharesMinted = curvePool.add_liquidity(
+                kavaAmounts,
+                (amountOfCurveLpsToBeAcquired * DEFAULT_SLIPPAGE) / 10000,
+                address(this)
+            );
+        } else {
+            revert WrongChainId(uint16(block.chainid));
+        }
+
         uint256 oldBalanceOfBeefyVaultTokens = beefyVault.balanceOf(
             address(this)
         );
@@ -158,18 +178,32 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         uint256 wantTokensAmount
     ) internal returns (uint256 amountOfWantTokensWithdrawn) {
         IBeefyVault beefyVault = _getBeefyVault();
-        IPlainPool curvePool = _getCurvePlainPool();
+        IPlainPool2Or4Coins curvePool = _getCurvePlainPool();
 
-        uint256[] memory amounts = _prepareAmountsArrayForCurveInteraction();
+        uint256[KAVA_CURVE_STABLESWAP_AXLUSD_USDT_POOL_N_COINS] memory kavaAmounts;
+        uint256[BASE_CURVE_STABLESWAP_FOR_POOL_LP_N_COINS] memory baseAmounts;
+
         uint256 wantTokenIndexInCurvePool = SafeCast.toUint256(
             _getIndexOfWantTokenInCurvePool()
         );
-        amounts[wantTokenIndexInCurvePool] = wantTokensAmount;
 
-        uint256 amountToWithdrawFromBeefyVault = curvePool.calc_token_amount(
-            amounts,
-            true
-        );
+        uint256 amountToWithdrawFromBeefyVault;
+
+        if (block.chainid == BASE_CHAIN_ID) {
+            baseAmounts[wantTokenIndexInCurvePool] = wantTokensAmount;
+            amountToWithdrawFromBeefyVault = curvePool.calc_token_amount(
+                baseAmounts,
+                true
+            );
+        } else if (block.chainid == KAVA_CHAIN_ID) {
+            kavaAmounts[wantTokenIndexInCurvePool] = wantTokensAmount;
+            amountToWithdrawFromBeefyVault = curvePool.calc_token_amount(
+                kavaAmounts,
+                true
+            );
+        } else {
+            revert WrongChainId(uint16(block.chainid));
+        }
 
         beefyVault.withdraw(amountToWithdrawFromBeefyVault);
 
@@ -227,11 +261,11 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         }
     }
 
-    function _getCurvePlainPool() internal view returns (IPlainPool curvePool) {
+    function _getCurvePlainPool() internal view returns (IPlainPool2Or4Coins curvePool) {
         if (block.chainid == BASE_CHAIN_ID) {
-            curvePool = IPlainPool(BASE_CURVE_4POOL_LP);
+            curvePool = IPlainPool2Or4Coins(BASE_CURVE_4POOL_LP);
         } else if (block.chainid == KAVA_CHAIN_ID) {
-            curvePool = IPlainPool(KAVA_CURVE_AXLUSD_USDT_POOL_LP);
+            curvePool = IPlainPool2Or4Coins(KAVA_CURVE_AXLUSD_USDT_POOL_LP);
         } else {
             revert WrongChainId(uint16(block.chainid));
         }
@@ -246,20 +280,6 @@ contract BeefyStrategy is Initializable, BaseStrategy {
             return BASE_WANT_TOKEN_INDEX_IN_CURVE_POOL; 
         } else if (block.chainid == KAVA_CHAIN_ID) {
             return KAVA_WANT_TOKEN_INDEX_IN_CURVE_POOL;
-        } else {
-            revert WrongChainId(uint16(block.chainid));
-        }
-    }
-
-    function _prepareAmountsArrayForCurveInteraction()
-        internal
-        view
-        returns (uint256[] memory amounts)
-    {
-        if (block.chainid == BASE_CHAIN_ID) {
-            amounts = new uint256[](BASE_CURVE_STABLESWAP_FOR_POOL_LP_N_COINS);
-        } else if (block.chainid == KAVA_CHAIN_ID) {
-            amounts = new uint256[](KAVA_CURVE_STABLESWAP_AXLUSD_USDT_POOL_N_COINS);
         } else {
             revert WrongChainId(uint16(block.chainid));
         }
