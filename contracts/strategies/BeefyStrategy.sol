@@ -136,9 +136,13 @@ contract BeefyStrategy is Initializable, BaseStrategy {
             _getIndexOfWantTokenInCurvePool()
         );
         amounts[wantTokenIndexInCurvePool] = amount;
+        uint256 amountOfCurveLpsToBeAcquired = curvePool.calc_token_amount(
+            amounts,
+            true
+        );
         uint256 curveSharesMinted = curvePool.add_liquidity(
             amounts,
-            (amount * DEFAULT_SLIPPAGE) / 10000,
+            (amountOfCurveLpsToBeAcquired * DEFAULT_SLIPPAGE) / 10000,
             address(this)
         );
         uint256 oldBalanceOfBeefyVaultTokens = beefyVault.balanceOf(
