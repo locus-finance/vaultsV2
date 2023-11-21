@@ -42,7 +42,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
     int128 public constant BASE_WANT_TOKEN_INDEX_IN_CURVE_POOL = 1;
     int128 public constant KAVA_WANT_TOKEN_INDEX_IN_CURVE_POOL = 0;
 
-    uint256 public constant BASE_CURVE_STABLESWAP_FOR_POOL_LP_N_COINS = 2;
+    uint256 public constant BASE_CURVE_STABLESWAP_FOR_POOL_LP_N_COINS = 4;
     uint256 public constant KAVA_CURVE_STABLESWAP_AXLUSD_USDT_POOL_N_COINS = 2;
 
     string private namePostfix;
@@ -138,7 +138,8 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         amounts[wantTokenIndexInCurvePool] = amount;
         uint256 curveSharesMinted = curvePool.add_liquidity(
             amounts,
-            (amount * DEFAULT_SLIPPAGE) / 10000
+            (amount * DEFAULT_SLIPPAGE) / 10000,
+            address(this)
         );
         uint256 oldBalanceOfBeefyVaultTokens = beefyVault.balanceOf(
             address(this)

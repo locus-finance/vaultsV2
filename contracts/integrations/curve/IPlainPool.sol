@@ -3,8 +3,8 @@
 pragma solidity ^0.8.18;
 
 interface IPlainPool {
-    /// @dev StableSwap.add_liquidity(_amounts: uint256[N_COINS], _min_mint_amount: uint256) → uint256
-    function add_liquidity(uint256[] memory _amounts, uint256 _min_mint_amount) external returns (uint256);
+    /// @dev StableSwap.add_liquidity(_amounts: uint256[N_COINS], _min_mint_amount: uint256, _receiver: address = msg.sender) → uint256
+    function add_liquidity(uint256[] memory _amounts, uint256 _min_mint_amount, address _receiver) external returns (uint256);
 
     /// @dev StableSwap.remove_liquidity(_amount: uint256, _min_amounts: uint256[N_COINS]) → uint256[N_COINS]
     function remove_liquidity(uint256 _amount, uint256[] memory _min_amounts) external returns (uint256[] memory);
