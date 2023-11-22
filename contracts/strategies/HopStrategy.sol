@@ -232,8 +232,8 @@ contract HopStrategy is Initializable, BaseStrategy {
             false
         );
 
-        if (amountLpToWithdraw > balanceOfWant()) {
-            amountLpToWithdraw = balanceOfWant();
+        if (amountLpToWithdraw > balanceOfStaked()) {
+            amountLpToWithdraw = balanceOfStaked();
         }
 
         IStakingRewards(STAKING_REWARD).withdraw(amountLpToWithdraw);

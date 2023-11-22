@@ -1,22 +1,19 @@
 const hre = require("hardhat");
 const bridgeConfig = require("../constants/bridgeConfig.json");
 
-const ABI = ["function setStargatePoolId(address,uint16,uint256) external"];
+const ABI = ["function handleWithdrawals() external"];
 
 async function main() {
-  // const sigs = await hre.ethers.getSigners();
-  // const provider = new hre.ethers.providers.JsonRpcProvider(
-  //   "http://127.0.0.1:8545"
-  // );
+  const sigs = await hre.ethers.getSigners();
+  const provider = new hre.ethers.providers.JsonRpcProvider(
+    "http://127.0.0.1:8545"
+  );
   // // console.log(sigs[0].address);
   // console.log(
   //   "BALANCE: ",
   //   await provider.getBalance("0xf712eE1C45C84aEC0bfA1581f34B9dc9a54D7e60")
   // );
-  // const tx = await sigs[0].sendTransaction({
-  //   to: "0x27f52fd2E60B1153CBD00D465F97C05245D22B82",
-  //   value: hre.ethers.utils.parseEther("1000"),
-  // });
+
   // console.log(await provider.getBalance(sigs[0].address));
   // 108000000
   // 2400
@@ -38,24 +35,24 @@ async function main() {
   // );
   // console.log(await signer.address());
   // const node = ethers.utils.HDNode.fromMnemonic(mnemonic);
-  const provider = new hre.ethers.providers.JsonRpcProvider(
-    "https://arb1.arbitrum.io/rpc"
-  );
+  // const provider = new hre.ethers.providers.JsonRpcProvider(
+  //   "https://arb1.arbitrum.io/rpc"
+  // );
   console.log((await provider.getNetwork()).chainId);
   let wallet = await new ethers.Wallet(
     process.env.DEPLOYER_PRIVATE_KEY
   ).connect(provider);
   const targetContract = await hre.ethers.getContractAt(
     ABI,
-    "0x4575603b0b15ae956bce755312fdcec655f4f019",
+    "0xf712eE1C45C84aEC0bfA1581f34B9dc9a54D7e60",
     wallet
   );
-
-  await targetContract.setStargatePoolId(
-    "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
-    184,
-    1
-  );
+  console.log(wallet.address);
+  const tx = await sigs[0].sendTransaction({
+    to: wallet.address,
+    value: hre.ethers.utils.parseEther("1000"),
+  });
+  console.log(await targetContract.handleWithdrawals({ gasLimit: 30000000 }));
   // console.log(await targetContract.connect(signer).name());
   // const tx1 = await targetContract
   //   .connect(impersonatedSigner)

@@ -91,6 +91,7 @@ contract Vault is
     mapping(uint16 => mapping(address => mapping(uint256 => bool)))
         internal _usedNonces;
     address public sgRouter;
+    uint256 public gasForLzSend;
 
     modifier onlyAuthorized() {
         if (msg.sender != governance && msg.sender != owner())
@@ -121,6 +122,10 @@ contract Vault is
         bool _emergencyShutdown
     ) external onlyAuthorized {
         emergencyShutdown = _emergencyShutdown;
+    }
+
+    function setGasForLzSend(uint256 _gas) external onlyOwner {
+        gasForLzSend = _gas;
     }
 
     function setGovernance(address _newGovernance) external onlyAuthorized {
@@ -300,21 +305,17 @@ contract Vault is
                 //         strategy
                 //     ] = strategyRequest;
                 amountNeeded -= strategyRequest;
-                if (VAULT_CHAIN_ID == chainId) {
-                    IBaseStrategy(strategy).withdraw(strategyRequest);
-                } else {
-                    _sendMessageToStrategy(
-                        chainId,
-                        strategy,
-                        abi.encode(
-                            MessageType.WithdrawSomeRequest,
-                            WithdrawSomeRequest({
-                                id: withdrawEpoch,
-                                amount: strategyRequest
-                            })
-                        )
-                    );
-                }
+                _sendMessageToStrategy(
+                    chainId,
+                    strategy,
+                    abi.encode(
+                        MessageType.WithdrawSomeRequest,
+                        WithdrawSomeRequest({
+                            id: withdrawEpoch,
+                            amount: strategyRequest
+                        })
+                    )
+                );
                 strategyRequested++;
             }
         }
@@ -367,18 +368,14 @@ contract Vault is
         });
         strategies[_chainId][_oldStrategy].debtRatio = 0;
         strategies[_chainId][_oldStrategy].totalDebt = 0;
-        if (VAULT_CHAIN_ID == _chainId) {
-            IBaseStrategy(_oldStrategy).migrate(_newStrategy);
-        } else {
-            _sendMessageToStrategy(
-                _chainId,
-                _oldStrategy,
-                abi.encode(
-                    MessageType.MigrateStrategyRequest,
-                    MigrateStrategyRequest({newStrategy: _newStrategy})
-                )
-            );
-        }
+        _sendMessageToStrategy(
+            _chainId,
+            _oldStrategy,
+            abi.encode(
+                MessageType.MigrateStrategyRequest,
+                MigrateStrategyRequest({newStrategy: _newStrategy})
+            )
+        );
         _strategiesByChainId[_chainId].remove(_oldStrategy);
         _strategiesByChainId[_chainId].add(_newStrategy);
     }
@@ -392,7 +389,7 @@ contract Vault is
         bytes memory _payload
     ) external override {
         if (_token != address(token)) revert Vault__V8();
-        if (msg.sender != sgRouter || msg.sender != address(sgBridge))
+        if (msg.sender != sgRouter && msg.sender != address(sgBridge))
             revert Vault__V9();
 
         address srcAddress = address(
@@ -479,30 +476,26 @@ contract Vault is
         ) {
             debt = _message.totalAssets;
         }
-        if (VAULT_CHAIN_ID == _chainId) {
-            token.safeTransfer(_message.strategy, _message.giveToStrategy);
-            IBaseStrategy(_message.strategy).adjustPosition(debt);
+
+        if (_message.giveToStrategy > 0) {
+            _bridge(
+                _message.giveToStrategy,
+                _chainId,
+                _message.strategy,
+                abi.encode(
+                    MessageType.AdjustPositionRequest,
+                    AdjustPositionRequest({debtOutstanding: debt})
+                )
+            );
         } else {
-            if (_message.giveToStrategy > 0) {
-                _bridge(
-                    _message.giveToStrategy,
-                    _chainId,
-                    _message.strategy,
-                    abi.encode(
-                        MessageType.AdjustPositionRequest,
-                        AdjustPositionRequest({debtOutstanding: debt})
-                    )
-                );
-            } else {
-                _sendMessageToStrategy(
-                    _chainId,
-                    _message.strategy,
-                    abi.encode(
-                        MessageType.AdjustPositionRequest,
-                        AdjustPositionRequest({debtOutstanding: debt})
-                    )
-                );
-            }
+            _sendMessageToStrategy(
+                _chainId,
+                _message.strategy,
+                abi.encode(
+                    MessageType.AdjustPositionRequest,
+                    AdjustPositionRequest({debtOutstanding: debt})
+                )
+            );
         }
     }
 
@@ -574,8 +567,7 @@ contract Vault is
 
     function _getAdapterParams() internal view virtual returns (bytes memory) {
         uint16 version = 1;
-        uint256 gasForDestinationLzReceive = 1_000_000;
-        return abi.encodePacked(version, gasForDestinationLzReceive);
+        return abi.encodePacked(version, gasForLzSend);
     }
 
     function _fulfillWithdrawEpoch() internal {
