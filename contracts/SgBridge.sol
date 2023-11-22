@@ -9,6 +9,14 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
 
+import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
+import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
+
+struct SwapInfo {
+    uint24 poolFee;
+    address tokenToSwap;
+}
+
 contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge {
     using SafeERC20 for IERC20;
 
@@ -19,6 +27,10 @@ contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge {
     uint16 public currentChainId;
 
     mapping(address => mapping(uint16 => uint256)) public poolIds;
+
+    mapping(uint16 dstChainId => SwapInfo swapInfo) public swapRouting;
+
+    ISwapRouter public swapRouter;
 
     function initialize(
         address _router,
@@ -36,6 +48,10 @@ contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge {
         router = IStargateRouter(_router);
     }
 
+    function setSwapRouter(address _router) external onlyOwner {
+        swapRouter = ISwapRouter(_router);
+    }
+
     function setSlippage(uint256 _slippage) external override onlyOwner {
         slippage = _slippage;
     }
@@ -50,6 +66,14 @@ contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge {
         uint16 _currentChainId
     ) external override onlyOwner {
         currentChainId = _currentChainId;
+    }
+
+    function addSwapRoute(
+        uint16 _dstChainId,
+        address _tokenToSwap,
+        uint24 _poolFee
+    ) external onlyOwner {
+        swapRouting[_dstChainId] = SwapInfo(_poolFee, _tokenToSwap);
     }
 
     function setStargatePoolId(
@@ -99,15 +123,37 @@ contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge {
             return;
         }
 
-        IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
-        _bridgeInternal(
-            _amount,
-            sourcePool,
-            _destChainId,
-            destinationPool,
-            _destinationAddress,
-            _message
-        );
+        if (swapRouting[_destChainId].tokenToSwap != address(0)) {
+            IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+            IERC20(_token).safeApprove(address(swapRouter), _amount);
+            uint256 swappedAmount = _swap(
+                _token,
+                swapRouting[_destChainId].tokenToSwap,
+                swapRouting[_destChainId].poolFee,
+                _amount
+            );
+            uint256 newSourcePool = poolIds[
+                swapRouting[_destChainId].tokenToSwap
+            ][currentChainId];
+            _bridgeInternal(
+                swappedAmount,
+                newSourcePool,
+                _destChainId,
+                destinationPool,
+                _destinationAddress,
+                _message
+            );
+        } else {
+            IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+            _bridgeInternal(
+                _amount,
+                sourcePool,
+                _destChainId,
+                destinationPool,
+                _destinationAddress,
+                _message
+            );
+        }
     }
 
     function feeForBridge(
@@ -174,6 +220,28 @@ contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge {
                 dstNativeAmount: 0,
                 dstNativeAddr: abi.encode(address(this))
             });
+    }
+
+    function _swap(
+        address _tokenIn,
+        address _tokenOut,
+        uint24 _poolFee,
+        uint256 _amountIn
+    ) internal returns (uint256 amountOut) {
+        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
+            .ExactInputSingleParams({
+                tokenIn: _tokenIn,
+                tokenOut: _tokenOut,
+                fee: _poolFee,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountIn: _amountIn,
+                amountOutMinimum: (_amountIn * slippage) / 10_000,
+                sqrtPriceLimitX96: 0
+            });
+
+        // The call to `exactInputSingle` executes the swap.
+        amountOut = swapRouter.exactInputSingle(params);
     }
 
     receive() external payable {}

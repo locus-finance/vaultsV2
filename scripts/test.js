@@ -1,57 +1,58 @@
 const hre = require("hardhat");
 const bridgeConfig = require("../constants/bridgeConfig.json");
 
-const ABI = [
-  "function harvest(uint256,uint256,uint256,uint256,bytes) external",
-  "function name() external view returns (string memory)",
-];
+const ABI = ["function handleWithdrawals() external"];
 
 async function main() {
   const sigs = await hre.ethers.getSigners();
   const provider = new hre.ethers.providers.JsonRpcProvider(
     "http://127.0.0.1:8545"
   );
-  // console.log(sigs[0].address);
-  console.log(
-    "BALANCE: ",
-    await provider.getBalance("0xf712eE1C45C84aEC0bfA1581f34B9dc9a54D7e60")
-  );
+  // // console.log(sigs[0].address);
+  // console.log(
+  //   "BALANCE: ",
+  //   await provider.getBalance("0xf712eE1C45C84aEC0bfA1581f34B9dc9a54D7e60")
+  // );
 
-  // const tx = await sigs[0].sendTransaction({
-  //   to: "0x27f52fd2E60B1153CBD00D465F97C05245D22B82",
-  //   value: hre.ethers.utils.parseEther("1000"),
-  // });
   // console.log(await provider.getBalance(sigs[0].address));
-
   // 108000000
   // 2400
   // 0xdeee509e572a298b176fb5180cc3d8df2748466ac671eee900691ccf74edefe437738a2741b6b328fcd29f9f759e5adff25726823e48d70a70c438faadfe7af41c
-
   // const signer = await hre.ethers.provider.getSigner(
   //   "0x27f52fd2E60B1153CBD00D465F97C05245D22B82"
   // );
-
   // const impersonatedSigner = await ethers.getImpersonatedSigner(
   //   "0x27f52fd2E60B1153CBD00D465F97C05245D22B82"
   // );
   // await upgradeVault();
-
   // const signer1 = await network.provider.request({
   //   method: "hardhat_impersonateAccount",
   //   params: ["0x27f52fd2E60B1153CBD00D465F97C05245D22B82"],
   // });
   // console.log(signer1.address);
-
   // const impersonatedSigner = await ethers.getImpersonatedSigner(
   //   "0x27f52fd2E60B1153CBD00D465F97C05245D22B82"
   // );
   // console.log(await signer.address());
-
   // const node = ethers.utils.HDNode.fromMnemonic(mnemonic);
-  // const targetContract = await hre.ethers.getContractAt(
-  //   ABI,
-  //   "0x0427eE06e5220BA8013d2A753109A57AD4020373"
+  // const provider = new hre.ethers.providers.JsonRpcProvider(
+  //   "https://arb1.arbitrum.io/rpc"
   // );
+  console.log((await provider.getNetwork()).chainId);
+  let wallet = await new ethers.Wallet(
+    process.env.DEPLOYER_PRIVATE_KEY
+  ).connect(provider);
+  const targetContract = await hre.ethers.getContractAt(
+    ABI,
+    "0xf712eE1C45C84aEC0bfA1581f34B9dc9a54D7e60",
+    wallet
+  );
+  console.log(wallet.address);
+  const tx = await sigs[0].sendTransaction({
+    to: wallet.address,
+    value: hre.ethers.utils.parseEther("1000"),
+  });
+  console.log(await targetContract.handleWithdrawals({ gasLimit: 30000000 }));
   // console.log(await targetContract.connect(signer).name());
   // const tx1 = await targetContract
   //   .connect(impersonatedSigner)
@@ -63,12 +64,14 @@ async function main() {
   //     "0xdeee509e572a298b176fb5180cc3d8df2748466ac671eee900691ccf74edefe437738a2741b6b328fcd29f9f759e5adff25726823e48d70a70c438faadfe7af41c",
   //     { gasLimit: 30000000 }
   //   );
-
   // console.log(tx1);
   // const factory = await ethers.getContractAt(
   //   ABI,
   //   "0x3edbE670D03C4A71367dedA78E73EA4f8d68F2E4"
   // );
+  // await hre.run("verify:verify", {
+  //   address: "0xD6D7673D94BAcDD1FA3D67D38B5A643Ba24F85b3",
+  // });
 }
 
 async function upgradeVault() {

@@ -31,7 +31,7 @@
             "address": "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
             "poolId": 1
         },
-        "sgBridge": "0x4575603b0B15aE956BCE755312FdcEc655f4F019",
+        "sgBridge": "0xF0d8994CaCF3A9DF463b8b557FCa86539a5DA4d4",
         "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
         "HopStrategy": "0x0427eE06e5220BA8013d2A753109A57AD4020373",
