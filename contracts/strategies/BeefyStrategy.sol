@@ -95,20 +95,29 @@ contract BeefyStrategy is Initializable, BaseStrategy {
         return string(abi.encodePacked("Beefy - Curve ", namePostfix));
     }
 
+    function getBalanceInBeefyVault() public view returns (uint256) {
+        return _getBeefyVault().balanceOf(address(this));
+    }
+
+    function getCurrentPricePerFullShareInBeefyVault() public view returns (uint256) {
+        return _getBeefyVault().getPricePerFullShare();
+    }
+
+    function getBalanceInBeefyVaultInCurveLpTokens() public view returns (uint256) {
+        // The calculation has precision equals to 1e18.
+        return ((getBalanceInBeefyVault() * 1e18) /
+            getCurrentPricePerFullShareInBeefyVault());
+    }
+
+    function getBalanceInBeefyVaultInWantTokens() public view returns (uint256) {
+        return _getCurvePlainPool().calc_withdraw_one_coin(
+            getBalanceInBeefyVaultInCurveLpTokens(),
+            _getIndexOfWantTokenInCurvePool()
+        );
+    }
+
     function estimatedTotalAssets() public view override returns (uint256) {
-        IBeefyVault beefyVault = _getBeefyVault();
-        IPlainPool2Or4Coins curvePool = _getCurvePlainPool();
-        // The calculation has precision equal to 1 ether in wei.
-        uint256 curveLpTokens = ((beefyVault.balanceOf(address(this)) * 1 ether) /
-            beefyVault.getPricePerFullShare()) / 1 ether;
-        uint256 wantTokensInCurvePool;
-        if (curveLpTokens > 0) {
-            wantTokensInCurvePool = curvePool.calc_withdraw_one_coin(
-                curveLpTokens,
-                _getIndexOfWantTokenInCurvePool()
-            );
-        }
-        return balanceOfWant() + wantTokensInCurvePool;
+        return balanceOfWant() + getBalanceInBeefyVaultInWantTokens();
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal override {

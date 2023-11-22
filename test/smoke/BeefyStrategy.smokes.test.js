@@ -24,6 +24,15 @@ describe("BeefyStrategy (estimatedTotalAssets() call)", () => {
   };
 
   it("should perform calculate a total assets", async () => {
+    // const TargetContract = await hre.ethers.getContractFactory("BeefyStrategy");
+
+    // // await hre.upgrades.forceImport(TARGET_ADDRESS, TargetContract);
+
+    // await hre.upgrades.upgradeProxy(
+    //   "0x13bf88e6d5105f7935C0A8F88d7e87716e9Bb535",
+    //   TargetContract
+    // );
+    
     const beefyStrategyInstance = await hre.ethers.getContractAt(
       "BeefyStrategy",
       "0x13bf88e6d5105f7935C0A8F88d7e87716e9Bb535" //"0xD6D7673D94BAcDD1FA3D67D38B5A643Ba24F85b3"
@@ -34,7 +43,7 @@ describe("BeefyStrategy (estimatedTotalAssets() call)", () => {
   xit("should perform adjust position", async () => {
     const beefyStrategyInstance = await hre.ethers.getContractAt(
       "BeefyStrategy",
-      "0x13bf88e6d5105f7935C0A8F88d7e87716e9Bb535"
+      "0x13bf88e6d5105f7935C0A8F88d7e87716e9Bb535", //"0xD6D7673D94BAcDD1FA3D67D38B5A643Ba24F85b3"
     );
     const strategist = await beefyStrategyInstance.strategist();
     await withImpersonatedSigner(strategist, async (strategistSigner) => {
