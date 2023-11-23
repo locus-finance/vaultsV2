@@ -5,7 +5,6 @@ pragma solidity ^0.8.18;
 import {OracleLibrary} from "@uniswap/v3-periphery/contracts/libraries/OracleLibrary.sol";
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -16,7 +15,7 @@ import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "../integrations/curve/IPlainPool2Or4Coins.sol";
 import "../integrations/beefy/IBeefyVault.sol";
 
-contract BeefyStrategy is Initializable, BaseStrategy {
+contract BeefyStrategy is BaseStrategy {
     using SafeERC20 for IERC20;
 
     error WrongChainId(uint16 chainId);
@@ -157,7 +156,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
             );
             curveSharesMinted = curvePool.add_liquidity(
                 baseAmounts,
-                (amountOfCurveLpsToBeAcquired * DEFAULT_SLIPPAGE) / 10000,
+                (amountOfCurveLpsToBeAcquired * slippage) / MAX_BPS,
                 address(this)
             );
         } else if (block.chainid == KAVA_CHAIN_ID) {
@@ -168,7 +167,7 @@ contract BeefyStrategy is Initializable, BaseStrategy {
             );
             curveSharesMinted = curvePool.add_liquidity(
                 kavaAmounts,
-                (amountOfCurveLpsToBeAcquired * DEFAULT_SLIPPAGE) / 10000,
+                (amountOfCurveLpsToBeAcquired * slippage) / MAX_BPS,
                 address(this)
             );
         } else {
@@ -215,12 +214,14 @@ contract BeefyStrategy is Initializable, BaseStrategy {
             revert WrongChainId(uint16(block.chainid));
         }
 
+        uint256 oldBalanceOfCurveLpTokens = beefyVault.balanceOf(address(this));
         beefyVault.withdraw(amountToWithdrawFromBeefyVault);
+        amountToWithdrawFromBeefyVault = beefyVault.balanceOf(address(this)) - oldBalanceOfCurveLpTokens;
 
         amountOfWantTokensWithdrawn = curvePool.remove_liquidity_one_coin(
-            wantTokensAmount,
+            amountToWithdrawFromBeefyVault,
             _getIndexOfWantTokenInCurvePool(),
-            (wantTokensAmount * DEFAULT_SLIPPAGE) / 10000
+            (amountToWithdrawFromBeefyVault * slippage) / MAX_BPS
         );
     }
 

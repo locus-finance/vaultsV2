@@ -46,7 +46,7 @@ describe("BeefyStrategy (estimatedTotalAssets() call)", () => {
     // await hre.upgrades.forceImport(TARGET_ADDRESS, TargetContract);
 
     await hre.upgrades.upgradeProxy(
-      "0x13bf88e6d5105f7935C0A8F88d7e87716e9Bb535",
+      "0xD6D7673D94BAcDD1FA3D67D38B5A643Ba24F85b3",
       TargetContract
     );
     const beefyStrategyInstance = await hre.ethers.getContractAt(
