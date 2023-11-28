@@ -20,6 +20,9 @@ import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 import {StrategyParams, WithdrawRequest, WithdrawEpoch, IVault} from "./interfaces/IVault.sol";
 import {IBaseStrategy} from "./interfaces/IBaseStrategy.sol";
 
+import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
+import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
+
 error Vault__V1();
 error Vault__V2();
 error Vault__V3();
@@ -395,6 +398,7 @@ contract Vault is
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
+        if (_token != address(token)) {}
 
         _handlePayload(_srcChainId, _payload, _amountLD);
 

@@ -1,4 +1,5 @@
 const hre = require("hardhat");
+const { ethers } = require("hardhat");
 const bridgeConfig = require("../constants/bridgeConfig.json");
 
 const ABI = ["function handleWithdrawals() external"];
@@ -38,21 +39,21 @@ async function main() {
   // const provider = new hre.ethers.providers.JsonRpcProvider(
   //   "https://arb1.arbitrum.io/rpc"
   // );
-  console.log((await provider.getNetwork()).chainId);
-  let wallet = await new ethers.Wallet(
-    process.env.DEPLOYER_PRIVATE_KEY
-  ).connect(provider);
-  const targetContract = await hre.ethers.getContractAt(
-    ABI,
-    "0xf712eE1C45C84aEC0bfA1581f34B9dc9a54D7e60",
-    wallet
-  );
-  console.log(wallet.address);
-  const tx = await sigs[0].sendTransaction({
-    to: wallet.address,
-    value: hre.ethers.utils.parseEther("1000"),
-  });
-  console.log(await targetContract.handleWithdrawals({ gasLimit: 30000000 }));
+  // console.log((await provider.getNetwork()).chainId);
+  // let wallet = await new ethers.Wallet(
+  //   process.env.DEPLOYER_PRIVATE_KEY
+  // ).connect(provider);
+  // const targetContract = await hre.ethers.getContractAt(
+  //   ABI,
+  //   "0xf712eE1C45C84aEC0bfA1581f34B9dc9a54D7e60",
+  //   wallet
+  // );
+  // console.log(wallet.address);
+  // const tx = await sigs[0].sendTransaction({
+  //   to: wallet.address,
+  //   value: hre.ethers.utils.parseEther("1000"),
+  // });
+  // console.log(await targetContract.handleWithdrawals({ gasLimit: 30000000 }));
   // console.log(await targetContract.connect(signer).name());
   // const tx1 = await targetContract
   //   .connect(impersonatedSigner)
@@ -72,6 +73,20 @@ async function main() {
   // await hre.run("verify:verify", {
   //   address: "0xD6D7673D94BAcDD1FA3D67D38B5A643Ba24F85b3",
   // });
+
+  const impersonatedSigner = await ethers.getImpersonatedSigner(
+    "0x2fEb1512183545f48f6b9C5b4EbfCaF49CfCa6F3"
+  );
+
+  const targetContract = await ethers.getContractAt(
+    ABI,
+    "0x0e86f93145d097090aCBBB8Ee44c716DACFf04d7"
+  );
+  console.log(
+    await targetContract
+      .connect(impersonatedSigner)
+      .deposit(ethers.utils.parseEther("0.1"))
+  );
 }
 
 async function upgradeVault() {
