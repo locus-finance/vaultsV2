@@ -66,7 +66,7 @@ module.exports = {
     hardhat: {
       // chainId: 1,
       // forking: {
-      //   url: ARBITRUM_NODE || "",
+      //   url: ETH_NODE || "",
       // },
     },
     mainnet: {
