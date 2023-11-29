@@ -60,6 +60,7 @@
   "function retryMessage(uint16,bytes,uint64,bytes) payable",
   "function revokeFunds()",
   "function setConfig(uint16,uint16,uint256,bytes)",
+  "function setCurrentChainId(uint16)",
   "function setEmergencyExit(bool)",
   "function setFeeThreshold(uint256)",
   "function setLzEndpoint(address)",

@@ -70,7 +70,7 @@ contract Vault is
         __ReentrancyGuard_init();
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
         __Ownable_init();
-        __ERC20_init("Locus Yield USD", "$lyUSD");
+        __ERC20_init("Locus Yield USD", "lyUSD");
 
         governance = _governance;
         token = _token;
@@ -173,6 +173,10 @@ contract Vault is
         uint256 shares = _issueSharesForAmount(_recipient, _amount);
         token.safeTransferFrom(msg.sender, address(this), _amount);
         return shares;
+    }
+
+    function skipWithdrawEpoch() external onlyOwner {
+        withdrawEpoch++;
     }
 
     function withdraw(

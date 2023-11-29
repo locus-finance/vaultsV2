@@ -22,15 +22,17 @@ module.exports = {
       return "optimismgoerli";
     }
 
-    if (networkName === "optimism" ||
+    if (
+      networkName === "optimism" ||
       networkName === "polygon" ||
-      networkName === "arbitrumOne"
+      networkName === "arbitrumOne" ||
+      networkName === "base"
     ) {
-      return "optimism";
+      return "arbitrumOne";
     }
 
     if (networkName === "base" || networkName === "kava") {
-      return "arbitrumOne"
+      return "arbitrumOne";
     }
 
     throw new Error("Vault not defined");
