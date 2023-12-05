@@ -54,6 +54,11 @@ abstract contract BaseStrategy is
     );
     event AdjustedPosition(uint256 debtOutstanding);
     event StrategyMigrated(address newStrategy);
+    event FeeGained(
+        uint256 indexed totalFee,
+        uint256 indexed managementFee,
+        uint256 indexed performanceFee
+    );
 
     modifier onlyStrategist() {
         if (msg.sender != strategist) revert OnlyStrategist();
@@ -211,6 +216,10 @@ abstract contract BaseStrategy is
             );
     }
 
+    function setCurrentChainId(uint16 _newChainId) external onlyOwner {
+        currentChainId = _newChainId;
+    }
+
     function harvest(
         uint256 _totalDebt,
         uint256 _debtOutstanding,
@@ -270,25 +279,15 @@ abstract contract BaseStrategy is
         });
         lastReport = block.timestamp;
 
-        if (vaultChainId == currentChainId) {
-            ISimpleVault(vault).onChainReport(
-                currentChainId,
-                report,
-                requestFromStrategy
+        if (requestFromStrategy > 0) {
+            _bridge(
+                requestFromStrategy,
+                vaultChainId,
+                vault,
+                abi.encode(MessageType.StrategyReport, report)
             );
         } else {
-            if (requestFromStrategy > 0) {
-                _bridge(
-                    requestFromStrategy,
-                    vaultChainId,
-                    vault,
-                    abi.encode(MessageType.StrategyReport, report)
-                );
-            } else {
-                _sendMessageToVault(
-                    abi.encode(MessageType.StrategyReport, report)
-                );
-            }
+            _sendMessageToVault(abi.encode(MessageType.StrategyReport, report));
         }
 
         emit StrategyReported(
@@ -564,6 +563,7 @@ abstract contract BaseStrategy is
                 want.safeTransfer(treasury, amount);
             }
         }
+        emit FeeGained(totalFee, managementFee, performanceFee);
         return totalFee;
     }
 

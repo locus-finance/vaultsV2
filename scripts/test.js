@@ -2,12 +2,15 @@ const hre = require("hardhat");
 const { ethers } = require("hardhat");
 const bridgeConfig = require("../constants/bridgeConfig.json");
 
-const ABI = ["function handleWithdrawals() external"];
+const ABI = [
+  "function estimatedTotalAssets() external view returns(uint256)",
+  "function setManagementFee(uint256) external",
+];
 
 async function main() {
   const sigs = await hre.ethers.getSigners();
   const provider = new hre.ethers.providers.JsonRpcProvider(
-    "http://127.0.0.1:8545"
+    "https://rpc.ankr.com/optimism"
   );
   // // console.log(sigs[0].address);
   // console.log(
@@ -29,6 +32,7 @@ async function main() {
   // const signer1 = await network.provider.request({
   //   method: "hardhat_impersonateAccount",
   //   params: ["0x27f52fd2E60B1153CBD00D465F97C05245D22B82"],
+  //   provider: provider,
   // });
   // console.log(signer1.address);
   // const impersonatedSigner = await ethers.getImpersonatedSigner(
@@ -40,9 +44,9 @@ async function main() {
   //   "https://arb1.arbitrum.io/rpc"
   // );
   // console.log((await provider.getNetwork()).chainId);
-  // let wallet = await new ethers.Wallet(
-  //   process.env.DEPLOYER_PRIVATE_KEY
-  // ).connect(provider);
+  let wallet = await new ethers.Wallet(
+    process.env.DEPLOYER_PRIVATE_KEY
+  ).connect(provider);
   // const targetContract = await hre.ethers.getContractAt(
   //   ABI,
   //   "0xf712eE1C45C84aEC0bfA1581f34B9dc9a54D7e60",
@@ -74,19 +78,16 @@ async function main() {
   //   address: "0xD6D7673D94BAcDD1FA3D67D38B5A643Ba24F85b3",
   // });
 
-  const impersonatedSigner = await ethers.getImpersonatedSigner(
-    "0x2fEb1512183545f48f6b9C5b4EbfCaF49CfCa6F3"
-  );
+  // const impersonatedSigner = await ethers.getImpersonatedSigner(
+  //   "0x27f52fd2E60B1153CBD00D465F97C05245D22B82"
+  // );
 
   const targetContract = await ethers.getContractAt(
     ABI,
-    "0x0e86f93145d097090aCBBB8Ee44c716DACFf04d7"
+    "0xf712eE1C45C84aEC0bfA1581f34B9dc9a54D7e60",
+    wallet
   );
-  console.log(
-    await targetContract
-      .connect(impersonatedSigner)
-      .deposit(ethers.utils.parseEther("0.1"))
-  );
+  console.log(await targetContract.connect(wallet).setManagementFee(50));
 }
 
 async function upgradeVault() {
@@ -99,16 +100,16 @@ async function upgradeVault() {
   //   "0x4F202835B6E12B51ef6C4ac87d610c83E9830dD9"
   // );
   // console.log(await proxy.owner());
-  // const owner = await ethers.getImpersonatedSigner(
-  //   "0x729F2222aaCD99619B8B660b412baE9fCEa3d90F"
-  // );
+  const owner = await ethers.getImpersonatedSigner(
+    "0x6194738930D4239e596C1CC624Fb1cEa4ebE2665"
+  );
   // await proxy
   //   .connect(owner)
   //   .transferOwnership("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
   // console.log(await proxy.owner());
-  const vault = await hre.ethers.getContractFactory("OnChainVault");
+  const vault = await hre.ethers.getContractFactory("HopStrategy", owner);
   const upgraded = await hre.upgrades.upgradeProxy(
-    "0x0f094f6deb056af1fa1299168188fd8c78542a07",
+    "0x244d8c59E7eB516DC98a81CC606D4f20E139C69e",
     vault
   );
   console.log("Successfully upgraded implementation of", upgraded.address);

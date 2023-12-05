@@ -4,7 +4,6 @@ const bridgeConfig = require("../constants/bridgeConfig.json");
 const { vaultChain } = require("../utils");
 
 const TOKEN = "USDC";
-
 async function main() {
   const { deployer } = await getNamedAccounts();
 
@@ -12,9 +11,11 @@ async function main() {
 
   const config = bridgeConfig[hre.network.name];
   const vaultConfig = bridgeConfig[vaultChain(hre.network.name)];
-  const VeloStrategy = await ethers.getContractFactory("VelodromeStrategy");
-  const veloStrategy = await upgrades.deployProxy(
-    VeloStrategy,
+  const BeefyCompoundStrategy = await ethers.getContractFactory(
+    "BeefyCompoundStrategy"
+  );
+  const beefyCompoundStrategy = await upgrades.deployProxy(
+    BeefyCompoundStrategy,
     [
       config.lzEndpoint,
       config.strategist,
@@ -24,24 +25,24 @@ async function main() {
       config.chainId,
       config.sgBridge,
       config.sgRouter,
+      hre.network.name,
     ],
     {
       initializer: "initialize",
       kind: "transparent",
     }
   );
-  console.log(4);
-  await veloStrategy.deployed();
+  await beefyCompoundStrategy.deployed();
 
-  console.log("VeloStrategy deployed to:", veloStrategy.address);
+  console.log(
+    "BeefyCompoundStrategy deployed to:",
+    beefyCompoundStrategy.address
+  );
 
   await hre.run("verify:verify", {
-    address: veloStrategy.address,
+    address: beefyCompoundStrategy.address,
   });
 }
-try {
-  main();
-} catch (error) {
-  console.log(error);
-}
-module.exports.tags = ["VelodromeStrategy"];
+main();
+
+module.exports.tags = ["BeefyCompoundStrategy"];
