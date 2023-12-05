@@ -65,9 +65,9 @@ module.exports = {
   networks: {
     hardhat: {
       // chainId: 1,
-      // forking: {
-      //   url: ETH_NODE || "",
-      // },
+      forking: {
+        url: "https://rpc.ankr.com/optimism",
+      },
     },
     mainnet: {
       url: ETH_NODE,

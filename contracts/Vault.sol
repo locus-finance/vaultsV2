@@ -752,5 +752,9 @@ contract Vault is
         return _strategiesByChainId[chainId].values();
     }
 
+    function decimals() public view virtual override returns (uint8) {
+        return 6;
+    }
+
     receive() external payable {}
 }

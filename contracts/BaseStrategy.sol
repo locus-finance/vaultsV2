@@ -54,6 +54,11 @@ abstract contract BaseStrategy is
     );
     event AdjustedPosition(uint256 debtOutstanding);
     event StrategyMigrated(address newStrategy);
+    event FeeGained(
+        uint256 indexed totalFee,
+        uint256 indexed managementFee,
+        uint256 indexed performanceFee
+    );
 
     modifier onlyStrategist() {
         if (msg.sender != strategist) revert OnlyStrategist();
@@ -558,6 +563,7 @@ abstract contract BaseStrategy is
                 want.safeTransfer(treasury, amount);
             }
         }
+        emit FeeGained(totalFee, managementFee, performanceFee);
         return totalFee;
     }
 
