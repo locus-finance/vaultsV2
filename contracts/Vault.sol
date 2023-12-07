@@ -300,7 +300,7 @@ contract Vault is
                 address strategy = strategiesByChainId.at(j);
                 StrategyParams storage params = strategies[chainId][strategy];
 
-                if (params.totalDebt == 0) {
+                if (params.totalDebt <= 1e6) {
                     continue;
                 }
 
@@ -328,6 +328,7 @@ contract Vault is
         }
 
         withdrawEpochs[withdrawEpoch].approveExpected = strategyRequested;
+        withdrawEpochs[withdrawEpoch].approveActual = 0;
         withdrawEpochs[withdrawEpoch].inProgress = true;
     }
 
