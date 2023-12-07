@@ -10,7 +10,7 @@
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
         "governance": "0x27f52fd2E60B1153CBD00D465F97C05245D22B82",
         "strategist": "0x27f52fd2E60B1153CBD00D465F97C05245D22B82",
-        "VeloStrategy": "0xBfADFc8db4B28Fc75119A0672cbB17f6092D596D",
+        "VeloStrategy": "0xa5e7eB6391F34Ec9691A5d39E93A8b2336B7E717",
         "TestStrategy": "0xBfADFc8db4B28Fc75119A0672cbB17f6092D596D"
     },
     "arbitrumOne": {
@@ -22,7 +22,7 @@
         "sgBridge": "0xF0d8994CaCF3A9DF463b8b557FCa86539a5DA4d4",
         "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
-        "HopStrategy": "0x0427eE06e5220BA8013d2A753109A57AD4020373",
+        "HopStrategy": "0x205D6195fa2ebFE04CDa0be91365c43aA9e1b739",
         "slippage": 9500,
         "TestStrategy": "0x0427eE06e5220BA8013d2A753109A57AD4020373",
         "strategist": "0x27f52fd2E60B1153CBD00D465F97C05245D22B82",
@@ -45,7 +45,7 @@
         "slippage": 9500,
         "TestStrategy": "0x13bf88e6d5105f7935C0A8F88d7e87716e9Bb535",
         "BeefyStrategy": "0x13bf88e6d5105f7935C0A8F88d7e87716e9Bb535",
-        "BeefyCompoundStrategy": "",
+        "BeefyCompoundStrategy": "0xAcB31C5520635e4791C94E26D114e2bb40e43100",
         "strategist": "0x27f52fd2E60B1153CBD00D465F97C05245D22B82"
     },
     "kava": {

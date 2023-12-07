@@ -253,8 +253,10 @@ contract VelodromeStrategy is Initializable, BaseStrategy {
     }
 
     function _claimAndSellRewards() internal {
-        IVeloGauge(VELO_GAUGE).getReward(address(this));
-        _sellVeloForWant(IERC20(VELO).balanceOf(address(this)));
+        if (IVeloGauge(VELO_GAUGE).earned(address(this)) > 1e18) {
+            IVeloGauge(VELO_GAUGE).getReward(address(this));
+            _sellVeloForWant(IERC20(VELO).balanceOf(address(this)));
+        }
     }
 
     function _exitPosition(uint256 _stakedAmount) internal {
@@ -321,5 +323,9 @@ contract VelodromeStrategy is Initializable, BaseStrategy {
         uint256 sum = desiredB + desiredA;
         amountA = (excessWant * desiredA) / sum;
         amountB = excessWant - amountA;
+    }
+
+    function swapUsdPlusToWant() external onlyStrategist {
+        _swapUsdplusToWant(IERC20(USDPLUS).balanceOf(address(this)));
     }
 }
