@@ -16,6 +16,8 @@ import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStarg
 import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 import "./interfaces/ISimpleVault.sol";
 
+import "hardhat/console.sol";
+
 abstract contract BaseStrategy is
     Initializable,
     NonblockingLzAppUpgradeable,
@@ -249,6 +251,7 @@ abstract contract BaseStrategy is
                 _debtOutstanding
             );
         }
+        console.log("AFTER PREPARE RETURN");
 
         uint256 fundsAvailable = profit + debtPayment;
         uint256 giveToStrategy = 0;
@@ -263,7 +266,7 @@ abstract contract BaseStrategy is
         }
 
         _assessFees(profit, _totalDebt);
-
+        console.log("AFTER ASSES FEES");
         StrategyReport memory report = StrategyReport({
             strategy: address(this),
             timestamp: block.timestamp,
