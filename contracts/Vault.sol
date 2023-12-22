@@ -410,10 +410,12 @@ contract Vault is
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
+        
         if (_token != address(token)) {
             address _swapChannel = swapChannel;
             IERC20(_token).safeTransfer(_swapChannel, _amountLD);
-            ISwapChannel(_swapChannel).notifySwap(_amountLD);
+            _amountLD = ISwapChannel(_swapChannel).notifySwap(_amountLD, _token);
+            _token = address(token);
         }
 
         _handlePayload(_srcChainId, _payload, _amountLD);
