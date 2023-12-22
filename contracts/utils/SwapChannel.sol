@@ -76,15 +76,11 @@ contract SwapChannel is ISwapChannel, AccessControl {
     }
 
     function notifySwap(
-        uint256 amount,
-        address _tokenIn
+        uint256 amount
     ) external override onlyRole(CHANNEL_OPERATOR_ROLE) returns (uint256 amountOut) {
-        if (_tokenIn != address(tokenIn)) {
-            revert InvalidTokenIn(_tokenIn, address(tokenIn));
-        }
         ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
             .ExactInputSingleParams({
-                tokenIn: _tokenIn,
+                tokenIn: tokenIn,
                 tokenOut: tokenOut,
                 fee: poolFee,
                 recipient: msg.sender,
