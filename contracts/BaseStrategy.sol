@@ -249,7 +249,6 @@ abstract contract BaseStrategy is
                 _debtOutstanding
             );
         }
-
         uint256 fundsAvailable = profit + debtPayment;
         uint256 giveToStrategy = 0;
         uint256 requestFromStrategy = 0;
@@ -262,8 +261,7 @@ abstract contract BaseStrategy is
             requestFromStrategy = fundsAvailable - _creditAvailable;
         }
 
-        _assessFees(profit, _totalDebt);
-
+        _assessFees(_totalDebt, profit);
         StrategyReport memory report = StrategyReport({
             strategy: address(this),
             timestamp: block.timestamp,
