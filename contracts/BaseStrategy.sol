@@ -265,7 +265,7 @@ abstract contract BaseStrategy is
             requestFromStrategy = fundsAvailable - _creditAvailable;
         }
 
-        _assessFees(profit, _totalDebt);
+        _assessFees(_totalDebt, profit);
         console.log("AFTER ASSES FEES");
         StrategyReport memory report = StrategyReport({
             strategy: address(this),
