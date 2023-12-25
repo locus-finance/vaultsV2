@@ -12453,7 +12453,7 @@
             "label": "sgBridge",
             "offset": 0,
             "slot": "303",
-            "type": "t_contract(ISgBridge)11272",
+            "type": "t_contract(ISgBridge)17128",
             "contract": "Vault",
             "src": "contracts\\Vault.sol:84"
           },
@@ -12485,7 +12485,7 @@
             "label": "strategies",
             "offset": 0,
             "slot": "307",
-            "type": "t_mapping(t_uint16,t_mapping(t_address,t_struct(StrategyParams)11345_storage))",
+            "type": "t_mapping(t_uint16,t_mapping(t_address,t_struct(StrategyParams)17218_storage))",
             "contract": "Vault",
             "src": "contracts\\Vault.sol:88"
           },
@@ -12501,7 +12501,7 @@
             "label": "_strategiesByChainId",
             "offset": 0,
             "slot": "309",
-            "type": "t_mapping(t_uint16,t_struct(AddressSet)8160_storage)",
+            "type": "t_mapping(t_uint16,t_struct(AddressSet)9701_storage)",
             "contract": "Vault",
             "src": "contracts\\Vault.sol:91"
           },
@@ -12509,7 +12509,7 @@
             "label": "_supportedChainIds",
             "offset": 0,
             "slot": "310",
-            "type": "t_struct(UintSet)8317_storage",
+            "type": "t_struct(UintSet)9858_storage",
             "contract": "Vault",
             "src": "contracts\\Vault.sol:92"
           },
@@ -12517,7 +12517,7 @@
             "label": "withdrawEpochs",
             "offset": 0,
             "slot": "312",
-            "type": "t_mapping(t_uint256,t_struct(WithdrawEpoch)11371_storage)",
+            "type": "t_mapping(t_uint256,t_struct(WithdrawEpoch)17244_storage)",
             "contract": "Vault",
             "src": "contracts\\Vault.sol:93"
           },
@@ -12555,7 +12555,7 @@
             "label": "bytes32[]",
             "numberOfBytes": "32"
           },
-          "t_array(t_struct(WithdrawRequest)11360_storage)dyn_storage": {
+          "t_array(t_struct(WithdrawRequest)17233_storage)dyn_storage": {
             "label": "struct WithdrawRequest[]",
             "numberOfBytes": "32"
           },
@@ -12595,7 +12595,7 @@
             "label": "contract ILayerZeroEndpointUpgradeable",
             "numberOfBytes": "20"
           },
-          "t_contract(ISgBridge)11272": {
+          "t_contract(ISgBridge)17128": {
             "label": "contract ISgBridge",
             "numberOfBytes": "20"
           },
@@ -12607,7 +12607,7 @@
             "label": "mapping(address => mapping(uint256 => bool))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_address,t_struct(StrategyParams)11345_storage)": {
+          "t_mapping(t_address,t_struct(StrategyParams)17218_storage)": {
             "label": "mapping(address => struct StrategyParams)",
             "numberOfBytes": "32"
           },
@@ -12631,7 +12631,7 @@
             "label": "mapping(uint16 => mapping(address => mapping(uint256 => bool)))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint16,t_mapping(t_address,t_struct(StrategyParams)11345_storage))": {
+          "t_mapping(t_uint16,t_mapping(t_address,t_struct(StrategyParams)17218_storage))": {
             "label": "mapping(uint16 => mapping(address => struct StrategyParams))",
             "numberOfBytes": "32"
           },
@@ -12643,7 +12643,7 @@
             "label": "mapping(uint16 => mapping(uint16 => uint256))",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint16,t_struct(AddressSet)8160_storage)": {
+          "t_mapping(t_uint16,t_struct(AddressSet)9701_storage)": {
             "label": "mapping(uint16 => struct EnumerableSet.AddressSet)",
             "numberOfBytes": "32"
           },
@@ -12655,7 +12655,7 @@
             "label": "mapping(uint256 => bool)",
             "numberOfBytes": "32"
           },
-          "t_mapping(t_uint256,t_struct(WithdrawEpoch)11371_storage)": {
+          "t_mapping(t_uint256,t_struct(WithdrawEpoch)17244_storage)": {
             "label": "mapping(uint256 => struct WithdrawEpoch)",
             "numberOfBytes": "32"
           },
@@ -12667,19 +12667,19 @@
             "label": "string",
             "numberOfBytes": "32"
           },
-          "t_struct(AddressSet)8160_storage": {
+          "t_struct(AddressSet)9701_storage": {
             "label": "struct EnumerableSet.AddressSet",
             "members": [
               {
                 "label": "_inner",
-                "type": "t_struct(Set)7845_storage",
+                "type": "t_struct(Set)9386_storage",
                 "offset": 0,
                 "slot": "0"
               }
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(Set)7845_storage": {
+          "t_struct(Set)9386_storage": {
             "label": "struct EnumerableSet.Set",
             "members": [
               {
@@ -12697,7 +12697,7 @@
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(StrategyParams)11345_storage": {
+          "t_struct(StrategyParams)17218_storage": {
             "label": "struct StrategyParams",
             "members": [
               {
@@ -12751,24 +12751,24 @@
             ],
             "numberOfBytes": "256"
           },
-          "t_struct(UintSet)8317_storage": {
+          "t_struct(UintSet)9858_storage": {
             "label": "struct EnumerableSet.UintSet",
             "members": [
               {
                 "label": "_inner",
-                "type": "t_struct(Set)7845_storage",
+                "type": "t_struct(Set)9386_storage",
                 "offset": 0,
                 "slot": "0"
               }
             ],
             "numberOfBytes": "64"
           },
-          "t_struct(WithdrawEpoch)11371_storage": {
+          "t_struct(WithdrawEpoch)17244_storage": {
             "label": "struct WithdrawEpoch",
             "members": [
               {
                 "label": "requests",
-                "type": "t_array(t_struct(WithdrawRequest)11360_storage)dyn_storage",
+                "type": "t_array(t_struct(WithdrawRequest)17233_storage)dyn_storage",
                 "offset": 0,
                 "slot": "0"
               },
@@ -12793,7 +12793,617 @@
             ],
             "numberOfBytes": "128"
           },
-          "t_struct(WithdrawRequest)11360_storage": {
+          "t_struct(WithdrawRequest)17233_storage": {
+            "label": "struct WithdrawRequest",
+            "members": [
+              {
+                "label": "author",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "user",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "shares",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "maxLoss",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "expected",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "success",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "timestamp",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        }
+      }
+    },
+    "33c446e55830bcc8b7c9ad888b10488b739f0e714492dadffbc9e9f16602d82b": {
+      "address": "0x7fC922a8e284494b5464F60A00716EAe97d81D1c",
+      "txHash": "0xd925e3b486034afe256162d4d08f82fe3a87ad551b4d373fd511f55397d618ae",
+      "layout": {
+        "solcVersion": "0.8.19",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_balances",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "ERC20Upgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:40"
+          },
+          {
+            "label": "_allowances",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+            "contract": "ERC20Upgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:42"
+          },
+          {
+            "label": "_totalSupply",
+            "offset": 0,
+            "slot": "53",
+            "type": "t_uint256",
+            "contract": "ERC20Upgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:44"
+          },
+          {
+            "label": "_name",
+            "offset": 0,
+            "slot": "54",
+            "type": "t_string_storage",
+            "contract": "ERC20Upgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:46"
+          },
+          {
+            "label": "_symbol",
+            "offset": 0,
+            "slot": "55",
+            "type": "t_string_storage",
+            "contract": "ERC20Upgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:47"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "56",
+            "type": "t_array(t_uint256)45_storage",
+            "contract": "ERC20Upgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:376"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "lzEndpoint",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_contract(ILayerZeroEndpointUpgradeable)144",
+            "contract": "LzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:20"
+          },
+          {
+            "label": "trustedRemoteLookup",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_mapping(t_uint16,t_bytes_storage)",
+            "contract": "LzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:21"
+          },
+          {
+            "label": "minDstGasLookup",
+            "offset": 0,
+            "slot": "153",
+            "type": "t_mapping(t_uint16,t_mapping(t_uint16,t_uint256))",
+            "contract": "LzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:22"
+          },
+          {
+            "label": "payloadSizeLimitLookup",
+            "offset": 0,
+            "slot": "154",
+            "type": "t_mapping(t_uint16,t_uint256)",
+            "contract": "LzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:23"
+          },
+          {
+            "label": "precrime",
+            "offset": 0,
+            "slot": "155",
+            "type": "t_address",
+            "contract": "LzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:24"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "156",
+            "type": "t_array(t_uint256)45_storage",
+            "contract": "LzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:150"
+          },
+          {
+            "label": "failedMessages",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_mapping(t_uint16,t_mapping(t_bytes_memory_ptr,t_mapping(t_uint64,t_bytes32)))",
+            "contract": "NonblockingLzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\NonblockingLzAppUpgradeable.sol:23"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "202",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "NonblockingLzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\NonblockingLzAppUpgradeable.sol:68"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "251",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "252",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\security\\ReentrancyGuardUpgradeable.sol:88"
+          },
+          {
+            "label": "governance",
+            "offset": 0,
+            "slot": "301",
+            "type": "t_address",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:83"
+          },
+          {
+            "label": "token",
+            "offset": 0,
+            "slot": "302",
+            "type": "t_contract(IERC20)5241",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:84"
+          },
+          {
+            "label": "sgBridge",
+            "offset": 0,
+            "slot": "303",
+            "type": "t_contract(ISgBridge)11740",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:86"
+          },
+          {
+            "label": "totalDebtRatio",
+            "offset": 0,
+            "slot": "304",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:87"
+          },
+          {
+            "label": "totalDebt",
+            "offset": 0,
+            "slot": "305",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:88"
+          },
+          {
+            "label": "emergencyShutdown",
+            "offset": 0,
+            "slot": "306",
+            "type": "t_bool",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:89"
+          },
+          {
+            "label": "strategies",
+            "offset": 0,
+            "slot": "307",
+            "type": "t_mapping(t_uint16,t_mapping(t_address,t_struct(StrategyParams)11848_storage))",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:90"
+          },
+          {
+            "label": "withdrawEpoch",
+            "offset": 0,
+            "slot": "308",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:91"
+          },
+          {
+            "label": "_strategiesByChainId",
+            "offset": 0,
+            "slot": "309",
+            "type": "t_mapping(t_uint16,t_struct(AddressSet)8585_storage)",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:93"
+          },
+          {
+            "label": "_supportedChainIds",
+            "offset": 0,
+            "slot": "310",
+            "type": "t_struct(UintSet)8742_storage",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:94"
+          },
+          {
+            "label": "withdrawEpochs",
+            "offset": 0,
+            "slot": "312",
+            "type": "t_mapping(t_uint256,t_struct(WithdrawEpoch)11874_storage)",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:95"
+          },
+          {
+            "label": "_usedNonces",
+            "offset": 0,
+            "slot": "313",
+            "type": "t_mapping(t_uint16,t_mapping(t_address,t_mapping(t_uint256,t_bool)))",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:96"
+          },
+          {
+            "label": "sgRouter",
+            "offset": 0,
+            "slot": "314",
+            "type": "t_address",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:98"
+          },
+          {
+            "label": "gasForLzSend",
+            "offset": 0,
+            "slot": "315",
+            "type": "t_uint256",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:99"
+          },
+          {
+            "label": "swapChannel",
+            "offset": 0,
+            "slot": "316",
+            "type": "t_address",
+            "contract": "Vault",
+            "src": "contracts\\Vault.sol:100"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_bytes32)dyn_storage": {
+            "label": "bytes32[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_struct(WithdrawRequest)11863_storage)dyn_storage": {
+            "label": "struct WithdrawRequest[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)45_storage": {
+            "label": "uint256[45]",
+            "numberOfBytes": "1440"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_bytes_memory_ptr": {
+            "label": "bytes",
+            "numberOfBytes": "32"
+          },
+          "t_bytes_storage": {
+            "label": "bytes",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IERC20)5241": {
+            "label": "contract IERC20",
+            "numberOfBytes": "20"
+          },
+          "t_contract(ILayerZeroEndpointUpgradeable)144": {
+            "label": "contract ILayerZeroEndpointUpgradeable",
+            "numberOfBytes": "20"
+          },
+          "t_contract(ISgBridge)11740": {
+            "label": "contract ISgBridge",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(address => mapping(uint256 => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(StrategyParams)11848_storage)": {
+            "label": "mapping(address => struct StrategyParams)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes_memory_ptr,t_mapping(t_uint64,t_bytes32))": {
+            "label": "mapping(bytes => mapping(uint64 => bytes32))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_bytes_storage)": {
+            "label": "mapping(uint16 => bytes)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_mapping(t_address,t_mapping(t_uint256,t_bool)))": {
+            "label": "mapping(uint16 => mapping(address => mapping(uint256 => bool)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_mapping(t_address,t_struct(StrategyParams)11848_storage))": {
+            "label": "mapping(uint16 => mapping(address => struct StrategyParams))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_mapping(t_bytes_memory_ptr,t_mapping(t_uint64,t_bytes32)))": {
+            "label": "mapping(uint16 => mapping(bytes => mapping(uint64 => bytes32)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_mapping(t_uint16,t_uint256))": {
+            "label": "mapping(uint16 => mapping(uint16 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_struct(AddressSet)8585_storage)": {
+            "label": "mapping(uint16 => struct EnumerableSet.AddressSet)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_uint256)": {
+            "label": "mapping(uint16 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(WithdrawEpoch)11874_storage)": {
+            "label": "mapping(uint256 => struct WithdrawEpoch)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint64,t_bytes32)": {
+            "label": "mapping(uint64 => bytes32)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AddressSet)8585_storage": {
+            "label": "struct EnumerableSet.AddressSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)8270_storage",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(Set)8270_storage": {
+            "label": "struct EnumerableSet.Set",
+            "members": [
+              {
+                "label": "_values",
+                "type": "t_array(t_bytes32)dyn_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_indexes",
+                "type": "t_mapping(t_bytes32,t_uint256)",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(StrategyParams)11848_storage": {
+            "label": "struct StrategyParams",
+            "members": [
+              {
+                "label": "activation",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "debtRatio",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "totalDebt",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "totalGain",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "totalLoss",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "lastReport",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "performanceFee",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "strategist",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "7"
+              }
+            ],
+            "numberOfBytes": "256"
+          },
+          "t_struct(UintSet)8742_storage": {
+            "label": "struct EnumerableSet.UintSet",
+            "members": [
+              {
+                "label": "_inner",
+                "type": "t_struct(Set)8270_storage",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(WithdrawEpoch)11874_storage": {
+            "label": "struct WithdrawEpoch",
+            "members": [
+              {
+                "label": "requests",
+                "type": "t_array(t_struct(WithdrawRequest)11863_storage)dyn_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "inProgress",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "approveExpected",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "approveActual",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(WithdrawRequest)11863_storage": {
             "label": "struct WithdrawRequest",
             "members": [
               {

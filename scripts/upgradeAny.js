@@ -2,8 +2,8 @@
 const hre = require("hardhat");
 
 async function main() {
-  const TARGET_ADDRESS = "0xa5e7eB6391F34Ec9691A5d39E93A8b2336B7E717";
-  const TARGET_STRATEGY = "VelodromeStrategy";
+  const TARGET_ADDRESS = "0x6c090e79A9399c0003A310E219b2D5ed4E6b0428";
+  const TARGET_STRATEGY = "Vault";
   //   console.log(1);
   // const provider = new hre.ethers.providers.JsonRpcProvider(
   //   "http://127.0.0.1:8545"
@@ -23,6 +23,10 @@ async function main() {
   await hre.run("verify:verify", {
     address: upgraded.address,
   });
+
+  const setSwapChannelTx = await upgraded.setSwapChannel("0xc5Dad0c33889693913617CEE718eE147bA61B4DC");
+  await setSwapChannelTx.wait();
+  console.log(`SwapChannel is set:\n${JSON.stringify(setSwapChannelTx)}`);
 }
 
 main()
