@@ -66,7 +66,7 @@ module.exports = {
     hardhat: {
       // chainId: 1,
       forking: {
-        url: "https://rpc.ankr.com/optimism",
+        url: ARBITRUM_NODE || ""
       },
     },
     mainnet: {
