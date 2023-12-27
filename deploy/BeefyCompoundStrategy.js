@@ -3,8 +3,9 @@ const { ethers, upgrades } = require("hardhat");
 const bridgeConfig = require("../constants/bridgeConfig.json");
 const { vaultChain } = require("../utils");
 
-const TOKEN = "USDC";
-async function main() {
+const TOKEN = "USDT";
+
+module.exports = async ({ getNamedAccounts }) => {
   const { deployer } = await getNamedAccounts();
 
   console.log(`Your address: ${deployer}. Network: ${hre.network.name}`);
@@ -17,6 +18,7 @@ async function main() {
   const beefyCompoundStrategy = await upgrades.deployProxy(
     BeefyCompoundStrategy,
     [
+      config.SwapChannel,
       config.lzEndpoint,
       config.strategist,
       config[TOKEN].address,
@@ -42,7 +44,6 @@ async function main() {
   await hre.run("verify:verify", {
     address: beefyCompoundStrategy.address,
   });
-}
-main();
+};
 
 module.exports.tags = ["BeefyCompoundStrategy"];
