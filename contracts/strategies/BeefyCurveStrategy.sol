@@ -17,7 +17,7 @@ import "../integrations/curve/IFactory.sol";
 import "../integrations/curve/IPlainPool.sol";
 import "../integrations/beefy/IBeefyVault.sol";
 
-contract BeefyKavaStrategy is Initializable, BaseStrategy {
+contract BeefyCurveStrategy is Initializable, BaseStrategy {
     using SafeERC20 for IERC20;
 
     error WantTokenIsNotInPool(address pool);
@@ -32,7 +32,6 @@ contract BeefyKavaStrategy is Initializable, BaseStrategy {
         0xd5BC6DEa24A93A542C0d3Aa7e4dFBD05d97AF0F8;
 
     uint256 public constant KAVA_CURVE_STABLESWAP_AXLUSD_USDT_POOL_N_COINS = 2;
-
     uint256 public constant DEFAULT_SLIPPAGE = 9_800;
 
     function initialize(
