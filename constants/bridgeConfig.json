@@ -56,6 +56,6 @@
         "sgBridge": "0x58cDAA78c71cd3AE44d24d980b33A09e5B00Db22",
         "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7",
-        "BeefyCompoundStrategy": ""
+        "BeefyCurveStrategy": "0x6544De3083c3dC615E00E2d998e5db53DEcd4E2F"
     }
 }

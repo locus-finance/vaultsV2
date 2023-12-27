@@ -53,4 +53,4 @@ module.exports = async function ({ getNamedAccounts }) {
     // console.log("Deploy scripts: BeefyStrategy is verified and configured.");
 };
 
-module.exports.tags = ["beefy"];
+module.exports.tags = ["BeefyCurveStrategy"];
