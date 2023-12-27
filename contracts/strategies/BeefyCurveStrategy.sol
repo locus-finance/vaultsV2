@@ -112,7 +112,7 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
         amounts[wantTokenIndexInCurvePool] = amount;
         uint256 curveSharesMinted = curvePool.add_liquidity(
             amounts,
-            (amount * slippage) / 10000
+            (amount * slippage) / MAX_BPS
         );
         uint256 oldBalanceOfBeefyVaultTokens = beefyVault.balanceOf(
             address(this)
@@ -147,7 +147,7 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
         amountOfWantTokensWithdrawn = curvePool.remove_liquidity_one_coin(
             wantTokensAmount,
             _getIndexOfWantTokenInCurvePool((address(curvePool))),
-            (wantTokensAmount * slippage) / 10000
+            (wantTokensAmount * slippage) / MAX_BPS
         );
     }
 
