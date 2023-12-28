@@ -41,8 +41,16 @@ module.exports = async function ({ getNamedAccounts }) {
 
     // WATCH OUT FOR HARD CODED SETTERS VALUES
 
-    // const setManagementFeeTx = await beefyCurveStrategy.setManagementFee(7000);
+    // const beefyCurveStrategy = await hre.ethers.getContractAt(
+    //     "BeefyCurveStrategy",
+    //     "0x2e29c4F1731A93f7e26B8C9a4E5257b68134a6Cd"
+    // );
+
+    // const setManagementFeeTx = await beefyCurveStrategy.setManagementFee(50);
     // await setManagementFeeTx.wait();
+
+    // const setPerformanceFeeTx = await beefyCurveStrategy.setPerformanceFee(500);
+    // await setPerformanceFeeTx.wait();
 
     // const setStrategistTx = await beefyCurveStrategy.setStrategist("0x27f52fd2E60B1153CBD00D465F97C05245D22B82");
     // await setStrategistTx.wait();
@@ -50,7 +58,7 @@ module.exports = async function ({ getNamedAccounts }) {
     // const setTreasuryAddressTx = await beefyCurveStrategy.setTreasuryAddress("0xf4bec3e032590347fc36ad40152c7155f8361d39");
     // await setTreasuryAddressTx.wait();
 
-    // console.log("Deploy scripts: BeefyStrategy is verified and configured.");
+    console.log("Deploy scripts: BeefyStrategy is verified and configured.");
 };
 
 module.exports.tags = ["BeefyCurveStrategy"];
