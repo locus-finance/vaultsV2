@@ -1,7 +1,8 @@
 const { ethers, upgrades } = require("hardhat");
 
 const bridgeConfig = require("../constants/bridgeConfig.json");
-async function main() {
+
+module.exports = async ({ getNamedAccounts }) => {
   const { deployer } = await getNamedAccounts();
 
   console.log(`Your address: ${deployer}. Network: ${hre.network.name}`);
@@ -26,5 +27,4 @@ async function main() {
     address: sgBridge.address,
   });
 }
-main();
 module.exports.tags = ["SgBridge"];

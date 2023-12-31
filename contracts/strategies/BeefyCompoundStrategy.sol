@@ -18,8 +18,9 @@ import "../integrations/beefy/IBeefyVault.sol";
 contract BeefyCompoundStrategy is Initializable, BaseStrategy {
     using SafeERC20 for IERC20;
 
-    address public constant BEEFY_VAULT =
+    address public constant BEEFY_VAULT_BASE =
         0xD7803d3Bf95517D204CFc6211678cAb223aC4c48;
+
     uint256 public constant DEFAULT_SLIPPAGE = 9_800;
 
     string private namePostfix;
@@ -47,8 +48,8 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy {
             DEFAULT_SLIPPAGE
         );
         namePostfix = _namePostfix;
-        IBeefyVault(BEEFY_VAULT).approve(BEEFY_VAULT, type(uint256).max);
-        IERC20(want).approve(BEEFY_VAULT, type(uint256).max);
+        IBeefyVault(BEEFY_VAULT_BASE).approve(BEEFY_VAULT_BASE, type(uint256).max);
+        IERC20(want).approve(BEEFY_VAULT_BASE, type(uint256).max);
     }
 
     function name() external view override returns (string memory) {
@@ -58,8 +59,8 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy {
     function estimatedTotalAssets() public view override returns (uint256) {
         return
             balanceOfWant() +
-            (IBeefyVault(BEEFY_VAULT).getPricePerFullShare() *
-                IBeefyVault(BEEFY_VAULT).balanceOf(address(this))) /
+            (IBeefyVault(BEEFY_VAULT_BASE).getPricePerFullShare() *
+                IBeefyVault(BEEFY_VAULT_BASE).balanceOf(address(this))) /
             10 ** 18;
     }
 
@@ -74,7 +75,7 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy {
             excessWant = unstakedBalance - _debtOutstanding;
         }
         if (excessWant > 0) {
-            IBeefyVault(BEEFY_VAULT).deposit(excessWant);
+            IBeefyVault(BEEFY_VAULT_BASE).deposit(excessWant);
         }
     }
 
@@ -86,15 +87,15 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy {
             return (_amountNeeded, 0);
         }
         uint256 amountToWithdraw = ((_amountNeeded - _wantBalance) * 1e18) /
-            IBeefyVault(BEEFY_VAULT).getPricePerFullShare();
+            IBeefyVault(BEEFY_VAULT_BASE).getPricePerFullShare();
         if (
-            amountToWithdraw > IBeefyVault(BEEFY_VAULT).balanceOf(address(this))
+            amountToWithdraw > IBeefyVault(BEEFY_VAULT_BASE).balanceOf(address(this))
         ) {
-            amountToWithdraw = IBeefyVault(BEEFY_VAULT).balanceOf(
+            amountToWithdraw = IBeefyVault(BEEFY_VAULT_BASE).balanceOf(
                 address(this)
             );
         }
-        IBeefyVault(BEEFY_VAULT).withdraw(amountToWithdraw);
+        IBeefyVault(BEEFY_VAULT_BASE).withdraw(amountToWithdraw);
 
         _wantBalance = balanceOfWant();
 

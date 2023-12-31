@@ -27,8 +27,8 @@
         "TestStrategy": "0x0427eE06e5220BA8013d2A753109A57AD4020373",
         "strategist": "0x27f52fd2E60B1153CBD00D465F97C05245D22B82",
         "vault": "0x6c090e79A9399c0003A310E219b2D5ed4E6b0428",
-        "governance": "0x27f52fd2E60B1153CBD00D465F97C05245D22B82"
-
+        "governance": "0x27f52fd2E60B1153CBD00D465F97C05245D22B82",
+        "SwapChannel": "0xc5Dad0c33889693913617CEE718eE147bA61B4DC"
     },
     "base": {
         "chainId": 184,
@@ -44,7 +44,6 @@
         "lzEndpoint": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7",
         "slippage": 9500,
         "TestStrategy": "0x13bf88e6d5105f7935C0A8F88d7e87716e9Bb535",
-        "BeefyStrategy": "0x13bf88e6d5105f7935C0A8F88d7e87716e9Bb535",
         "BeefyCompoundStrategy": "0xAcB31C5520635e4791C94E26D114e2bb40e43100",
         "strategist": "0x27f52fd2E60B1153CBD00D465F97C05245D22B82"
     },
@@ -53,10 +52,9 @@
         "USDT": {
             "address": "0x919C1c267BC06a7039e03fcc2eF738525769109c"
         },
-        "sgBridge": "0x45f1A95A4D3f3836523F5c83673c797f4d4d263B",
+        "sgBridge": "0x58cDAA78c71cd3AE44d24d980b33A09e5B00Db22",
         "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7",
-        "BeefyStrategy": "0xD6D7673D94BAcDD1FA3D67D38B5A643Ba24F85b3",
-        "TestStrategy": "0xD6D7673D94BAcDD1FA3D67D38B5A643Ba24F85b3"
+        "BeefyCurveStrategy": "0x2e29c4F1731A93f7e26B8C9a4E5257b68134a6Cd"
     }
 }

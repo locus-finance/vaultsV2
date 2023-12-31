@@ -23,6 +23,8 @@ import {IBaseStrategy} from "./interfaces/IBaseStrategy.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
+import "./interfaces/ISwapChannel.sol";
+
 error Vault__V1();
 error Vault__V2();
 error Vault__V3();
@@ -95,6 +97,7 @@ contract Vault is
         internal _usedNonces;
     address public sgRouter;
     uint256 public gasForLzSend;
+    address public swapChannel;
 
     modifier onlyAuthorized() {
         if (msg.sender != governance && msg.sender != owner())
@@ -141,6 +144,10 @@ contract Vault is
 
     function setSgRouter(address _newSgRouter) external onlyAuthorized {
         sgRouter = _newSgRouter;
+    }
+
+    function setSwapChannel(address _newSwapChannel) external onlyAuthorized {
+        swapChannel = _newSwapChannel;
     }
 
     function setStrategist(
@@ -403,7 +410,13 @@ contract Vault is
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
-        if (_token != address(token)) {}
+
+        if (_token != address(token)) {
+            address _swapChannel = swapChannel;
+            IERC20(_token).safeTransfer(_swapChannel, _amountLD);
+            _amountLD = ISwapChannel(_swapChannel).notifySwap(_amountLD);
+            _token = address(token);
+        }
 
         _handlePayload(_srcChainId, _payload, _amountLD);
 

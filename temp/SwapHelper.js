@@ -24,7 +24,7 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
 
     if (hre.network === "mainnet") {
         await hre.run("verify:verify", {
-            address: swapHelper.target,
+            address: (await deployments.get('SwapHelper')).address,
         });
     }
 };
