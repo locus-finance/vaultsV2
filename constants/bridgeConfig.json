@@ -29,7 +29,6 @@
         "vault": "0x6c090e79A9399c0003A310E219b2D5ed4E6b0428",
         "governance": "0x27f52fd2E60B1153CBD00D465F97C05245D22B82",
         "SwapChannel": "0xc5Dad0c33889693913617CEE718eE147bA61B4DC"
-
     },
     "base": {
         "chainId": 184,
