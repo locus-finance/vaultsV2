@@ -27,6 +27,7 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy {
     function initialize(
         address _lzEndpoint,
         address _strategist,
+        address _harvester,
         IERC20 _want,
         address _vault,
         uint16 _strategyStargateChainId,
@@ -38,6 +39,7 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy {
         __BaseStrategy_init(
             _lzEndpoint,
             _strategist,
+            _harvester,
             _want,
             _vault,
             _vaultStargateChainId,

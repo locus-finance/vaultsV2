@@ -41,6 +41,7 @@ abstract contract BaseStrategy is
     error VaultAddressMismatch();
     error DurationIsZero();
     error OnlyStrategistOrVault();
+    error OnlyHarvester();
 
     event SgReceived(address indexed token, uint256 amount, address sender);
     event StrategyReported(
@@ -77,9 +78,16 @@ abstract contract BaseStrategy is
         _;
     }
 
+    modifier onlyHarvester() {
+        if (msg.sender != harvester)
+            revert OnlyHarvester();
+        _;
+    }
+
     function __BaseStrategy_init(
         address _lzEndpoint,
         address _strategist,
+        address _harvester,
         IERC20 _want,
         address _vault,
         uint16 _vaultChainId,
@@ -100,9 +108,11 @@ abstract contract BaseStrategy is
         currentChainId = _currentChainId;
         sgBridge = ISgBridge(_sgBridge);
         sgRouter = IStargateRouter(_sgRouter);
+        harvester = _harvester;
     }
 
     address public strategist;
+    address public harvester;
     IERC20 public want;
     address public vault;
     uint16 public vaultChainId;
@@ -143,6 +153,10 @@ abstract contract BaseStrategy is
 
     function setSgRouter(address _sgRouter) external onlyOwner {
         sgRouter = IStargateRouter(_sgRouter);
+    }
+
+    function setHarvester(address _harvester) external onlyOwner {
+        harvester = _harvester;
     }
 
     function setVault(
@@ -226,7 +240,7 @@ abstract contract BaseStrategy is
         uint256 _creditAvailable,
         uint256 _debtRatio,
         bytes memory _signature
-    ) external onlyStrategist {
+    ) external onlyHarvester {
         _verifySignature(_signature);
 
         uint256 profit = 0;
@@ -338,7 +352,7 @@ abstract contract BaseStrategy is
         bytes32 messageHash = strategistSignMessageHash();
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
 
-        if (ECDSA.recover(ethSignedMessageHash, _signature) != strategist)
+        if (ECDSA.recover(ethSignedMessageHash, _signature) != harvester)
             revert InvalidSignature();
     }
 

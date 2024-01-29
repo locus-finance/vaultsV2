@@ -17,6 +17,7 @@ async function main() {
     [
       config.lzEndpoint,
       config.strategist,
+      config.harvester,
       config[TOKEN].address,
       vaultConfig.vault,
       vaultConfig.chainId,
