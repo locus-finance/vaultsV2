@@ -36,7 +36,7 @@ contract HopStrategy is Initializable, BaseStrategy {
     address internal constant UNISWAP_V3_ROUTER =
         0xE592427A0AEce92De3Edee1F18E0157C05861564;
 
-    uint32 internal constant TWAP_RANGE_SECS = 1800;
+    uint32 internal constant TWAP_RANGE_SECS = 6000;
 
     address internal constant ETH_USDC_UNI_V3_POOL =
         0xC6962004f452bE9203591991D15f6b388e09E8D0;
@@ -44,6 +44,7 @@ contract HopStrategy is Initializable, BaseStrategy {
     function initialize(
         address _lzEndpoint,
         address _strategist,
+        address _harvester,
         IERC20 _want,
         address _vault,
         uint16 _vaultChainId,
@@ -54,6 +55,7 @@ contract HopStrategy is Initializable, BaseStrategy {
         __BaseStrategy_init(
             _lzEndpoint,
             _strategist,
+            _harvester,
             _want,
             _vault,
             _vaultChainId,

@@ -26,19 +26,19 @@ async function main() {
   // );
 
   // console.log(await provider.getBalance(sigs[0].address));
-  await impersonateAccount("0x27f52fd2E60B1153CBD00D465F97C05245D22B82")
+  await impersonateAccount("0x3C2792d5Ea8f9C03e8E73738E9Ed157aeB4FeCBe")
   // const impersonatedSigner = await hre.ethers.getImpersonatedSigner(
   //   "0x27f52fd2E60B1153CBD00D465F97C05245D22B82"
   // );
 
   const strategist = await ethers.provider.getSigner(
-    "0x27f52fd2E60B1153CBD00D465F97C05245D22B82"
+    "0x3C2792d5Ea8f9C03e8E73738E9Ed157aeB4FeCBe"
   );
 
-  const wallet = await ethers.provider.getSigner(
-    "0x6194738930D4239e596C1CC624Fb1cEa4ebE2665"
-  );
-  console.log(wallet._address);
+  // const wallet = await ethers.provider.getSigner(
+  //   "0x6194738930D4239e596C1CC624Fb1cEa4ebE2665"
+  // );
+  // console.log(wallet._address);
   // const tx2 = await sigs[0].sendTransaction({
   //   to: wallet._address,
   //   value: hre.ethers.utils.parseEther("3000"),
@@ -48,18 +48,17 @@ async function main() {
   // console.log("upgraded");
   const strategy = await ethers.getContractAt(
     ABI,
-    "0x205D6195fa2ebFE04CDa0be91365c43aA9e1b739"
+    "0xA93e1DfF89dcCCA3C3CadFd0A28aD071C230eD84"
   );
-  
-  console.log(await strategy.connect(strategist).estimatedTotalAssets({gasLimit : 30000000}))
-  console.log(await strategy.connect(strategist).harvest(56250899402, 0, 8549771736, 4500, "0xbf5ea603cc33a00e58ebddadf391c6c3008cf3250a3edc753cb88030c6673192407dd8201ef819bb8235cdbb295c0b3172c8268be83153d238c2539efe1498531b",{gasLimit : 30000000}));
+
+  console.log(await strategy.connect(strategist).harvest(0, 0, 13500000, 4500, "0x8143be837ea4cc68a285877b2319a5f02f3fac6f3585e9a670ec14936984f1196bc75ddbdb75b2a38bd4857e66eb87cbb35a51cf139859a08b31a997ae6dd3711c", { gasLimit: 30000000 }));
 }
 
 async function upgradeVault() {
   const provider = new ethers.providers.JsonRpcProvider({
     url: "http://127.0.0.1:8545",
   });
-  await impersonateAccount("0x6194738930D4239e596C1CC624Fb1cEa4ebE2665")
+  await impersonateAccount("0x3C2792d5Ea8f9C03e8E73738E9Ed157aeB4FeCBe")
 
   console.log("upgrading");
   const owner = await ethers.provider.getSigner(

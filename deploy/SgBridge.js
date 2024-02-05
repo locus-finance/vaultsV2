@@ -11,7 +11,7 @@ async function main() {
     SgBridge,
     [
       bridgeConfig[hre.network.name].sgRouter,
-      bridgeConfig[hre.network.name].chainId,
+      bridgeConfig[hre.network.name].chainId
     ],
     {
       initializer: "initialize",
