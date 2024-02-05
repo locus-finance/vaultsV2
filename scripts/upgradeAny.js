@@ -2,15 +2,9 @@
 const hre = require("hardhat");
 
 async function main() {
-  const TARGET_ADDRESS = "0xa5e7eB6391F34Ec9691A5d39E93A8b2336B7E717";
-  const TARGET_STRATEGY = "VelodromeStrategy";
-  //   console.log(1);
-  // const provider = new hre.ethers.providers.JsonRpcProvider(
-  //   "http://127.0.0.1:8545"
-  // );
-  // let wallet = await new ethers.Wallet(
-  //   process.env.DEPLOYER_PRIVATE_KEY
-  // ).connect(provider);
+  const TARGET_ADDRESS = "0xA93e1DfF89dcCCA3C3CadFd0A28aD071C230eD84";
+  const TARGET_STRATEGY = "HopStrategy";
+
   const TargetContract = await hre.ethers.getContractFactory(TARGET_STRATEGY);
 
   const upgraded = await hre.upgrades.upgradeProxy(

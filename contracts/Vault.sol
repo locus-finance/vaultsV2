@@ -70,7 +70,7 @@ contract Vault is
         __ReentrancyGuard_init();
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
         __Ownable_init();
-        __ERC20_init("Locus Yield USD", "lyUSD");
+        __ERC20_init("Locus Yield USD", "xUSD");
 
         governance = _governance;
         token = _token;
