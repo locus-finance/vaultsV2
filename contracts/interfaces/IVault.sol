@@ -58,6 +58,10 @@ interface IVault {
         uint256 tokens
     );
 
+    event Deposit(address indexed recipient, uint256 indexed wantAmount, uint256 indexed sharesAmount, uint256 time);
+    event Withdraw(address indexed recipient, uint256 indexed wantAmount, uint256 indexed sharesAmount, uint256 time);
+
+
     function initialize(
         address _governance,
         address _lzEndpoint,

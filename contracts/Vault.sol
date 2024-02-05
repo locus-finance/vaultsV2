@@ -172,6 +172,7 @@ contract Vault is
         if (emergencyShutdown) revert Vault__V11();
         uint256 shares = _issueSharesForAmount(_recipient, _amount);
         token.safeTransferFrom(msg.sender, address(this), _amount);
+        emit Deposit(_recipient, _amount, shares, block.timestamp);
         return shares;
     }
 
@@ -610,6 +611,7 @@ contract Vault is
             request.success = true;
             token.safeTransfer(request.user, valueToTransfer);
             _burn(address(this), request.shares);
+            emit Withdraw(request.author, valueToTransfer, request.shares, block.timestamp);
         }
 
         emit FulfilledWithdrawEpoch(withdrawEpoch, requestsLength);

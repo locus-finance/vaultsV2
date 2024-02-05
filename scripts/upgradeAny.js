@@ -2,8 +2,8 @@
 const hre = require("hardhat");
 
 async function main() {
-  const TARGET_ADDRESS = "0xa5e7eB6391F34Ec9691A5d39E93A8b2336B7E717";
-  const TARGET_STRATEGY = "VelodromeStrategy";
+  const TARGET_ADDRESS = "0x2a889E9ef10c7Bd607473Aadc8c806c4511EB26f";
+  const TARGET_STRATEGY = "Vault";
   //   console.log(1);
   // const provider = new hre.ethers.providers.JsonRpcProvider(
   //   "http://127.0.0.1:8545"
