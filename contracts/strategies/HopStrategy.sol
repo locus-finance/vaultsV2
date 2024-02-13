@@ -9,11 +9,12 @@ import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRoute
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 import "../integrations/hop/IStakingRewards.sol";
 import "../integrations/hop/IRouter.sol";
 
-contract HopStrategy is Initializable, BaseStrategy {
+contract HopStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
     using SafeERC20 for IERC20;
 
     uint256 public constant DEFAULT_SLIPPAGE = 9_500;
@@ -52,6 +53,7 @@ contract HopStrategy is Initializable, BaseStrategy {
         address _sgBridge,
         address _router
     ) external initializer {
+        __UUPSUpgradeable_init();
         __BaseStrategy_init(
             _lzEndpoint,
             _strategist,
@@ -69,6 +71,9 @@ contract HopStrategy is Initializable, BaseStrategy {
         IERC20(HOP).safeApprove(UNISWAP_V3_ROUTER, type(uint256).max);
         want.safeApprove(HOP_ROUTER, type(uint256).max);
     }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner{}
+
 
     function name() external pure override returns (string memory) {
         return "HopStrategy";

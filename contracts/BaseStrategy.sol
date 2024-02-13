@@ -139,25 +139,25 @@ abstract contract BaseStrategy is
 
     function estimatedTotalAssets() public view virtual returns (uint256);
 
-    function setStrategist(address _strategist) external onlyOwner {
-        strategist = _strategist;
-    }
+    // function setStrategist(address _strategist) external onlyOwner {
+    //     strategist = _strategist;
+    // }
 
-    function setLzEndpoint(address _endpoint) external onlyOwner {
-        lzEndpoint = ILayerZeroEndpointUpgradeable(_endpoint);
-    }
+    // function setLzEndpoint(address _endpoint) external onlyOwner {
+    //     lzEndpoint = ILayerZeroEndpointUpgradeable(_endpoint);
+    // }
 
-    function setSgBridge(address _sgBridge) external onlyOwner {
-        sgBridge = ISgBridge(_sgBridge);
-    }
+    // function setSgBridge(address _sgBridge) external onlyOwner {
+    //     sgBridge = ISgBridge(_sgBridge);
+    // }
 
-    function setSgRouter(address _sgRouter) external onlyOwner {
-        sgRouter = IStargateRouter(_sgRouter);
-    }
+    // function setSgRouter(address _sgRouter) external onlyOwner {
+    //     sgRouter = IStargateRouter(_sgRouter);
+    // }
 
-    function setHarvester(address _harvester) external onlyOwner {
-        harvester = _harvester;
-    }
+    // function setHarvester(address _harvester) external onlyOwner {
+    //     harvester = _harvester;
+    // }
 
     function setVault(
         address _newVault,
