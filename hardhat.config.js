@@ -1,19 +1,12 @@
 require("@openzeppelin/hardhat-upgrades");
-require("@nomiclabs/hardhat-vyper");
-require("@nomiclabs/hardhat-waffle");
-require("@nomiclabs/hardhat-truffle5");
-require("@nomiclabs/hardhat-ethers");
-require("@nomiclabs/hardhat-etherscan");
 require("hardhat-tracer");
 require("hardhat-contract-sizer");
-require("hardhat-deploy");
-require("hardhat-deploy-ethers");
 require("hardhat-gas-reporter");
 require("hardhat-log-remover");
 require("hardhat-abi-exporter");
-require("dotenv").config();
-require("solidity-coverage");
+require("@nomicfoundation/hardhat-toolbox");
 
+require("dotenv").config();
 require("./tasks");
 
 const fs = require("fs");
@@ -66,7 +59,8 @@ module.exports = {
     hardhat: {
       // chainId: 1,
       forking: {
-        url: ARBITRUM_NODE || ""
+        url: ARBITRUM_NODE || "",
+        blockNumber: 180429847
       },
     },
     mainnet: {

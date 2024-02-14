@@ -29,7 +29,6 @@ abstract contract BaseStrategy is
     error IncorrectMessageType(uint256 messageType);
     error BaseStrategy__UnAcceptableFee();
     error OnlyStrategist();
-    error OnlyStrategistOrSelf();
     error TooHighSlippage();
     error DebtRatioShouldBeZero();
     error RouterOrBridgeOnly();
@@ -69,12 +68,6 @@ abstract contract BaseStrategy is
     modifier onlyStrategistOrVault() {
         if (msg.sender != strategist && msg.sender != vault)
             revert OnlyStrategistOrVault();
-        _;
-    }
-
-    modifier onlyStrategistOrSelf() {
-        if (msg.sender != strategist && msg.sender != address(this))
-            revert OnlyStrategistOrSelf();
         _;
     }
 
@@ -122,11 +115,10 @@ abstract contract BaseStrategy is
     bool public emergencyExit;
     ISgBridge public sgBridge;
     IStargateRouter public sgRouter;
-    uint256 public constant MAX_BPS = 10_000;
+    uint256 private constant MAX_BPS = 10_000;
     uint256 public performanceFee;
     uint256 public managementFee;
-    uint256 public strategistFee;
-    uint256 public constant SECS_PER_YEAR = 31_556_952;
+    uint256 private constant SECS_PER_YEAR = 31_556_952;
     uint256 public lastReport;
     address public treasury;
     uint256 public feeThreshold;
@@ -139,24 +131,15 @@ abstract contract BaseStrategy is
 
     function estimatedTotalAssets() public view virtual returns (uint256);
 
-    function setStrategist(address _strategist) external onlyOwner {
-        strategist = _strategist;
-    }
-
-    function setLzEndpoint(address _endpoint) external onlyOwner {
+    function setLzSettings(address _endpoint, address _sgBridge, address _sgRouter) external onlyOwner {
         lzEndpoint = ILayerZeroEndpointUpgradeable(_endpoint);
-    }
-
-    function setSgBridge(address _sgBridge) external onlyOwner {
         sgBridge = ISgBridge(_sgBridge);
-    }
-
-    function setSgRouter(address _sgRouter) external onlyOwner {
         sgRouter = IStargateRouter(_sgRouter);
     }
 
-    function setHarvester(address _harvester) external onlyOwner {
+    function setOperators(address _strategist, address _harvester) external onlyOwner {
         harvester = _harvester;
+        strategist = _strategist;
     }
 
     function setVault(
@@ -180,19 +163,11 @@ abstract contract BaseStrategy is
         slippage = _slippage;
     }
 
-    function setPerformanceFee(uint256 fee) external onlyOwner {
-        if (fee > MAX_BPS / 2) revert BaseStrategy__UnAcceptableFee();
-        performanceFee = fee;
-    }
-
-    function setManagementFee(uint256 fee) external onlyOwner {
-        if (fee > MAX_BPS) revert BaseStrategy__UnAcceptableFee();
-        managementFee = fee;
-    }
-
-    function setStrategistFee(uint256 fee) external onlyOwner {
-        if (fee > MAX_BPS) revert BaseStrategy__UnAcceptableFee();
-        strategistFee = fee;
+    function setFees(uint256 perfFee, uint256 manageFee) external onlyOwner {
+        if (perfFee > MAX_BPS / 2) revert BaseStrategy__UnAcceptableFee();
+        if (manageFee > MAX_BPS) revert BaseStrategy__UnAcceptableFee();
+        performanceFee = perfFee;
+        managementFee = manageFee;
     }
 
     function setTreasuryAddress(address _treasury) external onlyOwner {

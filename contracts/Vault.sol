@@ -20,8 +20,8 @@ import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 import {StrategyParams, WithdrawRequest, WithdrawEpoch, IVault} from "./interfaces/IVault.sol";
 import {IBaseStrategy} from "./interfaces/IBaseStrategy.sol";
 
-import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
-import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
+// import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
+// import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
 error Vault__V1();
 error Vault__V2();
