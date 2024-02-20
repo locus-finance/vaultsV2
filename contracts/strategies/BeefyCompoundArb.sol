@@ -20,19 +20,27 @@ import "../integrations/beefy/IBeefyVault.sol";
 contract BeefyCompoundStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
     using SafeERC20 for IERC20;
 
+    ///Want token is USDCe, but strategy required usdc.
+
     address public constant BEEFY_VAULT = 0xb9A27ba529634017b12e3cbbbFFb6dB7908a8C8B;
     uint256 public constant DEFAULT_SLIPPAGE = 9_800;
+    uint32 public constant TWAP_RANGE_SECS = 1800;
+    // TODO change addresses
+    address public constant USDC = 0xb9A27ba529634017b12e3cbbbFFb6dB7908a8C8B;
+    address public constant USDC_USDCE_UNI_POOL = 0xb9A27ba529634017b12e3cbbbFFb6dB7908a8C8B;
+    uint256 internal constant USDC_USDCE_FEE = 100;
+    address internal constant UNISWAP_V3_ROUTER = 0xb9A27ba529634017b12e3cbbbFFb6dB7908a8C8B;
 
     string private namePostfix;
-
+    
     function initialize(
         address _lzEndpoint,
         address _strategist,
         address _harvester,
         IERC20 _want,
         address _vault,
-        uint16 _strategyStargateChainId,
         uint16 _vaultStargateChainId,
+        uint16 _strategyStargateChainId,
         address _sgBridge,
         address _router,
         string calldata _namePostfix
@@ -52,7 +60,9 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
         );
         namePostfix = _namePostfix;
         IBeefyVault(BEEFY_VAULT).approve(BEEFY_VAULT, type(uint256).max);
-        IERC20(want).approve(BEEFY_VAULT, type(uint256).max);
+        IERC20(USDC).approve(BEEFY_VAULT, type(uint256).max);
+        IERC20(USDC).approve(UNISWAP_V3_ROUTER, type(uint256).max);
+        IERC20(want).approve(UNISWAP_V3_ROUTER, type(uint256).max);
     }
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner{}
 
@@ -64,7 +74,7 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
     function estimatedTotalAssets() public view override returns (uint256) {
         return
             balanceOfWant() +
-            (IBeefyVault(BEEFY_VAULT).getPricePerFullShare() *
+             _UsdcToUsdce(IBeefyVault(BEEFY_VAULT).getPricePerFullShare() *
                 IBeefyVault(BEEFY_VAULT).balanceOf(address(this))) /
             10 ** 18;
     }
@@ -79,8 +89,10 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
         if (unstakedBalance > _debtOutstanding) {
             excessWant = unstakedBalance - _debtOutstanding;
         }
+
         if (excessWant > 0) {
-            IBeefyVault(BEEFY_VAULT).deposit(excessWant);
+            uint256 out = _sellWantForUsdc(excessWant);
+            IBeefyVault(BEEFY_VAULT).deposit(out);
         }
     }
 
@@ -91,7 +103,7 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
         if (_wantBalance >= _amountNeeded) {
             return (_amountNeeded, 0);
         }
-        uint256 amountToWithdraw = ((_amountNeeded - _wantBalance) * 1e18) /
+        uint256 amountToWithdraw = (_UsdceToUsdc(_amountNeeded - _wantBalance) * 1e18) /
             IBeefyVault(BEEFY_VAULT).getPricePerFullShare();
         if (
             amountToWithdraw > IBeefyVault(BEEFY_VAULT).balanceOf(address(this))
@@ -101,6 +113,7 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
             );
         }
         IBeefyVault(BEEFY_VAULT).withdraw(amountToWithdraw);
+        _sellUsdcForWant(IERC20(USDC).balanceOf(address(this)));
 
         _wantBalance = balanceOfWant();
 
@@ -142,25 +155,65 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
             );
     }
 
-    function UsdceToUsdc(
+    function _UsdceToUsdc(
         uint256 amountIn
     ) internal view returns (uint256 amountOut) {
         amountOut = smthToSmth(
-            WETH_USDC_UNI_POOL,
-            WETH,
+            USDC_USDCE_UNI_POOL,
+            address(want),
+            USDC,
+            amountIn
+        );
+    }
+
+    function _UsdcToUsdce(
+        uint256 amountIn
+    ) internal view returns (uint256 amountOut) {
+        amountOut = smthToSmth(
+            USDC_USDCE_UNI_POOL,
+            USDC,
             address(want),
             amountIn
         );
     }
 
-    function UsdcToUsdce(
-        uint256 amountIn
-    ) internal view returns (uint256 amountOut) {
-        amountOut = smthToSmth(
-            WETH_USDC_UNI_POOL,
-            WETH,
-            address(want),
-            amountIn
+    function _sellUsdcForWant(uint256 amountToSell) internal returns(uint256 out) {
+        if (amountToSell == 0) {
+            return 0 ;
+        }
+        ISwapRouter.ExactInputParams memory params;
+        bytes memory swapPath = abi.encodePacked(
+            USDC,
+            uint24(USDC_USDCE_FEE),
+            address(want)
         );
+
+        uint256 expected = _UsdcToUsdce(amountToSell);
+        params.path = swapPath;
+        params.recipient = address(this);
+        params.deadline = block.timestamp;
+        params.amountIn = amountToSell;
+        params.amountOutMinimum = (expected * slippage) / 10000;
+        out = ISwapRouter(UNISWAP_V3_ROUTER).exactInput(params);
+    }
+
+    function _sellWantForUsdc(uint256 amountToSell) internal returns(uint256 out) {
+        if (amountToSell == 0) {
+            return 0;
+        }
+        ISwapRouter.ExactInputParams memory params;
+        bytes memory swapPath = abi.encodePacked(
+            address(want),
+            uint24(USDC_USDCE_FEE),
+            USDC
+        );
+
+        uint256 expected = _UsdceToUsdc(amountToSell);
+        params.path = swapPath;
+        params.recipient = address(this);
+        params.deadline = block.timestamp;
+        params.amountIn = amountToSell;
+        params.amountOutMinimum = (expected * slippage) / 10000;
+        out = ISwapRouter(UNISWAP_V3_ROUTER).exactInput(params);
     }
 }
