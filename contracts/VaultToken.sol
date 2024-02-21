@@ -7,6 +7,7 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {IBaseVault} from "./interfaces/IBaseVault.sol";
 
 error VaultToken__PremintFailed(address user, uint256 amount);
 
@@ -30,6 +31,7 @@ contract VaultToken is
 
     bytes32 public constant ADMIN = keccak256("ADMIN");
     bytes32 public constant VAULT = keccak256("VAULT");
+    IBaseVault public currentVault;
 
     function _authorizeUpgrade(
         address newImplementation
@@ -52,5 +54,13 @@ contract VaultToken is
         for (uint256 i; i < len; i++) {
             _transfer(_msgSender(), to[i], amount[i]);
         }
+    }
+
+    function setCurrentVault(address newVault) external onlyRole(ADMIN){
+        currentVault = IBaseVault(newVault);
+    }
+
+    function pricePerShare() external view  returns (uint256 pps) {
+        pps = currentVault.pricePerShare();
     }
 }

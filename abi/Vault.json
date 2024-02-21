@@ -108,7 +108,6 @@
   "function totalDebt() view returns (uint256)",
   "function totalDebtRatio() view returns (uint256)",
   "function totalIdle() view returns (uint256)",
-  "function totalSupply() view returns (uint256)",
   "function transferOwnership(address)",
   "function trustedRemoteLookup(uint16) view returns (bytes)",
   "function updateStrategyDebtRatio(uint16,address,uint256)",

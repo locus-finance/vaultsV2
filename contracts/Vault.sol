@@ -134,10 +134,6 @@ contract Vault is
         return wantToken.balanceOf(address(this));
     }
 
-    function totalSupply() external view returns (uint256 sup) {
-        sup = vaultToken.totalSupply();
-    }
-
     function getRequestsWithinEpoch(
         uint256 epoch
     ) external view returns (WithdrawRequest[] memory requests) {
