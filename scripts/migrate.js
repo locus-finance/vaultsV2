@@ -50,7 +50,10 @@ async function main() {
         sumToSpread += holders[index].Balance;
         addresses.push(holders[index].HolderAddress)
         balances.push(holders[index].Balance)
+        console.log();
     }
+    console.log(addresses);
+    console.log(balances);
     console.log("Sum to spread: ", sumToSpread);
     console.log("Total supply:",totalSupply )
     console.log("Sender has: ", await vaultToken.balanceOf(await sender.getAddress()));
