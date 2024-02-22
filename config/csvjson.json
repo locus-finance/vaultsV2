@@ -1,150 +1,182 @@
 [
   {
     "HolderAddress": "0x036d6794fdde4b5c4ed216503d0717783df900aa",
-    "Balance": 1.700125
+    "Balance": 1.700125,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x08098e8b358e2d32928ce5eae5a558c8bc5c4947",
-    "Balance": 21.154109
+    "Balance": 21.154109,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x0a251df99a88a20a93876205fb7f5faf2e85a481",
-    "Balance": 0.007014
+    "Balance": 0.007014,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x13343ad9555a7158614806cd978920b1da2b034a",
-    "Balance": 502.68194
+    "Balance": 502.68194,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x13a37a9c400d0519139aa9790cb54e9fd31c9fa3",
-    "Balance": 47.507306
+    "Balance": 47.507306,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x184abefbdca24ce0dd964a74f6d5e69ce44d9579",
-    "Balance": 4.376208
+    "Balance": 4.376208,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x1858c0c5c0a5e18232b22ced0095b7e3dd8a7edc",
-    "Balance": 694.952494
+    "Balance": 694.952494,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x2319ad98c36dfbcd5e99a99685b317a71e14fcb6",
-    "Balance": 4.480745
+    "Balance": 4.480745,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x28898d63d599b8a8227e4e9367369111cd7214f8",
-    "Balance": 0.002104
-  },
-  {
-    "HolderAddress": "0x2a889e9ef10c7bd607473aadc8c806c4511eb26f",
-    "Balance": 1192.73
+    "Balance": 0.002104,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x3a6e5df38cb29abfef43250bd58e8bdd5d21ad09",
-    "Balance": 23.563247
+    "Balance": 23.563247,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x3fdb50f723ceb370470d314ed05c22d7359be529",
-    "Balance": 498.813691
+    "Balance": 498.813691,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x423bf3038eaee9cb3880dddc44b8aaa543aa5b4a",
-    "Balance": 11205.993306
+    "Balance": 11205.993306,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x4c904f5c12b86aaa4ca1d35d52d2c0064618a737",
-    "Balance": 1.610334
+    "Balance": 1.610334,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x597b784c2f69a7352fd631d3c00d2191d5a313bb",
-    "Balance": 0.011424
+    "Balance": 0.011424,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x5c6412ce0e1f5c15c98aebc5353d936ed9bc5bf1",
-    "Balance": 0.432172
+    "Balance": 0.432172,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x60a11c355bfed5b907088665358a896a8331e269",
-    "Balance": 569.494414
+    "Balance": 569.494414,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x61e1495131879182d2e3f99a14cca4d4c1776086",
-    "Balance": 9.990504
+    "Balance": 9.990504,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x6255c8305cfe99cfbfa2f567fe992583846b4986",
-    "Balance": 0.009349
+    "Balance": 0.009349,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x6c090e79a9399c0003a310e219b2d5ed4e6b0428",
-    "Balance": 616.464575
+    "Balance": 616.464575,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x6c11a995a9184f3d2faaa72a64a40d6b7ca08860",
-    "Balance": 401.726659
+    "Balance": 401.726659,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x6d33ecd723155522d597682df1f0ac10e7d7d9ed",
-    "Balance": 71.629746
+    "Balance": 71.629746,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x805ebb94084e01da57c4bc70b6fe414af9148596",
-    "Balance": 0.500266
+    "Balance": 2.371517,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x853eadd8cc45896d29826911026e47b919f7368d",
-    "Balance": 996.965973
+    "Balance": 996.965973,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0x8a37e1808d34f75db5807198c1a627e048813831",
-    "Balance": 19.765148
+    "Balance": 19.765148,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0xa8735830c77d9cf4bd9a3acc75db41ee045bfd14",
-    "Balance": 7.799207
+    "Balance": 7.799207,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0xb34351721a29c0b302303724922ce3060544dbe8",
-    "Balance": 497.430742
+    "Balance": 497.430742,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0xb90d7d91f1dfc23c721df0c922192a5ca72c2f07",
-    "Balance": 10192.73543
+    "Balance": 10192.73543,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0xb992e179423d23ad1b51d61779f7a9df93730cda",
-    "Balance": 1654.628401
+    "Balance": 1654.628401,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0xb99d45612548a9ddd4ed063bd1638ccb28957a6c",
-    "Balance": 5037.341844
+    "Balance": 5037.341844,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0xba18a279d5bb53784da77f4f4f0cc5d86571e37a",
-    "Balance": 0.044402
+    "Balance": 0.044402,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0xc0496fe72226e6463a30cf0e0f0b5be525262b4e",
-    "Balance": 30.502371
+    "Balance": 30.502371,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0xd6f3c32f5e6e1e1eb9e0ea16fe5e86a95a126ed8",
-    "Balance": 0.003608
+    "Balance": 0.003608,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0xd93e036a2a3bc252a4b1a1269e640afbe2ac8a53",
-    "Balance": 387.850128
+    "Balance": 387.850128,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0xe8f4ca3529e3701c2435daa5409a1c0621f09f32",
-    "Balance": 2251.100343
+    "Balance": 2251.100343,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0xf70feaa153a0ffc391525c1226d6e0f00edf9974",
-    "Balance": 0.023251
+    "Balance": 0.023251,
+    "PendingBalanceUpdate": "No"
   },
   {
     "HolderAddress": "0xf7aef5fc0f5d6b030c417d6a44fcc23497cd3e0a",
-    "Balance": 2146.777881
+    "Balance": 2146.777881,
+    "PendingBalanceUpdate": "No"
   }
 ]

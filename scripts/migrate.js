@@ -20,7 +20,7 @@ const ABI = [
   "function migrateStrategy(uint16,address,address) external"
 ];
 
-const holders = require("../config/xUsdHolders.json")
+const holders = require("../config/csvjson.json")
 // import holders from "../config/xUsdHolders.json";
 const { vaultChain } = require("../utils");
 
@@ -38,8 +38,7 @@ async function main() {
   const provider = new ethers.JsonRpcProvider(
     "http://127.0.0.1:8545"
   );
-  const sender = (new ethers.Wallet(process.env.DEPLOYER_PRIVATE_KEY)).connect(provider);
-  console.log(await sender.getAddress());
+  const sender = "0x582cA23C72A715bA7304d42099BBbFE9868Ba5AA"
   const holdersLen = holders.length;
   let sumToSpread = 0;
   let addresses = []
@@ -50,15 +49,13 @@ async function main() {
         sumToSpread += holders[index].Balance;
         addresses.push(holders[index].HolderAddress)
         balances.push(holders[index].Balance)
-        console.log();
     }
-    console.log(addresses);
-    console.log(balances);
     console.log("Sum to spread: ", sumToSpread);
     console.log("Total supply:",totalSupply )
-    console.log("Sender has: ", await vaultToken.balanceOf(await sender.getAddress()));
-    expect(await vaultToken.balanceOf(await sender.getAddress())).to.gte(sumToSpread)
-    await vaultToken.connect(sender).dispatch(addresses, balances);
+    console.log("Sender has: ", await vaultToken.balanceOf(sender));
+    console.log();
+    // expect(await vaultToken.balanceOf(sender)).to.gte(sumToSpread)
+    // await vaultToken.connect(sender).dispatch(addresses, balances);
 
   
 }
