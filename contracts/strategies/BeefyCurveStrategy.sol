@@ -62,9 +62,9 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
     function estimatedTotalAssets() public view override returns (uint256) {
         return
             balanceOfWant() +
-            (IBeefyVault(BEEFY_VAULT).getPricePerFullShare() *
+            _LpToWant((IBeefyVault(BEEFY_VAULT).getPricePerFullShare() *
                 IBeefyVault(BEEFY_VAULT).balanceOf(address(this))) /
-            10 ** 18;
+            10 ** 18);
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal override {
@@ -82,7 +82,7 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
             uint256[2] memory amountsIn = [excessWant, 0];
             uint256 minMintAmount = _calcMinMintAmount(amountsIn);
             IPlainPool(CURVE_POOL).add_liquidity(amountsIn,minMintAmount);
-            IBeefyVault(BEEFY_VAULT).deposit(excessWant);
+            IBeefyVault(BEEFY_VAULT).deposit(IERC20(CURVE_POOL).balanceOf(address(this)));
         }
     }
 
@@ -129,6 +129,10 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
     }
 
     function _calcMinMintAmount(uint256[2] memory amount) internal view returns(uint256 out){
+        out = IPlainPool(CURVE_POOL).calc_token_amount(amount, true) * slippage / MAX_BPS;
+    }
 
+    function _LpToWant(uint256 amount) internal view returns(uint256 out){
+        out = IPlainPool(CURVE_POOL).calc_withdraw_one_coin(amount, 0);
     }
 }

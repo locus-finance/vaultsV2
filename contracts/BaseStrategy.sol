@@ -115,7 +115,7 @@ abstract contract BaseStrategy is
     bool public emergencyExit;
     ISgBridge public sgBridge;
     IStargateRouter public sgRouter;
-    uint256 private constant MAX_BPS = 10_000;
+    uint256 internal constant MAX_BPS = 10_000;
     uint256 public performanceFee;
     uint256 public managementFee;
     uint256 private constant SECS_PER_YEAR = 31_556_952;
