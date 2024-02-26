@@ -383,7 +383,7 @@ contract Vault is
         uint64 _nonce,
         bytes calldata _payload
     ) public virtual override {
-        if (msg.sender != address(lzEndpoint)) revert Vault__V10();
+        if (msg.sender != address(lzEndpoint) && !_strategiesByChainId[_srcChainId].contains(msg.sender)) revert Vault__V10();
         _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
 

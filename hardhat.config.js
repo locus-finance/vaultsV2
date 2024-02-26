@@ -61,7 +61,6 @@ module.exports = {
       // chainId: 1,
       forking: {
         url: ARBITRUM_NODE || "",
-        blockNumber: 180429847,
       },
     },
     mainnet: {

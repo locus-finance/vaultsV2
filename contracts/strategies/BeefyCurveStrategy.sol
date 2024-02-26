@@ -139,16 +139,20 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
     }
 
     function _calcMinMintAmount(uint256[2] memory amount) internal view returns(uint256 out){
+        if (amount[0] == 0) return 0;
         out = IPlainPool(CURVE_POOL).calc_token_amount(amount, true) * slippage / MAX_BPS;
     }
     function _calcMinWithdrawAmount(uint256 amount) internal view returns(uint256 out){
+        if (amount == 0) return 0;
         out = IPlainPool(CURVE_POOL).calc_withdraw_one_coin(amount, 0) * slippage / MAX_BPS;
     }
 
     function _LpToWant(uint256 amount) internal view returns(uint256 out){
+        if (amount == 0) return 0;
         out = IPlainPool(CURVE_POOL).calc_withdraw_one_coin(amount, 0);
     }
     function _wantToLp(uint256[2] memory amount) internal view returns(uint256 out){
+        if (amount[0] == 0) return 0;
         out = IPlainPool(CURVE_POOL).calc_token_amount(amount, true);
     }
 }
