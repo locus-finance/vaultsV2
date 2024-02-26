@@ -5,6 +5,7 @@ require("hardhat-gas-reporter");
 require("hardhat-log-remover");
 require("hardhat-abi-exporter");
 require("@nomicfoundation/hardhat-toolbox");
+const bridgeConfig = require("./constants/bridgeConfig.json");
 
 require("dotenv").config();
 require("./tasks");
@@ -371,4 +372,36 @@ task("sign", "Sign harvest")
     );
 
     console.log("Signature", signature);
+  });
+
+  task("harvestInfo", "Info harvest")
+  .addPositionalParam("chain")
+  .addPositionalParam("addr")
+  .setAction(async (taskArgs) => {
+    const [signer] = await ethers.getSigners();
+    const networkName = hre.network.name;
+
+    const vault = await ethers.getContractAt(
+        "Vault",
+        bridgeConfig[networkName].vault
+    );
+
+    
+    const strategyInfo = await vault.strategies(
+        taskArgs.chain,
+        taskArgs.addr
+    );
+    const debtOutstanding = await vault.debtOutstanding(
+      taskArgs.chain,
+      taskArgs.addr
+    );
+    const creditAvailable = await vault.creditAvailable(
+      taskArgs.chain,
+      taskArgs.addr
+    );
+
+    console.log(`Total debt=${(strategyInfo.totalDebt)}`);
+    console.log(`Debt outstanding=${(debtOutstanding)}`);
+    console.log(`Credit available=${(creditAvailable)}`);
+    console.log(`Debt ratio=${(strategyInfo.debtRatio)}`);
   });
