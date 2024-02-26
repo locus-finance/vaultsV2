@@ -27,13 +27,13 @@ async function main() {
     ],
     {
       initializer: "initialize",
-      kind: "transparent",
+      kind: "uups",
     }
   );
   await beefyCompoundStrategy.waitForDeployment();
 
   console.log(
-    "BeefyCompoundStrategy deployed to:",
+    "BeefyCurve deployed to:",
     await beefyCompoundStrategy.getAddress()
   );
 
