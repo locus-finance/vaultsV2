@@ -34,6 +34,29 @@ struct WithdrawEpoch {
 
 interface IVault {
     error InsufficientFunds(uint256 amount, uint256 balance);
+    error Vault__V1();
+    error Vault__V2();
+    error Vault__V3();
+    error Vault__V4();
+    error Vault__V5();
+    error Vault__V6();
+    error Vault__V7();
+    error Vault__V8();
+    error Vault__V9();
+    error Vault__V10();
+    error Vault__V11();
+    error Vault__V12();
+    error Vault__V13();
+    error Vault__V14();
+    error Vault__V15();
+    error Vault__V16();
+    error Vault__V17();
+    error Vault__V18();
+    error Vault__V19();
+    error Vault__V20();
+    error Vault__V21();
+    error Vault__V22();
+    error Vault__V23();
 
     event SgReceived(address indexed token, uint256 amount, address sender);
     event StrategyWithdrawnSome(
@@ -57,50 +80,6 @@ interface IVault {
         uint256 debtRatio,
         uint256 tokens
     );
-
-    function initialize(
-        address _governance,
-        address _lzEndpoint,
-        IERC20 _token,
-        address _sgRouter
-    ) external;
-
-    function token() external view returns (IERC20);
-
-    function revokeFunds() external;
-
-    function totalAssets() external view returns (uint256);
-
-    function deposit(
-        uint256 _amount,
-        address _recipient
-    ) external returns (uint256);
-
-    function withdraw(
-        uint256 _maxShares,
-        address _recipient,
-        uint256 _maxLoss
-    ) external;
-
-    function addStrategy(
-        uint16 _chainId,
-        address _strategy,
-        uint256 _debtRatio,
-        uint256 _performanceFee,
-        address _strategist
-    ) external;
-
-    function handleWithdrawals() external;
-
-    function pricePerShare() external view returns (uint256);
-
-    function revokeStrategy(uint16 _chainId, address _strategy) external;
-
-    function updateStrategyDebtRatio(
-        uint16 _chainId,
-        address _strategy,
-        uint256 _debtRatio
-    ) external;
-
-    function governance() external view returns (address);
+    event Deposit(address indexed from, uint256 indexed wantTokenAmount, address indexed recipient, uint256 sharesIssued, uint256 timestamp);
+    event Withdraw(address indexed from, uint256 indexed wantTokenAmount, address indexed recipient, uint256 sharesIssued, uint256 timestamp);
 }

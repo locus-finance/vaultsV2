@@ -5,9 +5,6 @@ const { vaultChain } = require("../utils");
 
 const TOKEN = "USDC";
 async function main() {
-  const { deployer } = await getNamedAccounts();
-
-  console.log(`Your address: ${deployer}. Network: ${hre.network.name}`);
 
   const config = bridgeConfig[hre.network.name];
   const vaultConfig = bridgeConfig[vaultChain(hre.network.name)];
@@ -27,15 +24,15 @@ async function main() {
     ],
     {
       initializer: "initialize",
-      kind: "transparent",
+      kind: "uups",
     }
   );
-  await hopStrategy.deployed();
+  await hopStrategy.waitForDeployment();
 
-  console.log("HopStrategy deployed to:", hopStrategy.address);
+  console.log("HopStrategy deployed to:",await hopStrategy.getAddress());
 
   await hre.run("verify:verify", {
-    address: hopStrategy.address,
+    address:await hopStrategy.getAddress(),
   });
 }
 main();

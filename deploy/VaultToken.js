@@ -4,20 +4,12 @@ const bridgeConfig = require("../constants/bridgeConfig.json");
 
 const TOKEN = "USDC";
 async function main() {
-  
 
-  // console.log(`Your address: ${deployer}. Network: ${hre.network.name}`);
   const config = bridgeConfig["arbitrumOne"];
-  const Vault = await ethers.getContractFactory("Vault");
+  const Vault = await ethers.getContractFactory("VaultToken");
   const vault = await upgrades.deployProxy(
     Vault,
-    [
-      config.governance,
-      config.mainAdmin,
-      config.lzEndpoint,
-      config[TOKEN].address,
-      config.sgRouter,
-    ],
+    [config.strategist, config.vault],
     {
       initializer: "initialize",
       kind: "uups",
@@ -25,7 +17,7 @@ async function main() {
   );
   await vault.waitForDeployment();
 
-  console.log("Vault deployed to:", await vault.getAddress());
+  console.log("Token deployed to:", await vault.getAddress());
 
   await hre.run("verify:verify", {
     address: await vault.getAddress(),

@@ -10,7 +10,7 @@ async function main() {
   const config = bridgeConfig[hre.network.name];
   const vaultConfig = bridgeConfig[vaultChain(hre.network.name)];
   const BeefyCompoundStrategy = await ethers.getContractFactory(
-    "BeefyCompoundStrategy"
+    "SaverStrategy"
   );
   const beefyCompoundStrategy = await upgrades.deployProxy(
     BeefyCompoundStrategy,
@@ -23,8 +23,7 @@ async function main() {
       vaultConfig.chainId,
       config.chainId,
       config.sgBridge,
-      config.sgRouter,
-      hre.network.name,
+      config.sgRouter
     ],
     {
       initializer: "initialize",
@@ -34,7 +33,7 @@ async function main() {
   await beefyCompoundStrategy.waitForDeployment();
 
   console.log(
-    "BeefyCompoundStrategy deployed to:",
+    "Saver deployed to:",
    await beefyCompoundStrategy.getAddress()
   );
 

@@ -9,11 +9,13 @@ import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRoute
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 import "../integrations/hop/IStakingRewards.sol";
 import "../integrations/hop/IRouter.sol";
+import "hardhat/console.sol";
 
-contract HopStrategy is Initializable, BaseStrategy {
+contract HopStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
     using SafeERC20 for IERC20;
 
     uint256 public constant DEFAULT_SLIPPAGE = 9_500;
@@ -36,7 +38,7 @@ contract HopStrategy is Initializable, BaseStrategy {
     address internal constant UNISWAP_V3_ROUTER =
         0xE592427A0AEce92De3Edee1F18E0157C05861564;
 
-    uint32 internal constant TWAP_RANGE_SECS = 6000;
+    uint32 internal constant TWAP_RANGE_SECS = 1800;
 
     address internal constant ETH_USDC_UNI_V3_POOL =
         0xC6962004f452bE9203591991D15f6b388e09E8D0;
@@ -52,6 +54,7 @@ contract HopStrategy is Initializable, BaseStrategy {
         address _sgBridge,
         address _router
     ) external initializer {
+        __UUPSUpgradeable_init();
         __BaseStrategy_init(
             _lzEndpoint,
             _strategist,
@@ -69,6 +72,9 @@ contract HopStrategy is Initializable, BaseStrategy {
         IERC20(HOP).safeApprove(UNISWAP_V3_ROUTER, type(uint256).max);
         want.safeApprove(HOP_ROUTER, type(uint256).max);
     }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner{}
+
 
     function name() external pure override returns (string memory) {
         return "HopStrategy";
@@ -194,6 +200,7 @@ contract HopStrategy is Initializable, BaseStrategy {
     function HopToWant(
         uint256 amountIn
     ) internal view returns (uint256 amountOut) {
+        if(amountIn == 0) return 0;
         amountOut = smthToSmth(
             WETH_USDC_UNI_POOL,
             WETH,

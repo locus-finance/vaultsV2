@@ -14,20 +14,20 @@
         "TestStrategy": "0xBfADFc8db4B28Fc75119A0672cbB17f6092D596D"
     },
     "arbitrumOne": {
-        "proxyAdmin": "0x1B4C9A314117E037461FBdc980C9DeBeFEE6F891",
         "chainId": 110,
         "USDC": {
             "address": "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
             "poolId": 1
         },
-        "sgBridge": "0x1C0C2133c9F2b74fb3522df0437d290f364f38a3",
+        "sgBridge": "0xc66534d9f18a9aB1b092861590495f6e4b4cfE14",
         "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0x3c2269811836af69497E5F486A85D7316753cf62",
         "HopStrategy": "",
         "slippage": 9500,
         "TestStrategy": "0x0427eE06e5220BA8013d2A753109A57AD4020373",
         "strategist": "0x942f39555D430eFB3230dD9e5b86939EFf185f0A",
-        "vault": "0x2a889E9ef10c7Bd607473Aadc8c806c4511EB26f",
+        "mainAdmin": "0xC1287e8e489e990b424299376f37c83CD39Bfc4c",
+        "vault": "0x6318938F825F57d439B3a9E25C38F04EF97987D8",
         "governance": "0x942f39555D430eFB3230dD9e5b86939EFf185f0A",
         "harvester": "0x3C2792d5Ea8f9C03e8E73738E9Ed157aeB4FeCBe"
     },
@@ -41,7 +41,7 @@
         "USDbC": {
             "address": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA"
         },
-        "sgBridge": "0x0CD5cda0E120F7E22516f074284e5416949882C2",
+        "sgBridge": "0x1B4C9A314117E037461FBdc980C9DeBeFEE6F891",
         "sgRouter": "0xeCc19E177d24551aA7ed6Bc6FE566eCa726CC8a9",
         "lzEndpoint": "0xb6319cC6c8c27A8F5dAF0dD3DF91EA35C4720dd7",
         "slippage": 9500,

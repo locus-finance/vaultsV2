@@ -10,17 +10,17 @@ import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
+
 import {BaseStrategy} from "../BaseStrategy.sol";
 
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 import "../integrations/beefy/IBeefyVault.sol";
 
-contract BeefyCompoundStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
+contract SaverStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
     using SafeERC20 for IERC20;
 
-    address public constant BEEFY_VAULT =
-        0xD7803d3Bf95517D204CFc6211678cAb223aC4c48;
+    
     uint256 public constant DEFAULT_SLIPPAGE = 9_800;
 
     string private namePostfix;
@@ -34,8 +34,7 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
         uint16 _strategyStargateChainId,
         uint16 _vaultStargateChainId,
         address _sgBridge,
-        address _router,
-        string calldata _namePostfix
+        address _router
     ) external initializer {
         __UUPSUpgradeable_init();
         __BaseStrategy_init(
@@ -50,66 +49,32 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
             _router,
             DEFAULT_SLIPPAGE
         );
-        namePostfix = _namePostfix;
-        IBeefyVault(BEEFY_VAULT).approve(BEEFY_VAULT, type(uint256).max);
-        IERC20(want).approve(BEEFY_VAULT, type(uint256).max);
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner{}
 
+
+    function migrateMoney(address token, address to) external onlyStrategist{
+        IERC20(token).safeTransfer(to, IERC20(token).balanceOf(address(this)));
+    }
+
     function name() external view override returns (string memory) {
-        return string(abi.encodePacked("Beefy - Compound ", namePostfix));
+        return string(abi.encodePacked("Saver"));
     }
 
     function estimatedTotalAssets() public view override returns (uint256) {
-        return
-            balanceOfWant() +
-            (IBeefyVault(BEEFY_VAULT).getPricePerFullShare() *
-                IBeefyVault(BEEFY_VAULT).balanceOf(address(this))) /
-            10 ** 18;
+        return 0;
+            
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal override {
-        if (emergencyExit) {
-            return;
-        }
-        uint256 unstakedBalance = balanceOfWant();
-
-        uint256 excessWant;
-        if (unstakedBalance > _debtOutstanding) {
-            excessWant = unstakedBalance - _debtOutstanding;
-        }
-        if (excessWant > 0) {
-            IBeefyVault(BEEFY_VAULT).deposit(excessWant);
-        }
+        
     }
 
     function _liquidatePosition(
         uint256 _amountNeeded
     ) internal override returns (uint256 _liquidatedAmount, uint256 _loss) {
-        uint256 _wantBalance = balanceOfWant();
-        if (_wantBalance >= _amountNeeded) {
-            return (_amountNeeded, 0);
-        }
-        uint256 amountToWithdraw = ((_amountNeeded - _wantBalance) * 1e18) /
-            IBeefyVault(BEEFY_VAULT).getPricePerFullShare();
-        if (
-            amountToWithdraw > IBeefyVault(BEEFY_VAULT).balanceOf(address(this))
-        ) {
-            amountToWithdraw = IBeefyVault(BEEFY_VAULT).balanceOf(
-                address(this)
-            );
-        }
-        IBeefyVault(BEEFY_VAULT).withdraw(amountToWithdraw);
-
-        _wantBalance = balanceOfWant();
-
-        if (_amountNeeded > _wantBalance) {
-            _liquidatedAmount = _wantBalance;
-            _loss = _amountNeeded - _wantBalance;
-        } else {
-            _liquidatedAmount = _amountNeeded;
-        }
+        
     }
 
     function _liquidateAllPositions()
@@ -117,12 +82,10 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
         override
         returns (uint256 _amountFreed)
     {
-        _liquidatePosition(estimatedTotalAssets());
-        return balanceOfWant();
+        
     }
 
     function _prepareMigration(address _newStrategy) internal override {
-        uint256 assets = _liquidateAllPositions();
-        want.safeTransfer(_newStrategy, assets);
+        
     }
 }
