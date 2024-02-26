@@ -57,7 +57,9 @@ contract VaultToken is
     }
 
     function setCurrentVault(address newVault) external onlyRole(ADMIN){
+        _revokeRole(VAULT, address(currentVault));
         currentVault = IBaseVault(newVault);
+        _grantRole(VAULT, newVault);
     }
 
     function pricePerShare() external view  returns (uint256 pps) {
