@@ -2,86 +2,63 @@
 
 pragma solidity ^0.8.19;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {ERC4626} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
 import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
-import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
 import {IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 import {StrategyParams, WithdrawRequest, WithdrawEpoch, IVault} from "./interfaces/IVault.sol";
 import {IBaseStrategy} from "./interfaces/IBaseStrategy.sol";
-import "hardhat/console.sol";
+import {IVaultToken} from "./interfaces/IVaultToken.sol";
+import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
-// import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
-// import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
-
-error Vault__V1();
-error Vault__V2();
-error Vault__V3();
-error Vault__V4();
-error Vault__V5();
-error Vault__V6();
-error Vault__V7();
-error Vault__V8();
-error Vault__V9();
-error Vault__V10();
-error Vault__V11();
-error Vault__V12();
-error Vault__V13();
-error Vault__V14();
-error Vault__V15();
-error Vault__V16();
-error Vault__V17();
-error Vault__V18();
-error Vault__V19();
-error Vault__V20();
-error Vault__V21();
-error Vault__V22();
-error Vault__V23();
 
 contract Vault is
     Initializable,
-    ERC20Upgradeable,
     NonblockingLzAppUpgradeable,
     IVault,
     IStrategyMessages,
     IStargateReceiver,
-    ReentrancyGuardUpgradeable
+    ReentrancyGuardUpgradeable,
+    UUPSUpgradeable,
+    AccessControlUpgradeable
 {
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.AddressSet;
-    using SafeERC20 for IERC20;
+    using SafeERC20 for IERC20Metadata;
+    using SafeERC20 for IVaultToken;
     using BytesLib for bytes;
 
     function initialize(
-        address _governance,
+        address gouvernance,
+        address mainAdmin,
         address _lzEndpoint,
-        IERC20 _token,
+        IERC20Metadata _wantToken,
         address _sgRouter
-    ) external override initializer {
+    ) external initializer {
         __ReentrancyGuard_init();
+        __UUPSUpgradeable_init();
+        __AccessControl_init();
         __NonblockingLzAppUpgradeable_init(_lzEndpoint);
-        __Ownable_init();
-        __ERC20_init("Locus Yield USD", "xUSD");
-
-        governance = _governance;
-        token = _token;
+        _grantRole(DEFAULT_ADMIN_ROLE, mainAdmin);
+        _grantRole(GOVERNANCE, gouvernance);
+        wantToken = _wantToken;
         sgRouter = _sgRouter;
     }
 
-    uint16 internal constant VAULT_CHAIN_ID = 110;
-    address public override governance;
-    IERC20 public override token;
+    bytes32 public constant GOVERNANCE = keccak256("GOVERNANCE");
 
+    uint16 internal constant VAULT_CHAIN_ID = 110;
+    IERC20Metadata public wantToken;
+    IVaultToken public vaultToken;
     ISgBridge public sgBridge;
     uint256 public totalDebtRatio;
     uint256 public totalDebt;
@@ -96,12 +73,6 @@ contract Vault is
         internal _usedNonces;
     address public sgRouter;
     uint256 public gasForLzSend;
-
-    modifier onlyAuthorized() {
-        if (msg.sender != governance && msg.sender != owner())
-            revert Vault__V1();
-        _;
-    }
 
     modifier isAction(uint16 _chainId, address _strategy) {
         if (strategies[_chainId][_strategy].activation == 0) revert Vault__V2();
@@ -118,46 +89,49 @@ contract Vault is
         _;
     }
 
-    function revokeFunds() external override onlyAuthorized {
+    function _authorizeUpgrade(address newImplementation) internal override onlyRole(GOVERNANCE){}
+
+
+    function revokeFunds() external onlyRole(GOVERNANCE) {
         payable(msg.sender).transfer(address(this).balance);
     }
 
     function setEmergencyShutdown(
         bool _emergencyShutdown
-    ) external onlyAuthorized {
+    ) external onlyRole(GOVERNANCE) {
         emergencyShutdown = _emergencyShutdown;
     }
 
-    function setGasForLzSend(uint256 _gas) external onlyOwner {
+    function setGasForLzSend(uint256 _gas) external onlyRole(GOVERNANCE) {
         gasForLzSend = _gas;
     }
 
-    function setGovernance(address _newGovernance) external onlyAuthorized {
-        governance = _newGovernance;
-    }
-
-    function setSgBridge(address _newSgBridge) external onlyAuthorized {
+    function setSgBridge(address _newSgBridge) external onlyRole(GOVERNANCE) {
         sgBridge = ISgBridge(_newSgBridge);
     }
 
-    function setSgRouter(address _newSgRouter) external onlyAuthorized {
+    function setSgRouter(address _newSgRouter) external onlyRole(GOVERNANCE) {
         sgRouter = _newSgRouter;
+    }
+
+    function setVaultToken(IVaultToken _newToken) external onlyRole(GOVERNANCE) {
+        vaultToken = _newToken;
     }
 
     function setStrategist(
         uint16 _chainId,
         address _strategy,
         address _newStrategist
-    ) external onlyAuthorized {
+    ) external onlyRole(GOVERNANCE) {
         strategies[_chainId][_strategy].strategist = _newStrategist;
     }
 
-    function totalAssets() public view override returns (uint256) {
+    function totalAssets() public view returns (uint256) {
         return totalDebt + totalIdle();
     }
 
     function totalIdle() public view returns (uint256) {
-        return token.balanceOf(address(this));
+        return wantToken.balanceOf(address(this));
     }
 
     function getRequestsWithinEpoch(
@@ -169,10 +143,11 @@ contract Vault is
     function deposit(
         uint256 _amount,
         address _recipient
-    ) public override nonReentrant returns (uint256) {
+    ) public nonReentrant returns (uint256) {
         if (emergencyShutdown) revert Vault__V11();
         uint256 shares = _issueSharesForAmount(_recipient, _amount);
-        token.safeTransferFrom(msg.sender, address(this), _amount);
+        wantToken.safeTransferFrom(msg.sender, address(this), _amount);
+        emit Deposit(_msgSender(), _amount, _recipient, shares, block.timestamp);
         return shares;
     }
 
@@ -184,12 +159,12 @@ contract Vault is
         uint256 _maxShares,
         address _recipient,
         uint256 _maxLoss
-    ) public override WithdrawInProgress {
-        if (_maxShares == 0 || _maxShares > balanceOf(msg.sender))
+    ) public WithdrawInProgress {
+        if (_maxShares == 0 || _maxShares > vaultToken.balanceOf(msg.sender))
             revert Vault__V19();
         if (_recipient == address(0)) revert Vault__V20();
         if (_maxLoss > MAX_BPS) revert Vault__V23();
-        _transfer(msg.sender, address(this), _maxShares);
+        vaultToken.safeTransferFrom(msg.sender, address(this), _maxShares);
         withdrawEpochs[withdrawEpoch].requests.push(
             WithdrawRequest({
                 author: msg.sender,
@@ -209,7 +184,7 @@ contract Vault is
         uint256 _debtRatio,
         uint256 _performanceFee,
         address _strategist
-    ) external override onlyAuthorized nonAction(_chainId, _strategy) {
+    ) external onlyRole(GOVERNANCE) nonAction(_chainId, _strategy) {
         if (totalDebtRatio + _debtRatio > MAX_BPS) revert Vault__V5();
         if (_performanceFee > MAX_BPS) revert Vault__V18();
         strategies[_chainId][_strategy] = StrategyParams({
@@ -264,7 +239,7 @@ contract Vault is
         return Math.min(totalIdle(), strategyDebtLimit - strategyTotalDebt);
     }
 
-    function handleWithdrawals() external override onlyAuthorized {
+    function handleWithdrawals() external onlyRole(GOVERNANCE) {
         uint256 withdrawValue = 0;
         for (
             uint256 i = 0;
@@ -332,23 +307,15 @@ contract Vault is
         withdrawEpochs[withdrawEpoch].inProgress = true;
     }
 
-    function pricePerShare() external view override returns (uint256) {
-        return _shareValue(10 ** ERC20Upgradeable(address(token)).decimals());
-    }
-
-    function revokeStrategy(
-        uint16 _chainId,
-        address _strategy
-    ) external override onlyAuthorized {
-        totalDebtRatio -= strategies[_chainId][_strategy].debtRatio;
-        strategies[_chainId][_strategy].debtRatio = 0;
+    function pricePerShare() external view returns (uint256) {
+        return _shareValue(10 ** wantToken.decimals());
     }
 
     function updateStrategyDebtRatio(
         uint16 _chainId,
         address _strategy,
         uint256 _debtRatio
-    ) external override onlyAuthorized {
+    ) external onlyRole(GOVERNANCE) {
         if (emergencyShutdown == true) revert Vault__V21();
         totalDebtRatio -= strategies[_chainId][_strategy].debtRatio;
         strategies[_chainId][_strategy].debtRatio = _debtRatio;
@@ -360,8 +327,8 @@ contract Vault is
         uint16 _chainId,
         address _oldStrategy,
         address _newStrategy
-    ) external onlyAuthorized nonAction(_chainId, _newStrategy) {
-        if (_newStrategy == address(0) || _newStrategy != _oldStrategy)
+    ) external onlyRole(GOVERNANCE) nonAction(_chainId, _newStrategy) {
+        if (_newStrategy == address(0) || _newStrategy == _oldStrategy)
             revert Vault__V7();
         StrategyParams memory params = strategies[_chainId][_oldStrategy];
         strategies[_chainId][_newStrategy] = StrategyParams({
@@ -396,14 +363,14 @@ contract Vault is
         uint256 _amountLD,
         bytes memory _payload
     ) external override {
-        if (_token != address(token)) revert Vault__V8();
+        if (_token != address(wantToken)) revert Vault__V8();
         if (msg.sender != sgRouter && msg.sender != address(sgBridge))
             revert Vault__V9();
 
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
-        if (_token != address(token)) {}
+        if (_token != address(wantToken)) {}
 
         _handlePayload(_srcChainId, _payload, _amountLD);
 
@@ -440,14 +407,6 @@ contract Vault is
             );
             _handleWithdrawSomeResponse(_chainId, message);
         }
-    }
-
-    function onChainReport(
-        uint16 _chainId,
-        StrategyReport memory _message,
-        uint256 _receivedTokens
-    ) external {
-        _handleStrategyReport(_chainId, _message, _receivedTokens);
     }
 
     function _handleStrategyReport(
@@ -522,10 +481,10 @@ contract Vault is
     }
 
     function _shareValue(uint256 _shares) internal view returns (uint256) {
-        if (totalSupply() == 0) {
+        if (vaultToken.totalSupply() == 0) {
             return _shares;
         }
-        return (_shares * totalAssets()) / totalSupply();
+        return (_shares * totalAssets()) / vaultToken.totalSupply();
     }
 
     function _issueSharesForAmount(
@@ -533,13 +492,13 @@ contract Vault is
         uint256 _amount
     ) internal returns (uint256) {
         uint256 shares = 0;
-        if (totalSupply() == 0) {
+        if (vaultToken.totalSupply() == 0) {
             shares = _amount;
         } else {
-            shares = (_amount * totalSupply()) / totalAssets();
+            shares = (_amount * vaultToken.totalSupply()) / totalAssets();
         }
         if (shares == 0) revert Vault__V13();
-        _mint(_to, shares);
+        vaultToken.mint(_to, shares);
         return shares;
     }
 
@@ -603,14 +562,15 @@ contract Vault is
 
                 if (diffScaled > request.maxLoss) {
                     request.success = false;
-                    this.transfer(request.author, request.shares);
+                    vaultToken.safeTransfer(request.author, request.shares);
                     continue;
                 }
             }
 
             request.success = true;
-            token.safeTransfer(request.user, valueToTransfer);
-            _burn(address(this), request.shares);
+            wantToken.safeTransfer(request.user, valueToTransfer);
+            vaultToken.burn(address(this), request.shares);
+            emit Withdraw(request.author, valueToTransfer, request.user, request.shares, block.timestamp);
         }
 
         emit FulfilledWithdrawEpoch(withdrawEpoch, requestsLength);
@@ -668,11 +628,9 @@ contract Vault is
     ) internal {
         console.log("In vault bridge", _destChainId, _dest, address(sgBridge));
         uint256 fee = sgBridge.feeForBridge(_destChainId, _dest, _payload);
-        console.log(fee);
-        token.safeApprove(address(sgBridge), _amount);
-        console.log(address(sgBridge));
+        wantToken.safeApprove(address(sgBridge), _amount);
         sgBridge.bridge{value: fee}(
-            address(token),
+            address(wantToken),
             _amount,
             _destChainId,
             _dest,
@@ -729,7 +687,7 @@ contract Vault is
         }
     }
 
-    function mixChainIds(uint256[] calldata values) external onlyAuthorized {
+    function mixChainIds(uint256[] calldata values) external onlyRole(GOVERNANCE) {
         for (uint256 i = 0; i < values.length; i++) {
             _supportedChainIds.remove(values[i]);
             _supportedChainIds.add(values[i]);
@@ -739,7 +697,7 @@ contract Vault is
     function mixStrategiesByChainIds(
         uint16 chainId,
         address[] calldata addresses
-    ) external onlyAuthorized {
+    ) external onlyRole(GOVERNANCE) {
         for (uint256 i = 0; i < addresses.length; i++) {
             _strategiesByChainId[chainId].remove(addresses[i]);
             _strategiesByChainId[chainId].add(addresses[i]);
@@ -754,10 +712,6 @@ contract Vault is
         uint16 chainId
     ) external view returns (address[] memory) {
         return _strategiesByChainId[chainId].values();
-    }
-
-    function decimals() public view virtual override returns (uint8) {
-        return 6;
     }
 
     receive() external payable {}

@@ -5,12 +5,11 @@ pragma solidity ^0.8.19;
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {ISgBridge} from "./interfaces/ISgBridge.sol";
 
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
-import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
 import "hardhat/console.sol";
 
@@ -19,7 +18,7 @@ struct SwapInfo {
     address tokenToSwap;
 }
 
-contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge {
+contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge, UUPSUpgradeable {
     using SafeERC20 for IERC20;
 
     IStargateRouter public router;
@@ -39,12 +38,14 @@ contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge {
         uint16 _currentChainId
     ) public override initializer {
         __Ownable_init();
-
+        __UUPSUpgradeable_init();
         router = IStargateRouter(_router);
         currentChainId = _currentChainId;
         slippage = 9_900;
         dstGasForCall = 1_000_000;
     }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner{}
 
     function setRouter(address _router) external override onlyOwner {
         router = IStargateRouter(_router);

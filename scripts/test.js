@@ -28,12 +28,12 @@ async function main() {
   console.log(1);
   // await deployStrategy()
 
-  await impersonateAccount("0x942f39555D430eFB3230dD9e5b86939EFf185f0A")
+  await impersonateAccount("0x3C2792d5Ea8f9C03e8E73738E9Ed157aeB4FeCBe")
 
   const governance = await ethers.provider.getSigner(
-    "0x942f39555D430eFB3230dD9e5b86939EFf185f0A"
+    "0x3C2792d5Ea8f9C03e8E73738E9Ed157aeB4FeCBe"
   );
-
+  await upgradeVault()
 
   const tx2 = await sigs[0].sendTransaction({
     to: await governance.getAddress(),
@@ -43,40 +43,38 @@ async function main() {
   console.log("funds send");
   const strategy = await ethers.getContractAt(
     ABI,
+    "0x68Ee86f798f247FeC4d33C224Dad360dC919450A"
+  );
+
+  const oldStrategy = await ethers.getContractAt(
+    ABI,
     "0xA93e1DfF89dcCCA3C3CadFd0A28aD071C230eD84"
   );
 
-  const newStrategy = await ethers.getContractAt(
-    ABI,
-    "0xC7f602302cAf28340BfDE77a24Ac9d93A10dB6BA"
-  );
-
-  const vault = await ethers.getContractAt(
-    ABI,
-    "0x2a889E9ef10c7Bd607473Aadc8c806c4511EB26f"
-  );
+  // const vault = await ethers.getContractAt(
+  //   ABI,
+  //   "0x2a889E9ef10c7Bd607473Aadc8c806c4511EB26f"
+  // );
   // await mine(1000);
   // await time.increase(1000)
-  console.log(await vault.owner())
-  console.log(await strategy.connect(governance).estimatedTotalAssets());
-  console.log(await newStrategy.connect(governance).estimatedTotalAssets());
-  console.log(await vault.connect(governance).migrateStrategy(110, await strategy.getAddress() ,await newStrategy.getAddress(), { gasLimit: 30000000 }));
-  console.log(await strategy.connect(governance).estimatedTotalAssets());
-  console.log(await newStrategy.connect(governance).estimatedTotalAssets());
+  // console.log(await vault.owner())
+  // console.log(await strategy.connect(governance).estimatedTotalAssets());
+  console.log(await oldStrategy.connect(governance).estimatedTotalAssets());
+  console.log(await strategy.connect(governance).harvest(0,0,13500000,4500,"0x6006d4f67c9d28bee8784c0efd4d7130741f23d0273a77bb18fba58ec82e65f67c6dd2124925236b35deb2f543072818d0d033a5159d006f5e3cea68ca2a0c821b", { gasLimit: 30000000 }));
+  // console.log(await strategy.connect(governance).estimatedTotalAssets());
+  // console.log(await newStrategy.connect(governance).estimatedTotalAssets());
 }
 
 async function upgradeVault() {
-  const provider = new ethers.providers.JsonRpcProvider({
-    url: "http://127.0.0.1:8545",
-  });
-  await impersonateAccount("0x3C2792d5Ea8f9C03e8E73738E9Ed157aeB4FeCBe")
-
-  console.log("upgrading");
-  const owner = await ethers.provider.getSigner(
-    "0x6194738930D4239e596C1CC624Fb1cEa4ebE2665"
+  const provider = new ethers.JsonRpcProvider(
+    "http://127.0.0.1:8545"
   );
-  console.log(owner);
-  console.log("upgrading");
+  await impersonateAccount("0xD44044f706B7a3491ae810173e916cE94a15ade5")
+
+  // console.log("upgrading");
+  const owner = await ethers.provider.getSigner(
+    "0xD44044f706B7a3491ae810173e916cE94a15ade5"
+  );
   // await proxy
   //   .connect(owner)
   //   .transferOwnership("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
@@ -84,11 +82,11 @@ async function upgradeVault() {
   const vault = await hre.ethers.getContractFactory("HopStrategy", owner);
   console.log("upgrading");
   const upgraded = await hre.upgrades.upgradeProxy(
-    "0x205D6195fa2ebFE04CDa0be91365c43aA9e1b739",
+    "0x68Ee86f798f247FeC4d33C224Dad360dC919450A",
     vault
   );
   console.log("upgrading");
-  console.log("Successfully upgraded implementation of", upgraded.address);
+  console.log("Successfully upgraded implementation of", await upgraded.getAddress());
 }
 
 async function deployStrategy() {

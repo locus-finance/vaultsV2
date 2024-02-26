@@ -2,7 +2,7 @@
 const hre = require("hardhat");
 
 async function main() {
-  const TARGET_ADDRESS = "0xA93e1DfF89dcCCA3C3CadFd0A28aD071C230eD84";
+  const TARGET_ADDRESS = "0x68Ee86f798f247FeC4d33C224Dad360dC919450A";
   const TARGET_STRATEGY = "HopStrategy";
 
   const TargetContract = await hre.ethers.getContractFactory(TARGET_STRATEGY);
@@ -12,10 +12,10 @@ async function main() {
     TargetContract
   );
 
-  console.log("Successfully upgraded implementation of", upgraded.address);
+  console.log("Successfully upgraded implementation of", await upgraded.getAddress());
 
   await hre.run("verify:verify", {
-    address: upgraded.address,
+    address:await upgraded.getAddress(),
   });
 }
 
