@@ -23,7 +23,6 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
         0xEc7c0205a6f426c2Cb1667d783B5B4fD2f875434;
     address public constant CURVE_POOL = 0x7f90122BF0700F9E7e1F688fe926940E8839F353;
     uint256 public constant DEFAULT_SLIPPAGE = 9_800;
-
     string private namePostfix;
 
     function initialize(
@@ -52,7 +51,9 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
         );
         namePostfix = _namePostfix;
         IBeefyVault(BEEFY_VAULT).approve(BEEFY_VAULT, type(uint256).max);
-        IERC20(want).approve(BEEFY_VAULT, type(uint256).max);
+        IERC20(want).approve(CURVE_POOL, type(uint256).max);
+        IERC20(CURVE_POOL).approve(BEEFY_VAULT, type(uint256).max);
+        IERC20(CURVE_POOL).approve(CURVE_POOL, type(uint256).max);
     }
 
     function name() external view override returns (string memory) {
@@ -63,8 +64,8 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
         return
             balanceOfWant() +
             _LpToWant((IBeefyVault(BEEFY_VAULT).getPricePerFullShare() *
-                IBeefyVault(BEEFY_VAULT).balanceOf(address(this))) /
-            10 ** 18);
+                IBeefyVault(BEEFY_VAULT).balanceOf(address(this)) /
+            10 ** 18));
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal override {
@@ -93,7 +94,8 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
         if (_wantBalance >= _amountNeeded) {
             return (_amountNeeded, 0);
         }
-        uint256 amountToWithdraw = ((_amountNeeded - _wantBalance) * 1e18) /
+        uint256[2] memory amountsIn = [_amountNeeded - _wantBalance, 0];
+        uint256 amountToWithdraw = (_wantToLp(amountsIn) * 1e18) /
             IBeefyVault(BEEFY_VAULT).getPricePerFullShare();
         if (
             amountToWithdraw > IBeefyVault(BEEFY_VAULT).balanceOf(address(this))
@@ -103,7 +105,9 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
             );
         }
         IBeefyVault(BEEFY_VAULT).withdraw(amountToWithdraw);
-
+        uint256 currentLpBalance = IERC20(CURVE_POOL).balanceOf(address(this));
+        uint256 minWithdrawAmount = _calcMinWithdrawAmount(currentLpBalance);
+        IPlainPool(CURVE_POOL).remove_liquidity_one_coin(currentLpBalance,0,minWithdrawAmount);
         _wantBalance = balanceOfWant();
 
         if (_amountNeeded > _wantBalance) {
@@ -131,8 +135,14 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
     function _calcMinMintAmount(uint256[2] memory amount) internal view returns(uint256 out){
         out = IPlainPool(CURVE_POOL).calc_token_amount(amount, true) * slippage / MAX_BPS;
     }
+    function _calcMinWithdrawAmount(uint256 amount) internal view returns(uint256 out){
+        out = IPlainPool(CURVE_POOL).calc_withdraw_one_coin(amount, 0) * slippage / MAX_BPS;
+    }
 
     function _LpToWant(uint256 amount) internal view returns(uint256 out){
         out = IPlainPool(CURVE_POOL).calc_withdraw_one_coin(amount, 0);
+    }
+    function _wantToLp(uint256[2] memory amount) internal view returns(uint256 out){
+        out = IPlainPool(CURVE_POOL).calc_token_amount(amount, true);
     }
 }

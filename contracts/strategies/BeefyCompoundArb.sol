@@ -17,7 +17,7 @@ import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 import "../integrations/beefy/IBeefyVault.sol";
 
-contract BeefyCompoundStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
+contract BeefyCompoundArb is Initializable, BaseStrategy, UUPSUpgradeable {
     using SafeERC20 for IERC20;
 
     ///Want token is USDCe, but strategy required usdc.
@@ -25,11 +25,10 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
     address public constant BEEFY_VAULT = 0xb9A27ba529634017b12e3cbbbFFb6dB7908a8C8B;
     uint256 public constant DEFAULT_SLIPPAGE = 9_800;
     uint32 public constant TWAP_RANGE_SECS = 1800;
-    // TODO change addresses
-    address public constant USDC = 0xb9A27ba529634017b12e3cbbbFFb6dB7908a8C8B;
-    address public constant USDC_USDCE_UNI_POOL = 0xb9A27ba529634017b12e3cbbbFFb6dB7908a8C8B;
+    address public constant USDC = 0xaf88d065e77c8cC2239327C5EDb3A432268e5831;
+    address public constant USDC_USDCE_UNI_POOL = 0x8e295789c9465487074a65b1ae9Ce0351172393f;
     uint256 internal constant USDC_USDCE_FEE = 100;
-    address internal constant UNISWAP_V3_ROUTER = 0xb9A27ba529634017b12e3cbbbFFb6dB7908a8C8B;
+    address internal constant UNISWAP_V3_ROUTER = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
 
     string private namePostfix;
     
@@ -75,8 +74,8 @@ contract BeefyCompoundStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
         return
             balanceOfWant() +
              _UsdcToUsdce(IBeefyVault(BEEFY_VAULT).getPricePerFullShare() *
-                IBeefyVault(BEEFY_VAULT).balanceOf(address(this))) /
-            10 ** 18;
+                IBeefyVault(BEEFY_VAULT).balanceOf(address(this)) /
+            10 ** 18);
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal override {
