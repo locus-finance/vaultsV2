@@ -17,7 +17,7 @@ const IERC20_SOURCE = "@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20";
 const NODE = getEnv("ARBITRUM_NODE");
 const NET_FORK_BLOCK = getEnv("ARBITRUM_FORK_BLOCK");
 const sgRouter = "0x0000000000000000000000000000000000000001";
-const chainId = 42161;
+const chainId = 110;
 const wantToken = "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8";
 const TOKENS = {
     USDC: {
@@ -151,6 +151,19 @@ describe("BeefyCompound Arb", function () {
 
       await dealTokensToAddress(deployer.address, TOKENS.USDC, "1000");
 
+      const ethWhale = await ethers.getSigner(TOKENS.ETH.whale);
+
+    await ethWhale.sendTransaction({
+      to: await vault.getAddress(),
+      value: ethers.parseEther("1"),
+    });
+    await ethWhale.sendTransaction({
+        to: await strategy.getAddress(),
+        value: ethers.parseEther("1"),
+      });
+
+      await vault.setSgBridge(sgBridge);
+
       return {sgBridge, strategy, vault, deployer, want  };
     }
   
@@ -162,62 +175,45 @@ describe("BeefyCompound Arb", function () {
 
     it("Should deposit -> harvest -> withdraw the right name", async function () {
         const { sgBridge, strategy, vault, deployer, want } = await loadFixture(deployFixture);
-        const signature = await sign(strategy,deployer);
-        console.log(signature);
-        console.log(ethers.isAddressable(vault));
+        let signature = await sign(strategy,deployer);
         const balanceBefore = await want.balanceOf(deployer.address);
-        console.log(balanceBefore);
         await want.connect(deployer).approve(vault, ethers.parseEther("10000"))
         await vault.connect(deployer)["deposit(uint256,address)"](balanceBefore, deployer.address);
         expect(await want.balanceOf(vault)).to.equal(balanceBefore);
-        const totalDebt = (await vault.strategies(110, strategy)).totalDebt
-        const debtOutstanding = await vault.debtOutstanding(110, strategy)
-        const credit = await vault.creditAvailable(110, strategy)
-        const ratio = (await vault.strategies(110, strategy)).debtRatio
-        console.log(totalDebt, debtOutstanding, credit, ratio);
-        await strategy.connect(deployer).harvest(totalDebt, debtOutstanding, credit, ratio, signature );
-        // expect(await strategy.estimatedTotalAssets()).to.be.closeTo(
-        //   balanceBefore,
-        //   ethers.utils.parseUnits("100", 6)
-        // );
-        // We are dropping some USDC to staking contract to simulate profit from JOE staking
-        // await dealTokensToAddress(whale.address, TOKENS.USDC, "1000000");
-        // const deposit = await want.balanceOf(whale.address);
-        // await ethers.provider.send("evm_increaseTime", [100 * 24 * 60 * 60]);
+        let totalDebt = (await vault.strategies(110, strategy)).totalDebt
+        let debtOutstanding = await vault.debtOutstanding(110, strategy)
+        let credit = await vault.creditAvailable(110, strategy)
+        let ratio = (await vault.strategies(110, strategy)).debtRatio
+        await strategy.connect(deployer).harvest(totalDebt, debtOutstanding, credit, ratio, signature);
+        expect(await strategy.estimatedTotalAssets()).to.be.closeTo(
+          balanceBefore,
+          ethers.parseUnits("100", 6)
+        );
+        expect(await want.balanceOf(await strategy.getAddress())).to.eq(0)
+        let eta = await strategy.estimatedTotalAssets();
+        await time.increase(60 * 60 * 24 * 15)
+        totalDebt = (await vault.strategies(110, strategy)).totalDebt
+        debtOutstanding = await vault.debtOutstanding(110, strategy)
+        credit = await vault.creditAvailable(110, strategy)
+        ratio = (await vault.strategies(110, strategy)).debtRatio
+        signature = await sign(strategy,deployer);
+        await strategy.connect(deployer).harvest(totalDebt, debtOutstanding, credit, ratio, signature);
     
-        // await vault.connect(whale)["deposit(uint256)"](deposit);
-        // const tx = await strategy.connect(deployer).harvest();
-    
-        // await tx.wait();
-        // expect(Number(await strategy.rewardss())).to.be.greaterThan(0);
-        // await ethers.provider.send("evm_increaseTime", [50 * 24 * 60 * 60]);
-    
-        // Previous harvest indicated some profit and it was withdrawn to vault
-        // expect(Number(await want.balanceOf(vault.address))).to.be.greaterThan(0);
-        // All profit from strategy was withdrawn to vault
-        // expect(Number(await want.balanceOf(strategy.address))).to.be.equal(0);
-    
-        // Vault reinvesing its profit back to strategy
-        // await strategy.connect(deployer).harvest();
-        // expect(Number(await strategy.estimatedTotalAssets())).to.be.greaterThan(
-        //   Number(balanceBefore)
-        // );
-    
-        // Mining blocks for unlocking all profit so whale can withdraw
-        // mine(36000);
-    
-        // await vault
-        //   .connect(whale)
-        //   ["withdraw(uint256,address,uint256)"](
-        //     await vault.balanceOf(whale.address),
-        //     whale.address,
-        //     1000
-        //   );
-        // expect(Number(await want.balanceOf(whale.address))).to.be.greaterThan(
-        //   Number(balanceBefore)
-        // );
         
-        
+        expect(await strategy.estimatedTotalAssets()).to.be.greaterThan(eta);
+        await vault
+          .connect(deployer)
+          ["withdraw(uint256,address,uint256)"](
+            await vault.balanceOf(deployer.address),
+            deployer.address,
+            1000
+          );
+          let tx  = await vault.connect(deployer).handleWithdrawals();
+          await tx.wait();
+           tx  = await vault.connect(deployer).handleWithdrawals();
+        expect((await want.balanceOf(deployer.address))).to.be.greaterThan(
+          balanceBefore
+        );
       });
   
     

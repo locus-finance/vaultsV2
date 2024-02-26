@@ -15,6 +15,7 @@ import {ISgBridge} from "./interfaces/ISgBridge.sol";
 import {IStargateRouter, IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 import "./interfaces/ISimpleVault.sol";
+import "hardhat/console.sol";
 
 abstract contract BaseStrategy is
     Initializable,
@@ -483,7 +484,7 @@ abstract contract BaseStrategy is
             vault,
             address(this)
         );
-
+        console.log(1);
         (uint256 nativeFee, ) = lzEndpoint.estimateFees(
             vaultChainId,
             address(this),
@@ -491,7 +492,7 @@ abstract contract BaseStrategy is
             false,
             _getAdapterParams()
         );
-
+        console.log(2);
         if (address(this).balance < nativeFee) {
             revert InsufficientFunds(nativeFee, address(this).balance);
         }

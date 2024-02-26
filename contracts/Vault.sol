@@ -19,6 +19,7 @@ import {IStargateReceiver} from "./integrations/stargate/IStargate.sol";
 import {IStrategyMessages} from "./interfaces/IStrategyMessages.sol";
 import {StrategyParams, WithdrawRequest, WithdrawEpoch, IVault} from "./interfaces/IVault.sol";
 import {IBaseStrategy} from "./interfaces/IBaseStrategy.sol";
+import "hardhat/console.sol";
 
 // import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 // import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
@@ -279,10 +280,9 @@ contract Vault is
             _fulfillWithdrawEpoch();
             return;
         }
-
+        
         uint256 amountNeeded = withdrawValue - totalIdle();
         uint256 strategyRequested = 0;
-
         for (
             uint256 i = 0;
             i < _supportedChainIds.length() && amountNeeded > 0;
@@ -417,7 +417,7 @@ contract Vault is
         bytes calldata _payload
     ) public virtual override {
         if (msg.sender != address(lzEndpoint)) revert Vault__V10();
-
+        console.log("LZ received vault");
         _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
 
@@ -456,7 +456,7 @@ contract Vault is
         uint256 _receivedTokens
     ) internal isAction(_chainId, _message.strategy) {
         _verifySignature(_chainId, _message);
-
+        console.log("Handle report");
         if (_message.loss > 0) {
             _reportLoss(_chainId, _message.strategy, _message.loss);
         }
@@ -485,6 +485,7 @@ contract Vault is
         ) {
             debt = _message.totalAssets;
         }
+        console.log("give to strat:", _message.giveToStrategy);
 
         if (_message.giveToStrategy > 0) {
             _bridge(
@@ -656,7 +657,6 @@ contract Vault is
         );
         if (strategies[_srcChainId][srcAddress].activation == 0)
             revert Vault__V15();
-
         _handlePayload(_srcChainId, _payload, 0);
     }
 
@@ -666,8 +666,11 @@ contract Vault is
         address _dest,
         bytes memory _payload
     ) internal {
+        console.log("In vault bridge", _destChainId, _dest, address(sgBridge));
         uint256 fee = sgBridge.feeForBridge(_destChainId, _dest, _payload);
+        console.log(fee);
         token.safeApprove(address(sgBridge), _amount);
+        console.log(address(sgBridge));
         sgBridge.bridge{value: fee}(
             address(token),
             _amount,

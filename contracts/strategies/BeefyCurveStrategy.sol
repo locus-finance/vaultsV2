@@ -31,8 +31,8 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
         address _harvester,
         IERC20 _want,
         address _vault,
-        uint16 _strategyStargateChainId,
         uint16 _vaultStargateChainId,
+        uint16 _strategyStargateChainId,
         address _sgBridge,
         address _router,
         string calldata _namePostfix
@@ -57,15 +57,15 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
     }
 
     function name() external view override returns (string memory) {
-        return string(abi.encodePacked("Beefy - Compound ", namePostfix));
+        return string(abi.encodePacked("Beefy - Curve ", namePostfix));
     }
 
     function estimatedTotalAssets() public view override returns (uint256) {
         return
             balanceOfWant() +
-            _LpToWant((IBeefyVault(BEEFY_VAULT).getPricePerFullShare() *
+            _LpToWant(IBeefyVault(BEEFY_VAULT).getPricePerFullShare() *
                 IBeefyVault(BEEFY_VAULT).balanceOf(address(this)) /
-            10 ** 18));
+            1e18);
     }
 
     function _adjustPosition(uint256 _debtOutstanding) internal override {

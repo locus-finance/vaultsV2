@@ -16,7 +16,7 @@ contract LZEndpointMock {
     constructor() {}
 
     function send(
-        uint16,
+        uint16 _sourceChainId,
         bytes memory _destination,
         bytes memory _payload,
         address,
@@ -26,7 +26,7 @@ contract LZEndpointMock {
         address destination = bytesToAddress(_destination);
         bytes memory srcAddress = abi.encodePacked(msg.sender, destination);
         ILayerZeroReceiver(destination).lzReceive(
-            srcChainId,
+            _sourceChainId,
             srcAddress,
             0,
             _payload
@@ -76,5 +76,16 @@ contract LZEndpointMock {
             _nonce,
             _payload
         );
+    }
+
+    function estimateFees(
+        uint16 _srcChainId,
+        address _srcAddress,
+        bytes calldata _payload,
+        bool _bool,
+        bytes calldata _nonce
+    ) external view returns (uint256 a, uint256 b) {
+        a = 0;
+        b = 0;
     }
 }

@@ -1,6 +1,6 @@
 require("@openzeppelin/hardhat-upgrades");
 require("hardhat-tracer");
-require("hardhat-contract-sizer");
+// require("hardhat-contract-sizer");
 require("hardhat-gas-reporter");
 require("hardhat-log-remover");
 require("hardhat-abi-exporter");
@@ -57,10 +57,12 @@ module.exports = {
   },
   networks: {
     hardhat: {
+      allowUnlimitedContractSize: true,
       // chainId: 1,
       forking: {
         url: ARBITRUM_NODE || "",
-        blockNumber: 180429847
+        blockNumber: 180429847,
+        allowUnlimitedContractSize: true,
       },
     },
     mainnet: {
@@ -351,3 +353,24 @@ subtask("compile:solidity:get-compilation-job-for-file").setAction(
     return job;
   }
 );
+
+task("sign", "Sign harvest")
+  .addPositionalParam("addr")
+  .setAction(async (taskArgs) => {
+    const [signer] = await ethers.getSigners();
+    const networkName = hre.network.name;
+    const strategy = await ethers.getContractAt(
+        "BaseStrategy",
+        taskArgs.addr
+    );
+
+    console.log(`Signing by ${signer.address}`);
+
+    const signPayload = await strategy.strategistSignMessageHash();
+    console.log(`Sign payload ${signPayload}`);
+    const signature = await signer.signMessage(
+        ethers.utils.arrayify(signPayload)
+    );
+
+    console.log("Signature", signature);
+  });
