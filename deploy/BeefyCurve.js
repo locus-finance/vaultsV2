@@ -9,7 +9,7 @@ async function main() {
   const config = bridgeConfig[hre.network.name];
   const vaultConfig = bridgeConfig[vaultChain(hre.network.name)];
   const BeefyCompoundStrategy = await ethers.getContractFactory(
-    "BeefyCompoundArb"
+    "BeefyCurveStrategy"
   );
   const beefyCompoundStrategy = await upgrades.deployProxy(
     BeefyCompoundStrategy,

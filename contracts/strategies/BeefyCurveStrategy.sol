@@ -9,6 +9,8 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IPlainPool} from "../integrations/curve/IPlainPool.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+
 
 import {BaseStrategy} from "../BaseStrategy.sol";
 
@@ -16,7 +18,7 @@ import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 import "../integrations/beefy/IBeefyVault.sol";
 
-contract BeefyCurveStrategy is Initializable, BaseStrategy {
+contract BeefyCurveStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
     using SafeERC20 for IERC20;
 
     address public constant BEEFY_VAULT =
@@ -37,6 +39,7 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
         address _router,
         string calldata _namePostfix
     ) external initializer {
+        __UUPSUpgradeable_init();
         __BaseStrategy_init(
             _lzEndpoint,
             _strategist,
@@ -55,6 +58,9 @@ contract BeefyCurveStrategy is Initializable, BaseStrategy {
         IERC20(CURVE_POOL).approve(BEEFY_VAULT, type(uint256).max);
         IERC20(CURVE_POOL).approve(CURVE_POOL, type(uint256).max);
     }
+
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner{}
+
 
     function name() external view override returns (string memory) {
         return string(abi.encodePacked("Beefy - Curve ", namePostfix));

@@ -11,8 +11,6 @@ import {ISgBridge} from "./interfaces/ISgBridge.sol";
 
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 
-import "hardhat/console.sol";
-
 struct SwapInfo {
     uint24 poolFee;
     address tokenToSwap;
@@ -163,7 +161,6 @@ contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge, UUPSUpgradeab
         address _destinationContract,
         bytes memory _payload
     ) external view override returns (uint256) {
-        console.log(_destChainId, currentChainId);
         if (_destChainId == currentChainId) {
             return 0;
         }

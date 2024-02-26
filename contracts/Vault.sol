@@ -384,7 +384,6 @@ contract Vault is
         bytes calldata _payload
     ) public virtual override {
         if (msg.sender != address(lzEndpoint)) revert Vault__V10();
-        console.log("LZ received vault");
         _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
 
@@ -415,7 +414,6 @@ contract Vault is
         uint256 _receivedTokens
     ) internal isAction(_chainId, _message.strategy) {
         _verifySignature(_chainId, _message);
-        console.log("Handle report");
         if (_message.loss > 0) {
             _reportLoss(_chainId, _message.strategy, _message.loss);
         }
@@ -444,7 +442,6 @@ contract Vault is
         ) {
             debt = _message.totalAssets;
         }
-        console.log("give to strat:", _message.giveToStrategy);
 
         if (_message.giveToStrategy > 0) {
             _bridge(
@@ -626,7 +623,6 @@ contract Vault is
         address _dest,
         bytes memory _payload
     ) internal {
-        console.log("In vault bridge", _destChainId, _dest, address(sgBridge));
         uint256 fee = sgBridge.feeForBridge(_destChainId, _dest, _payload);
         wantToken.safeApprove(address(sgBridge), _amount);
         sgBridge.bridge{value: fee}(

@@ -27,7 +27,7 @@ async function main() {
     ],
     {
       initializer: "initialize",
-      kind: "transparent",
+      kind: "uups",
     }
   );
   await beefyCompoundStrategy.waitForDeployment();

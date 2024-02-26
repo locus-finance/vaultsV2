@@ -1,6 +1,6 @@
 require("@openzeppelin/hardhat-upgrades");
 require("hardhat-tracer");
-// require("hardhat-contract-sizer");
+require("hardhat-contract-sizer");
 require("hardhat-gas-reporter");
 require("hardhat-log-remover");
 require("hardhat-abi-exporter");
@@ -57,12 +57,10 @@ module.exports = {
   },
   networks: {
     hardhat: {
-      allowUnlimitedContractSize: true,
       // chainId: 1,
       forking: {
         url: ARBITRUM_NODE || "",
         blockNumber: 180429847,
-        allowUnlimitedContractSize: true,
       },
     },
     mainnet: {
