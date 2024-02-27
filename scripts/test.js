@@ -33,7 +33,7 @@ async function main() {
   const governance = await ethers.provider.getSigner(
     "0x3c2792d5ea8f9c03e8e73738e9ed157aeb4fecbe"
   );
-  // await upgradeVault()
+  await upgradeVault()
 
   const tx2 = await sigs[0].sendTransaction({
     to: await governance.getAddress(),
@@ -43,7 +43,7 @@ async function main() {
   console.log("funds send");
   const strategy = await ethers.getContractAt(
     ABI,
-    "0xC4E7d7c15b8F5c2D77512460b84802D1D3693692"
+    "0x68Ee86f798f247FeC4d33C224Dad360dC919450A"
   );
 
   
@@ -56,7 +56,8 @@ async function main() {
   // await time.increase(1000)
   // console.log(await vault.owner())
   // console.log(await strategy.connect(governance).estimatedTotalAssets());
-  console.log(await strategy.connect(governance).harvest(0,0,138062884,10,"0x5c2a93f96c989ada694ef361d822b10a2ea4cb9bda57a1182524fa975bde887e1c30c563b4d75992773b0db2966ae2710c42c9ccbe8a0bfd574a8551059f823c1b", { gasLimit: 30000000 }));
+  console.log(await strategy.connect(governance).estimatedTotalAssets());
+  console.log(await strategy.connect(governance).harvest(78686701933,46932228898,0,2300,"0xc18d32453fa3916cb3afa6ee0907e7212860172b8d03be0521784ae820bddd65124e1687165f10dfa5390cfdbe2e3964fa1e624ee0ee78a174398784c5d1dff81b", { gasLimit: 30000000 }));
   console.log(await strategy.connect(governance).estimatedTotalAssets());
   // console.log(await newStrategy.connect(governance).estimatedTotalAssets());
 }
@@ -65,11 +66,11 @@ async function upgradeVault() {
   const provider = new ethers.JsonRpcProvider(
     "http://127.0.0.1:8545"
   );
-  await impersonateAccount("0xD44044f706B7a3491ae810173e916cE94a15ade5")
+  await impersonateAccount("0x942f39555D430eFB3230dD9e5b86939EFf185f0A")
 
   // console.log("upgrading");
   const owner = await ethers.provider.getSigner(
-    "0xD44044f706B7a3491ae810173e916cE94a15ade5"
+    "0x942f39555D430eFB3230dD9e5b86939EFf185f0A"
   );
   // await proxy
   //   .connect(owner)

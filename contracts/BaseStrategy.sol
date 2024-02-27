@@ -236,16 +236,15 @@ abstract contract BaseStrategy is
         uint256 fundsAvailable = profit + debtPayment;
         uint256 giveToStrategy = 0;
         uint256 requestFromStrategy = 0;
-
+        uint256 totalFee = _assessFees(_totalDebt, profit);
+        fundsAvailable -= totalFee;
         if (fundsAvailable < _creditAvailable) {
             giveToStrategy = _creditAvailable - fundsAvailable;
             requestFromStrategy = 0;
         } else {
             giveToStrategy = 0;
             requestFromStrategy = fundsAvailable - _creditAvailable;
-        }
-
-        _assessFees(_totalDebt, profit);
+        }        
         StrategyReport memory report = StrategyReport({
             strategy: address(this),
             timestamp: block.timestamp,
@@ -260,7 +259,6 @@ abstract contract BaseStrategy is
             signature: _signature
         });
         lastReport = block.timestamp;
-
         if (requestFromStrategy > 0) {
             _bridge(
                 requestFromStrategy,

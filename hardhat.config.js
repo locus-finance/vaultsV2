@@ -59,9 +59,9 @@ module.exports = {
   networks: {
     hardhat: {
       // chainId: 1,
-      forking: {
-        url: ARBITRUM_NODE || "",
-      },
+      // forking: {
+      //   url: ARBITRUM_NODE || "",
+      // },
     },
     mainnet: {
       url: ETH_NODE,
