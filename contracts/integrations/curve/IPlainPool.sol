@@ -6,6 +6,9 @@ interface IPlainPool {
     /// @dev StableSwap.add_liquidity(_amounts: uint256[N_COINS], _min_mint_amount: uint256) → uint256
     function add_liquidity(uint256[] memory _amounts, uint256 _min_mint_amount) external returns (uint256);
 
+    /// @dev StableSwap.add_liquidity(_amounts: uint256[N_COINS], _min_mint_amount: uint256) → uint256
+    function add_liquidity(uint256[2] memory _amounts, uint256 _min_mint_amount) external returns (uint256);
+
     /// @dev StableSwap.remove_liquidity(_amount: uint256, _min_amounts: uint256[N_COINS]) → uint256[N_COINS]
     function remove_liquidity(uint256 _amount, uint256[] memory _min_amounts) external returns (uint256[] memory);
 
@@ -17,6 +20,9 @@ interface IPlainPool {
 
     /// @dev StableSwap.calc_token_amount(_amounts: uint256[N_COINS], _is_deposit: bool) → uint256: view
     function calc_token_amount(uint256[] memory _amounts, bool is_deposit) external view returns (uint256);
+
+    /// @dev StableSwap.calc_token_amount(_amounts: uint256[N_COINS], _is_deposit: bool) → uint256: view
+    function calc_token_amount(uint256[2] memory _amounts, bool is_deposit) external view returns (uint256);
 
     /// @dev StableSwap.lp_token() → address: view
     function lp_token() external view returns (address);

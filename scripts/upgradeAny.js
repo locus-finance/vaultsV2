@@ -2,8 +2,8 @@
 const hre = require("hardhat");
 
 async function main() {
-  const TARGET_ADDRESS = "0x68Ee86f798f247FeC4d33C224Dad360dC919450A";
-  const TARGET_STRATEGY = "HopStrategy";
+  const TARGET_ADDRESS = "0x395F4A621dD51B120ECe2152f45C315bb14799a0";
+  const TARGET_STRATEGY = "BeefyCompoundStrategy";
 
   const TargetContract = await hre.ethers.getContractFactory(TARGET_STRATEGY);
 

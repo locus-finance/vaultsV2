@@ -13,7 +13,6 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 
 import "../integrations/hop/IStakingRewards.sol";
 import "../integrations/hop/IRouter.sol";
-import "hardhat/console.sol";
 
 contract HopStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
     using SafeERC20 for IERC20;

@@ -106,7 +106,6 @@ contract SgBridge is Initializable, OwnableUpgradeable, ISgBridge, UUPSUpgradeab
         if (sourcePool == 0) {
             revert TokenNotSupported(_token, currentChainId);
         }
-
         if (_destChainId == currentChainId) {
             IERC20(_token).safeTransferFrom(
                 msg.sender,

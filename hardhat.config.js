@@ -5,6 +5,7 @@ require("hardhat-gas-reporter");
 require("hardhat-log-remover");
 require("hardhat-abi-exporter");
 require("@nomicfoundation/hardhat-toolbox");
+const bridgeConfig = require("./constants/bridgeConfig.json");
 
 require("dotenv").config();
 require("./tasks");
@@ -58,10 +59,9 @@ module.exports = {
   networks: {
     hardhat: {
       // chainId: 1,
-      forking: {
-        url: ARBITRUM_NODE || "",
-      //   accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
-      },
+      // forking: {
+      //   url: ARBITRUM_NODE || "",
+      // },
     },
     mainnet: {
       url: ETH_NODE,
@@ -351,3 +351,56 @@ subtask("compile:solidity:get-compilation-job-for-file").setAction(
     return job;
   }
 );
+
+task("sign", "Sign harvest")
+  .addPositionalParam("addr")
+  .setAction(async (taskArgs) => {
+    const [signer] = await ethers.getSigners();
+    const networkName = hre.network.name;
+    const strategy = await ethers.getContractAt(
+        "BaseStrategy",
+        taskArgs.addr
+    );
+
+    console.log(`Signing by ${signer.address}`);
+
+    const signPayload = await strategy.strategistSignMessageHash();
+    console.log(`Sign payload ${signPayload}`);
+    const signature = await signer.signMessage(
+        ethers.utils.arrayify(signPayload)
+    );
+
+    console.log("Signature", signature);
+  });
+
+  task("harvestInfo", "Info harvest")
+  .addPositionalParam("chain")
+  .addPositionalParam("addr")
+  .setAction(async (taskArgs) => {
+    const [signer] = await ethers.getSigners();
+    const networkName = hre.network.name;
+
+    const vault = await ethers.getContractAt(
+        "Vault",
+        bridgeConfig[networkName].vault
+    );
+
+    
+    const strategyInfo = await vault.strategies(
+        taskArgs.chain,
+        taskArgs.addr
+    );
+    const debtOutstanding = await vault.debtOutstanding(
+      taskArgs.chain,
+      taskArgs.addr
+    );
+    const creditAvailable = await vault.creditAvailable(
+      taskArgs.chain,
+      taskArgs.addr
+    );
+
+    console.log(`Total debt=${(strategyInfo.totalDebt)}`);
+    console.log(`Debt outstanding=${(debtOutstanding)}`);
+    console.log(`Credit available=${(creditAvailable)}`);
+    console.log(`Debt ratio=${(strategyInfo.debtRatio)}`);
+  });

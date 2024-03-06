@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 
 import {ERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {NonblockingLzAppUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
+import {NonblockingLzAppUpgradeable, ILayerZeroReceiverUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/lzApp/NonblockingLzAppUpgradeable.sol";
 import {ILayerZeroEndpointUpgradeable} from "@layerzerolabs/solidity-examples/contracts/contracts-upgradable/interfaces/ILayerZeroEndpointUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {BytesLib} from "@layerzerolabs/solidity-examples/contracts/lzApp/NonblockingLzApp.sol";
@@ -26,7 +26,6 @@ abstract contract BaseStrategy is
     using SafeERC20 for IERC20;
 
     error InsufficientFunds(uint256 amount, uint256 balance);
-    error IncorrectMessageType(uint256 messageType);
     error BaseStrategy__UnAcceptableFee();
     error OnlyStrategist();
     error TooHighSlippage();
@@ -37,7 +36,6 @@ abstract contract BaseStrategy is
     error AlreadyWithdrawn();
     error VaultChainIdMismatch();
     error NotAVault();
-    error VaultAddressMismatch();
     error DurationIsZero();
     error OnlyStrategistOrVault();
     error OnlyHarvester();
@@ -115,7 +113,7 @@ abstract contract BaseStrategy is
     bool public emergencyExit;
     ISgBridge public sgBridge;
     IStargateRouter public sgRouter;
-    uint256 private constant MAX_BPS = 10_000;
+    uint256 internal constant MAX_BPS = 10_000;
     uint256 public performanceFee;
     uint256 public managementFee;
     uint256 private constant SECS_PER_YEAR = 31_556_952;
@@ -163,14 +161,11 @@ abstract contract BaseStrategy is
         slippage = _slippage;
     }
 
-    function setFees(uint256 perfFee, uint256 manageFee) external onlyOwner {
+    function setFees(uint256 perfFee, uint256 manageFee, address _treasury) external onlyOwner {
         if (perfFee > MAX_BPS / 2) revert BaseStrategy__UnAcceptableFee();
         if (manageFee > MAX_BPS) revert BaseStrategy__UnAcceptableFee();
         performanceFee = perfFee;
         managementFee = manageFee;
-    }
-
-    function setTreasuryAddress(address _treasury) external onlyOwner {
         treasury = _treasury;
     }
 
@@ -241,16 +236,15 @@ abstract contract BaseStrategy is
         uint256 fundsAvailable = profit + debtPayment;
         uint256 giveToStrategy = 0;
         uint256 requestFromStrategy = 0;
-
+        uint256 totalFee = _assessFees(_totalDebt, profit);
+        fundsAvailable -= totalFee;
         if (fundsAvailable < _creditAvailable) {
             giveToStrategy = _creditAvailable - fundsAvailable;
             requestFromStrategy = 0;
         } else {
             giveToStrategy = 0;
             requestFromStrategy = fundsAvailable - _creditAvailable;
-        }
-
-        _assessFees(_totalDebt, profit);
+        }        
         StrategyReport memory report = StrategyReport({
             strategy: address(this),
             timestamp: block.timestamp,
@@ -265,7 +259,6 @@ abstract contract BaseStrategy is
             signature: _signature
         });
         lastReport = block.timestamp;
-
         if (requestFromStrategy > 0) {
             _bridge(
                 requestFromStrategy,
@@ -337,17 +330,6 @@ abstract contract BaseStrategy is
         uint16 version = 1;
         uint256 gasForDestinationLzReceive = 1_000_000;
         return abi.encodePacked(version, gasForDestinationLzReceive);
-    }
-
-    function _withSlippage(uint256 _amount) internal view returns (uint256) {
-        return (_amount * slippage) / 10_000;
-    }
-
-    function _withSlippage(
-        uint256 _amount,
-        uint256 _slippage
-    ) internal pure returns (uint256) {
-        return (_amount * _slippage) / 10_000;
     }
 
     function _liquidatePosition(
@@ -456,7 +438,7 @@ abstract contract BaseStrategy is
         address srcAddress = address(
             bytes20(abi.encodePacked(_srcAddress.slice(0, 20)))
         );
-        if (srcAddress != vault) revert VaultAddressMismatch();
+        if (srcAddress != vault) revert NotAVault();
 
         _handlePayload(_payload);
     }
@@ -483,7 +465,6 @@ abstract contract BaseStrategy is
             vault,
             address(this)
         );
-
         (uint256 nativeFee, ) = lzEndpoint.estimateFees(
             vaultChainId,
             address(this),
@@ -491,9 +472,17 @@ abstract contract BaseStrategy is
             false,
             _getAdapterParams()
         );
-
         if (address(this).balance < nativeFee) {
             revert InsufficientFunds(nativeFee, address(this).balance);
+        }
+
+        if (vaultChainId == currentChainId) {
+            bytes memory _src = abi.encodePacked(
+            address(this),
+            vault
+        );
+            ILayerZeroReceiverUpgradeable(vault).lzReceive(currentChainId,_src,0,_payload);
+            return;
         }
 
         lzEndpoint.send{value: nativeFee}(
@@ -513,17 +502,13 @@ abstract contract BaseStrategy is
         want.safeTransfer(msg.sender, amountFreed);
     }
 
-    function migrate(address _newStrategy) external {
-        if (msg.sender != address(vault)) revert NotAVault();
-        if (BaseStrategy(payable(_newStrategy)).vault() != vault)
-            revert NotAVault();
-        _prepareMigration(_newStrategy);
-        want.safeTransfer(_newStrategy, want.balanceOf(address(this)));
-    }
-
-    function delegatedAssets() public view virtual returns (uint256) {
-        return 0;
-    }
+    // function migrate(address _newStrategy) external {
+    //     if (msg.sender != address(vault)) revert NotAVault();
+    //     if (BaseStrategy(payable(_newStrategy)).vault() != vault)
+    //         revert NotAVault();
+    //     _prepareMigration(_newStrategy);
+    //     want.safeTransfer(_newStrategy, want.balanceOf(address(this)));
+    // }
 
     function _assessFees(
         uint256 totalDebt,
@@ -534,7 +519,7 @@ abstract contract BaseStrategy is
         if (gain == 0) {
             return 0;
         }
-        uint256 _managementFee = ((totalDebt - delegatedAssets()) *
+        uint256 _managementFee = ((totalDebt) *
             duration *
             managementFee) /
             MAX_BPS /

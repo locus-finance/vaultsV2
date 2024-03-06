@@ -255,10 +255,9 @@ contract Vault is
             _fulfillWithdrawEpoch();
             return;
         }
-
+        
         uint256 amountNeeded = withdrawValue - totalIdle();
         uint256 strategyRequested = 0;
-
         for (
             uint256 i = 0;
             i < _supportedChainIds.length() && amountNeeded > 0;
@@ -384,8 +383,7 @@ contract Vault is
         uint64 _nonce,
         bytes calldata _payload
     ) public virtual override {
-        if (msg.sender != address(lzEndpoint)) revert Vault__V10();
-
+        if (msg.sender != address(lzEndpoint) && !_strategiesByChainId[_srcChainId].contains(msg.sender)) revert Vault__V10();
         _blockingLzReceive(_srcChainId, _srcAddress, _nonce, _payload);
     }
 
@@ -416,7 +414,6 @@ contract Vault is
         uint256 _receivedTokens
     ) internal isAction(_chainId, _message.strategy) {
         _verifySignature(_chainId, _message);
-
         if (_message.loss > 0) {
             _reportLoss(_chainId, _message.strategy, _message.loss);
         }
@@ -617,7 +614,6 @@ contract Vault is
         );
         if (strategies[_srcChainId][srcAddress].activation == 0)
             revert Vault__V15();
-
         _handlePayload(_srcChainId, _payload, 0);
     }
 

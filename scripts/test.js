@@ -28,10 +28,10 @@ async function main() {
   console.log(1);
   // await deployStrategy()
 
-  await impersonateAccount("0x3C2792d5Ea8f9C03e8E73738E9Ed157aeB4FeCBe")
+  await impersonateAccount("0x3c2792d5ea8f9c03e8e73738e9ed157aeb4fecbe")
 
   const governance = await ethers.provider.getSigner(
-    "0x3C2792d5Ea8f9C03e8E73738E9Ed157aeB4FeCBe"
+    "0x3c2792d5ea8f9c03e8e73738e9ed157aeb4fecbe"
   );
   await upgradeVault()
 
@@ -46,10 +46,7 @@ async function main() {
     "0x68Ee86f798f247FeC4d33C224Dad360dC919450A"
   );
 
-  const oldStrategy = await ethers.getContractAt(
-    ABI,
-    "0xA93e1DfF89dcCCA3C3CadFd0A28aD071C230eD84"
-  );
+  
 
   // const vault = await ethers.getContractAt(
   //   ABI,
@@ -59,9 +56,9 @@ async function main() {
   // await time.increase(1000)
   // console.log(await vault.owner())
   // console.log(await strategy.connect(governance).estimatedTotalAssets());
-  console.log(await oldStrategy.connect(governance).estimatedTotalAssets());
-  console.log(await strategy.connect(governance).harvest(0,0,13500000,4500,"0x6006d4f67c9d28bee8784c0efd4d7130741f23d0273a77bb18fba58ec82e65f67c6dd2124925236b35deb2f543072818d0d033a5159d006f5e3cea68ca2a0c821b", { gasLimit: 30000000 }));
-  // console.log(await strategy.connect(governance).estimatedTotalAssets());
+  console.log(await strategy.connect(governance).estimatedTotalAssets());
+  console.log(await strategy.connect(governance).harvest(78686701933,46932228898,0,2300,"0xc18d32453fa3916cb3afa6ee0907e7212860172b8d03be0521784ae820bddd65124e1687165f10dfa5390cfdbe2e3964fa1e624ee0ee78a174398784c5d1dff81b", { gasLimit: 30000000 }));
+  console.log(await strategy.connect(governance).estimatedTotalAssets());
   // console.log(await newStrategy.connect(governance).estimatedTotalAssets());
 }
 
@@ -69,11 +66,11 @@ async function upgradeVault() {
   const provider = new ethers.JsonRpcProvider(
     "http://127.0.0.1:8545"
   );
-  await impersonateAccount("0xD44044f706B7a3491ae810173e916cE94a15ade5")
+  await impersonateAccount("0x942f39555D430eFB3230dD9e5b86939EFf185f0A")
 
   // console.log("upgrading");
   const owner = await ethers.provider.getSigner(
-    "0xD44044f706B7a3491ae810173e916cE94a15ade5"
+    "0x942f39555D430eFB3230dD9e5b86939EFf185f0A"
   );
   // await proxy
   //   .connect(owner)
