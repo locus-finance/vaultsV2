@@ -324,7 +324,7 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
         uint256 pendleLpIn
     ) internal view returns (uint256 usdeOut) {
         uint256 lpToAssetRate = PENDLE_MARKET.getLpToAssetRate(durationForPendleOracle);
-        usdeOut = pendleLpIn * lpToAssetRate;
+        usdeOut = (pendleLpIn * lpToAssetRate) / PRECISION;
     }
 
     function _previewFromBeefySharesToPendleLpConversion(
