@@ -6,5 +6,6 @@ export type { legacy };
 export type { BeefyCompoundArb } from "./BeefyCompoundArb";
 export type { BeefyCompoundStrategy } from "./BeefyCompoundStrategy";
 export type { BeefyCurveStrategy } from "./BeefyCurveStrategy";
+export type { BeefyPendleStrategy } from "./BeefyPendleStrategy";
 export type { HopStrategy } from "./HopStrategy";
 export type { SaverStrategy } from "./SaverStrategy";

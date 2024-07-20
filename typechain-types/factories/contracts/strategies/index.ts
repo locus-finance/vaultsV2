@@ -5,5 +5,6 @@ export * as legacy from "./legacy";
 export { BeefyCompoundArb__factory } from "./BeefyCompoundArb__factory";
 export { BeefyCompoundStrategy__factory } from "./BeefyCompoundStrategy__factory";
 export { BeefyCurveStrategy__factory } from "./BeefyCurveStrategy__factory";
+export { BeefyPendleStrategy__factory } from "./BeefyPendleStrategy__factory";
 export { HopStrategy__factory } from "./HopStrategy__factory";
 export { SaverStrategy__factory } from "./SaverStrategy__factory";
