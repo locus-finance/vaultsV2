@@ -14,7 +14,7 @@ import {BaseStrategy} from "../BaseStrategy.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@pendle/core-v2/contracts/interfaces/IPAllActionV3.sol";
 import "@pendle/core-v2/contracts/interfaces/IPMarket.sol";
-import "@pendle/core-v2/contracts/oracles/PendlePYLpOracle.sol";
+import "@pendle/core-v2/contracts/oracles/PendleLpOracleLib.sol";
 import "@cryptoalgebra/v1.9-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@cryptoalgebra/v1.9-periphery/contracts/interfaces/IQuoter.sol";
 
@@ -23,6 +23,7 @@ import "../integrations/beefy/IBeefyVault.sol";
 contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
     using SafeERC20 for IERC20Metadata;
     using SafeERC20 for IERC20;
+    using PendleLpOracleLib for IPMarket;
 
     event WantToUsdeOperation(
         uint256 indexed amountSwapped,
@@ -51,8 +52,6 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
 
     IERC20Metadata public constant USDe =
         IERC20Metadata(0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34);
-    IERC20Metadata public constant PENDLE =
-        IERC20Metadata(0x0c880f6761F1af8d9Aa9C466984b80DAb9a8c9e8);
 
     uint256 public constant PRECISION = 1 ether;
     uint256 public constant DEFAULT_SLIPPAGE = 9_500;
@@ -65,9 +64,7 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
     ApproxParams public defaultApprox =
         ApproxParams(0, type(uint256).max, 0, 256, 1e14);
 
-    IStandardizedYield public SY;
-    IPPrincipalToken public PT;
-    IPYieldToken public YT;
+    uint32 public durationForPendleOracle = 1800;
 
     function initialize(
         address _lzEndpoint,
@@ -95,6 +92,12 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
         );
         want.approve(address(CAMELOT_SWAP_ROUTER), type(uint256).max);
         USDe.approve(address(CAMELOT_SWAP_ROUTER), type(uint256).max);
+        USDe.approve(address(PENDLE_ROUTER), type(uint256).max);
+        PENDLE_MARKET.approve(address(PENDLE_ROUTER), type(uint256).max);
+    }
+
+    function setDurationForPendleOracle(uint32 _duration) external onlyOwner {
+        durationForPendleOracle = _duration;
     }
 
     function _authorizeUpgrade(
@@ -312,11 +315,17 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
 
     function _previewUsdeToPendleLpConversion(
         uint256 usdeIn
-    ) internal view returns (uint256 pendleLpOut) {}
+    ) internal view returns (uint256 pendleLpOut) {
+        uint256 lpToAssetRate = PENDLE_MARKET.getLpToAssetRate(durationForPendleOracle);
+        pendleLpOut = (PRECISION * usdeIn) / lpToAssetRate;
+    }
 
     function _previewPendleLpToUsdeConversion(
         uint256 pendleLpIn
-    ) internal view returns (uint256 usdeOut) {}
+    ) internal view returns (uint256 usdeOut) {
+        uint256 lpToAssetRate = PENDLE_MARKET.getLpToAssetRate(durationForPendleOracle);
+        usdeOut = pendleLpIn * lpToAssetRate;
+    }
 
     function _previewFromBeefySharesToPendleLpConversion(
         uint256 shares

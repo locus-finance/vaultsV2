@@ -31,14 +31,10 @@ export interface BeefyPendleStrategyInterface extends Interface {
       | "CAMELOT_SWAP_ROUTER"
       | "DEFAULT_PAYLOAD_SIZE_LIMIT"
       | "DEFAULT_SLIPPAGE"
-      | "PENDLE"
       | "PENDLE_MARKET"
       | "PENDLE_ROUTER"
       | "PRECISION"
-      | "PT"
-      | "SY"
       | "USDe"
-      | "YT"
       | "adjustPosition"
       | "balanceOfBeefyShares"
       | "balanceOfPendleLp"
@@ -46,6 +42,7 @@ export interface BeefyPendleStrategyInterface extends Interface {
       | "balanceOfWant"
       | "currentChainId"
       | "defaultApprox"
+      | "durationForPendleOracle"
       | "emergencyExit"
       | "emptyLimit"
       | "emptySwap"
@@ -77,6 +74,7 @@ export interface BeefyPendleStrategyInterface extends Interface {
       | "revokeFunds"
       | "setConfig"
       | "setCurrentChainId"
+      | "setDurationForPendleOracle"
       | "setEmergencyExit"
       | "setFeeThreshold"
       | "setFees"
@@ -153,7 +151,6 @@ export interface BeefyPendleStrategyInterface extends Interface {
     functionFragment: "DEFAULT_SLIPPAGE",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "PENDLE", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "PENDLE_MARKET",
     values?: undefined
@@ -163,10 +160,7 @@ export interface BeefyPendleStrategyInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "PRECISION", values?: undefined): string;
-  encodeFunctionData(functionFragment: "PT", values?: undefined): string;
-  encodeFunctionData(functionFragment: "SY", values?: undefined): string;
   encodeFunctionData(functionFragment: "USDe", values?: undefined): string;
-  encodeFunctionData(functionFragment: "YT", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "adjustPosition",
     values: [BigNumberish]
@@ -193,6 +187,10 @@ export interface BeefyPendleStrategyInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "defaultApprox",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "durationForPendleOracle",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -312,6 +310,10 @@ export interface BeefyPendleStrategyInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "setCurrentChainId",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setDurationForPendleOracle",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -448,7 +450,6 @@ export interface BeefyPendleStrategyInterface extends Interface {
     functionFragment: "DEFAULT_SLIPPAGE",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "PENDLE", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "PENDLE_MARKET",
     data: BytesLike
@@ -458,10 +459,7 @@ export interface BeefyPendleStrategyInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "PRECISION", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "PT", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "SY", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "USDe", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "YT", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "adjustPosition",
     data: BytesLike
@@ -488,6 +486,10 @@ export interface BeefyPendleStrategyInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "defaultApprox",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "durationForPendleOracle",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -573,6 +575,10 @@ export interface BeefyPendleStrategyInterface extends Interface {
   decodeFunctionResult(functionFragment: "setConfig", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setCurrentChainId",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setDurationForPendleOracle",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -1042,21 +1048,13 @@ export interface BeefyPendleStrategy extends BaseContract {
 
   DEFAULT_SLIPPAGE: TypedContractMethod<[], [bigint], "view">;
 
-  PENDLE: TypedContractMethod<[], [string], "view">;
-
   PENDLE_MARKET: TypedContractMethod<[], [string], "view">;
 
   PENDLE_ROUTER: TypedContractMethod<[], [string], "view">;
 
   PRECISION: TypedContractMethod<[], [bigint], "view">;
 
-  PT: TypedContractMethod<[], [string], "view">;
-
-  SY: TypedContractMethod<[], [string], "view">;
-
   USDe: TypedContractMethod<[], [string], "view">;
-
-  YT: TypedContractMethod<[], [string], "view">;
 
   adjustPosition: TypedContractMethod<
     [_debtOutstanding: BigNumberish],
@@ -1087,6 +1085,8 @@ export interface BeefyPendleStrategy extends BaseContract {
     ],
     "view"
   >;
+
+  durationForPendleOracle: TypedContractMethod<[], [bigint], "view">;
 
   emergencyExit: TypedContractMethod<[], [boolean], "view">;
 
@@ -1272,6 +1272,12 @@ export interface BeefyPendleStrategy extends BaseContract {
     "nonpayable"
   >;
 
+  setDurationForPendleOracle: TypedContractMethod<
+    [_duration: BigNumberish],
+    [void],
+    "nonpayable"
+  >;
+
   setEmergencyExit: TypedContractMethod<
     [_emergencyExit: boolean],
     [void],
@@ -1445,9 +1451,6 @@ export interface BeefyPendleStrategy extends BaseContract {
     nameOrSignature: "DEFAULT_SLIPPAGE"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "PENDLE"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
     nameOrSignature: "PENDLE_MARKET"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
@@ -1456,12 +1459,9 @@ export interface BeefyPendleStrategy extends BaseContract {
   getFunction(
     nameOrSignature: "PRECISION"
   ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(nameOrSignature: "PT"): TypedContractMethod<[], [string], "view">;
-  getFunction(nameOrSignature: "SY"): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "USDe"
   ): TypedContractMethod<[], [string], "view">;
-  getFunction(nameOrSignature: "YT"): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "adjustPosition"
   ): TypedContractMethod<
@@ -1499,6 +1499,9 @@ export interface BeefyPendleStrategy extends BaseContract {
     ],
     "view"
   >;
+  getFunction(
+    nameOrSignature: "durationForPendleOracle"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "emergencyExit"
   ): TypedContractMethod<[], [boolean], "view">;
@@ -1698,6 +1701,9 @@ export interface BeefyPendleStrategy extends BaseContract {
   getFunction(
     nameOrSignature: "setCurrentChainId"
   ): TypedContractMethod<[_newChainId: BigNumberish], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "setDurationForPendleOracle"
+  ): TypedContractMethod<[_duration: BigNumberish], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "setEmergencyExit"
   ): TypedContractMethod<[_emergencyExit: boolean], [void], "nonpayable">;
