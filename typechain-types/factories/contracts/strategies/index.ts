@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as legacy from "./legacy";
+export * as libraries from "./libraries";
 export { BeefyCompoundArb__factory } from "./BeefyCompoundArb__factory";
 export { BeefyCompoundStrategy__factory } from "./BeefyCompoundStrategy__factory";
 export { BeefyCurveStrategy__factory } from "./BeefyCurveStrategy__factory";

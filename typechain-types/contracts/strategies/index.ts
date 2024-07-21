@@ -3,6 +3,8 @@
 /* eslint-disable */
 import type * as legacy from "./legacy";
 export type { legacy };
+import type * as libraries from "./libraries";
+export type { libraries };
 export type { BeefyCompoundArb } from "./BeefyCompoundArb";
 export type { BeefyCompoundStrategy } from "./BeefyCompoundStrategy";
 export type { BeefyCurveStrategy } from "./BeefyCurveStrategy";

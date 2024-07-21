@@ -26,15 +26,7 @@ import type {
 export interface BeefyPendleStrategyInterface extends Interface {
   getFunction(
     nameOrSignature:
-      | "BEEFY_VAULT"
-      | "CAMELOT_QUOTER"
-      | "CAMELOT_SWAP_ROUTER"
       | "DEFAULT_PAYLOAD_SIZE_LIMIT"
-      | "DEFAULT_SLIPPAGE"
-      | "PENDLE_MARKET"
-      | "PENDLE_ROUTER"
-      | "PRECISION"
-      | "USDe"
       | "adjustPosition"
       | "balanceOfBeefyShares"
       | "balanceOfPendleLp"
@@ -52,6 +44,7 @@ export interface BeefyPendleStrategyInterface extends Interface {
       | "forceResumeReceive"
       | "getConfig"
       | "getEthSignedMessageHash"
+      | "getQuoteOnCamelot"
       | "getTrustedRemoteAddress"
       | "harvest"
       | "harvester"
@@ -68,6 +61,10 @@ export interface BeefyPendleStrategyInterface extends Interface {
       | "payloadSizeLimitLookup"
       | "performanceFee"
       | "precrime"
+      | "previewFromBeefySharesToPendleLpConversion"
+      | "previewFromPendleLpToBeefySharesConversion"
+      | "previewPendleLpToUsdeConversion"
+      | "previewUsdeToPendleLpConversion"
       | "proxiableUUID"
       | "renounceOwnership"
       | "retryMessage"
@@ -113,12 +110,10 @@ export interface BeefyPendleStrategyInterface extends Interface {
       | "AdjustedPosition"
       | "AdminChanged"
       | "BeaconUpgraded"
-      | "BeefyVaultSharesOperation"
       | "FeeGained"
       | "Initialized"
       | "MessageFailed"
       | "OwnershipTransferred"
-      | "PendleLpTokensOperation"
       | "RetryMessageSuccess"
       | "SetMinDstGas"
       | "SetPrecrime"
@@ -132,35 +127,9 @@ export interface BeefyPendleStrategyInterface extends Interface {
   ): EventFragment;
 
   encodeFunctionData(
-    functionFragment: "BEEFY_VAULT",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "CAMELOT_QUOTER",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "CAMELOT_SWAP_ROUTER",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "DEFAULT_PAYLOAD_SIZE_LIMIT",
     values?: undefined
   ): string;
-  encodeFunctionData(
-    functionFragment: "DEFAULT_SLIPPAGE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "PENDLE_MARKET",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "PENDLE_ROUTER",
-    values?: undefined
-  ): string;
-  encodeFunctionData(functionFragment: "PRECISION", values?: undefined): string;
-  encodeFunctionData(functionFragment: "USDe", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "adjustPosition",
     values: [BigNumberish]
@@ -227,6 +196,10 @@ export interface BeefyPendleStrategyInterface extends Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "getQuoteOnCamelot",
+    values: [AddressLike, AddressLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getTrustedRemoteAddress",
     values: [BigNumberish]
   ): string;
@@ -288,6 +261,22 @@ export interface BeefyPendleStrategyInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "precrime", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "previewFromBeefySharesToPendleLpConversion",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "previewFromPendleLpToBeefySharesConversion",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "previewPendleLpToUsdeConversion",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "previewUsdeToPendleLpConversion",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "proxiableUUID",
     values?: undefined
@@ -431,35 +420,9 @@ export interface BeefyPendleStrategyInterface extends Interface {
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "BEEFY_VAULT",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "CAMELOT_QUOTER",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "CAMELOT_SWAP_ROUTER",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "DEFAULT_PAYLOAD_SIZE_LIMIT",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "DEFAULT_SLIPPAGE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "PENDLE_MARKET",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "PENDLE_ROUTER",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "PRECISION", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "USDe", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "adjustPosition",
     data: BytesLike
@@ -520,6 +483,10 @@ export interface BeefyPendleStrategyInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "getQuoteOnCamelot",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getTrustedRemoteAddress",
     data: BytesLike
   ): Result;
@@ -556,6 +523,22 @@ export interface BeefyPendleStrategyInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "precrime", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "previewFromBeefySharesToPendleLpConversion",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "previewFromPendleLpToBeefySharesConversion",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "previewPendleLpToUsdeConversion",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "previewUsdeToPendleLpConversion",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "proxiableUUID",
     data: BytesLike
@@ -705,22 +688,6 @@ export namespace BeaconUpgradedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace BeefyVaultSharesOperationEvent {
-  export type InputTuple = [
-    amountMintedOrBurned: BigNumberish,
-    isMinted: boolean
-  ];
-  export type OutputTuple = [amountMintedOrBurned: bigint, isMinted: boolean];
-  export interface OutputObject {
-    amountMintedOrBurned: bigint;
-    isMinted: boolean;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
 export namespace FeeGainedEvent {
   export type InputTuple = [
     totalFee: BigNumberish,
@@ -789,22 +756,6 @@ export namespace OwnershipTransferredEvent {
   export interface OutputObject {
     previousOwner: string;
     newOwner: string;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace PendleLpTokensOperationEvent {
-  export type InputTuple = [
-    amountMintedOrBurned: BigNumberish,
-    isMinted: boolean
-  ];
-  export type OutputTuple = [amountMintedOrBurned: bigint, isMinted: boolean];
-  export interface OutputObject {
-    amountMintedOrBurned: bigint;
-    isMinted: boolean;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -1038,23 +989,7 @@ export interface BeefyPendleStrategy extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  BEEFY_VAULT: TypedContractMethod<[], [string], "view">;
-
-  CAMELOT_QUOTER: TypedContractMethod<[], [string], "view">;
-
-  CAMELOT_SWAP_ROUTER: TypedContractMethod<[], [string], "view">;
-
   DEFAULT_PAYLOAD_SIZE_LIMIT: TypedContractMethod<[], [bigint], "view">;
-
-  DEFAULT_SLIPPAGE: TypedContractMethod<[], [bigint], "view">;
-
-  PENDLE_MARKET: TypedContractMethod<[], [string], "view">;
-
-  PENDLE_ROUTER: TypedContractMethod<[], [string], "view">;
-
-  PRECISION: TypedContractMethod<[], [bigint], "view">;
-
-  USDe: TypedContractMethod<[], [string], "view">;
 
   adjustPosition: TypedContractMethod<
     [_debtOutstanding: BigNumberish],
@@ -1148,6 +1083,12 @@ export interface BeefyPendleStrategy extends BaseContract {
     "view"
   >;
 
+  getQuoteOnCamelot: TypedContractMethod<
+    [tokenFrom: AddressLike, tokenTo: AddressLike, amount: BigNumberish],
+    [bigint],
+    "view"
+  >;
+
   getTrustedRemoteAddress: TypedContractMethod<
     [_remoteChainId: BigNumberish],
     [string],
@@ -1237,6 +1178,30 @@ export interface BeefyPendleStrategy extends BaseContract {
   performanceFee: TypedContractMethod<[], [bigint], "view">;
 
   precrime: TypedContractMethod<[], [string], "view">;
+
+  previewFromBeefySharesToPendleLpConversion: TypedContractMethod<
+    [shares: BigNumberish],
+    [bigint],
+    "view"
+  >;
+
+  previewFromPendleLpToBeefySharesConversion: TypedContractMethod<
+    [pendleLpIn: BigNumberish],
+    [bigint],
+    "view"
+  >;
+
+  previewPendleLpToUsdeConversion: TypedContractMethod<
+    [pendleLpIn: BigNumberish],
+    [bigint],
+    "view"
+  >;
+
+  previewUsdeToPendleLpConversion: TypedContractMethod<
+    [usdeIn: BigNumberish],
+    [bigint],
+    "view"
+  >;
 
   proxiableUUID: TypedContractMethod<[], [string], "view">;
 
@@ -1436,32 +1401,8 @@ export interface BeefyPendleStrategy extends BaseContract {
   ): T;
 
   getFunction(
-    nameOrSignature: "BEEFY_VAULT"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "CAMELOT_QUOTER"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "CAMELOT_SWAP_ROUTER"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
     nameOrSignature: "DEFAULT_PAYLOAD_SIZE_LIMIT"
   ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "DEFAULT_SLIPPAGE"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "PENDLE_MARKET"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "PENDLE_ROUTER"
-  ): TypedContractMethod<[], [string], "view">;
-  getFunction(
-    nameOrSignature: "PRECISION"
-  ): TypedContractMethod<[], [bigint], "view">;
-  getFunction(
-    nameOrSignature: "USDe"
-  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "adjustPosition"
   ): TypedContractMethod<
@@ -1568,6 +1509,13 @@ export interface BeefyPendleStrategy extends BaseContract {
     nameOrSignature: "getEthSignedMessageHash"
   ): TypedContractMethod<[_messageHash: BytesLike], [string], "view">;
   getFunction(
+    nameOrSignature: "getQuoteOnCamelot"
+  ): TypedContractMethod<
+    [tokenFrom: AddressLike, tokenTo: AddressLike, amount: BigNumberish],
+    [bigint],
+    "view"
+  >;
+  getFunction(
     nameOrSignature: "getTrustedRemoteAddress"
   ): TypedContractMethod<[_remoteChainId: BigNumberish], [string], "view">;
   getFunction(
@@ -1665,6 +1613,18 @@ export interface BeefyPendleStrategy extends BaseContract {
   getFunction(
     nameOrSignature: "precrime"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "previewFromBeefySharesToPendleLpConversion"
+  ): TypedContractMethod<[shares: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "previewFromPendleLpToBeefySharesConversion"
+  ): TypedContractMethod<[pendleLpIn: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "previewPendleLpToUsdeConversion"
+  ): TypedContractMethod<[pendleLpIn: BigNumberish], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "previewUsdeToPendleLpConversion"
+  ): TypedContractMethod<[usdeIn: BigNumberish], [bigint], "view">;
   getFunction(
     nameOrSignature: "proxiableUUID"
   ): TypedContractMethod<[], [string], "view">;
@@ -1875,13 +1835,6 @@ export interface BeefyPendleStrategy extends BaseContract {
     BeaconUpgradedEvent.OutputObject
   >;
   getEvent(
-    key: "BeefyVaultSharesOperation"
-  ): TypedContractEvent<
-    BeefyVaultSharesOperationEvent.InputTuple,
-    BeefyVaultSharesOperationEvent.OutputTuple,
-    BeefyVaultSharesOperationEvent.OutputObject
-  >;
-  getEvent(
     key: "FeeGained"
   ): TypedContractEvent<
     FeeGainedEvent.InputTuple,
@@ -1908,13 +1861,6 @@ export interface BeefyPendleStrategy extends BaseContract {
     OwnershipTransferredEvent.InputTuple,
     OwnershipTransferredEvent.OutputTuple,
     OwnershipTransferredEvent.OutputObject
-  >;
-  getEvent(
-    key: "PendleLpTokensOperation"
-  ): TypedContractEvent<
-    PendleLpTokensOperationEvent.InputTuple,
-    PendleLpTokensOperationEvent.OutputTuple,
-    PendleLpTokensOperationEvent.OutputObject
   >;
   getEvent(
     key: "RetryMessageSuccess"
@@ -2021,17 +1967,6 @@ export interface BeefyPendleStrategy extends BaseContract {
       BeaconUpgradedEvent.OutputObject
     >;
 
-    "BeefyVaultSharesOperation(uint256,bool)": TypedContractEvent<
-      BeefyVaultSharesOperationEvent.InputTuple,
-      BeefyVaultSharesOperationEvent.OutputTuple,
-      BeefyVaultSharesOperationEvent.OutputObject
-    >;
-    BeefyVaultSharesOperation: TypedContractEvent<
-      BeefyVaultSharesOperationEvent.InputTuple,
-      BeefyVaultSharesOperationEvent.OutputTuple,
-      BeefyVaultSharesOperationEvent.OutputObject
-    >;
-
     "FeeGained(uint256,uint256,uint256)": TypedContractEvent<
       FeeGainedEvent.InputTuple,
       FeeGainedEvent.OutputTuple,
@@ -2074,17 +2009,6 @@ export interface BeefyPendleStrategy extends BaseContract {
       OwnershipTransferredEvent.InputTuple,
       OwnershipTransferredEvent.OutputTuple,
       OwnershipTransferredEvent.OutputObject
-    >;
-
-    "PendleLpTokensOperation(uint256,bool)": TypedContractEvent<
-      PendleLpTokensOperationEvent.InputTuple,
-      PendleLpTokensOperationEvent.OutputTuple,
-      PendleLpTokensOperationEvent.OutputObject
-    >;
-    PendleLpTokensOperation: TypedContractEvent<
-      PendleLpTokensOperationEvent.InputTuple,
-      PendleLpTokensOperationEvent.OutputTuple,
-      PendleLpTokensOperationEvent.OutputObject
     >;
 
     "RetryMessageSuccess(uint16,bytes,uint64,bytes32)": TypedContractEvent<

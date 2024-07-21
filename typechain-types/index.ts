@@ -262,6 +262,8 @@ export type { PikaStrategy } from "./contracts/strategies/legacy/PikaStrategy";
 export { PikaStrategy__factory } from "./factories/contracts/strategies/legacy/PikaStrategy__factory";
 export type { VelodromeStrategy } from "./contracts/strategies/legacy/VelodromeStrategy";
 export { VelodromeStrategy__factory } from "./factories/contracts/strategies/legacy/VelodromeStrategy__factory";
+export type { BeefyPendleStrategyLib } from "./contracts/strategies/libraries/BeefyPendleStrategyLib";
+export { BeefyPendleStrategyLib__factory } from "./factories/contracts/strategies/libraries/BeefyPendleStrategyLib__factory";
 export type { SaverStrategy } from "./contracts/strategies/SaverStrategy";
 export { SaverStrategy__factory } from "./factories/contracts/strategies/SaverStrategy__factory";
 export type { SwapHelper } from "./contracts/utils/SwapHelper";

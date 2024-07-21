@@ -514,6 +514,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.VelodromeStrategy__factory>;
     getContractFactory(
+      name: "BeefyPendleStrategyLib",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.BeefyPendleStrategyLib__factory>;
+    getContractFactory(
       name: "SaverStrategy",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.SaverStrategy__factory>;
@@ -1156,6 +1160,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.VelodromeStrategy>;
     getContractAt(
+      name: "BeefyPendleStrategyLib",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.BeefyPendleStrategyLib>;
+    getContractAt(
       name: "SaverStrategy",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -1677,6 +1686,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.VelodromeStrategy>;
     deployContract(
+      name: "BeefyPendleStrategyLib",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.BeefyPendleStrategyLib>;
+    deployContract(
       name: "SaverStrategy",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.SaverStrategy>;
@@ -2318,6 +2331,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.VelodromeStrategy>;
+    deployContract(
+      name: "BeefyPendleStrategyLib",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.BeefyPendleStrategyLib>;
     deployContract(
       name: "SaverStrategy",
       args: any[],
