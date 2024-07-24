@@ -5,7 +5,5 @@ import type * as core from "./core";
 export type { core };
 import type * as interfaces from "./interfaces";
 export type { interfaces };
-import type * as oracles from "./oracles";
-export type { oracles };
 import type * as router from "./router";
 export type { router };

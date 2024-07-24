@@ -3,5 +3,4 @@
 /* eslint-disable */
 export * as core from "./core";
 export * as interfaces from "./interfaces";
-export * as oracles from "./oracles";
 export * as router from "./router";

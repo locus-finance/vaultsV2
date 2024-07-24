@@ -9,7 +9,6 @@ import type {
   Result,
   Interface,
   EventFragment,
-  AddressLike,
   ContractRunner,
   ContractMethod,
   Listener,
@@ -27,14 +26,14 @@ export interface BeefyPendleStrategyLibInterface extends Interface {
   getFunction(
     nameOrSignature:
       | "BEEFY_VAULT"
-      | "CAMELOT_QUOTER"
+      | "CAMELOT_FACTORY"
       | "CAMELOT_SWAP_ROUTER"
       | "DEFAULT_SLIPPAGE"
       | "PENDLE_MARKET"
       | "PENDLE_ROUTER"
       | "PRECISION"
+      | "USDC_NON_BRIDGED"
       | "USDe"
-      | "getQuoteOnCamelot"
       | "previewFromBeefySharesToPendleLpConversion"
       | "previewFromPendleLpToBeefySharesConversion"
       | "previewPendleLpToUsdeConversion"
@@ -53,7 +52,7 @@ export interface BeefyPendleStrategyLibInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "CAMELOT_QUOTER",
+    functionFragment: "CAMELOT_FACTORY",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -73,11 +72,11 @@ export interface BeefyPendleStrategyLibInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "PRECISION", values?: undefined): string;
-  encodeFunctionData(functionFragment: "USDe", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "getQuoteOnCamelot",
-    values: [AddressLike, AddressLike, BigNumberish]
+    functionFragment: "USDC_NON_BRIDGED",
+    values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "USDe", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "previewFromBeefySharesToPendleLpConversion",
     values: [BigNumberish]
@@ -100,7 +99,7 @@ export interface BeefyPendleStrategyLibInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "CAMELOT_QUOTER",
+    functionFragment: "CAMELOT_FACTORY",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -120,11 +119,11 @@ export interface BeefyPendleStrategyLibInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "PRECISION", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "USDe", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getQuoteOnCamelot",
+    functionFragment: "USDC_NON_BRIDGED",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "USDe", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "previewFromBeefySharesToPendleLpConversion",
     data: BytesLike
@@ -239,7 +238,7 @@ export interface BeefyPendleStrategyLib extends BaseContract {
 
   BEEFY_VAULT: TypedContractMethod<[], [string], "view">;
 
-  CAMELOT_QUOTER: TypedContractMethod<[], [string], "view">;
+  CAMELOT_FACTORY: TypedContractMethod<[], [string], "view">;
 
   CAMELOT_SWAP_ROUTER: TypedContractMethod<[], [string], "view">;
 
@@ -251,13 +250,9 @@ export interface BeefyPendleStrategyLib extends BaseContract {
 
   PRECISION: TypedContractMethod<[], [bigint], "view">;
 
-  USDe: TypedContractMethod<[], [string], "view">;
+  USDC_NON_BRIDGED: TypedContractMethod<[], [string], "view">;
 
-  getQuoteOnCamelot: TypedContractMethod<
-    [tokenFrom: AddressLike, tokenTo: AddressLike, amount: BigNumberish],
-    [bigint],
-    "view"
-  >;
+  USDe: TypedContractMethod<[], [string], "view">;
 
   previewFromBeefySharesToPendleLpConversion: TypedContractMethod<
     [shares: BigNumberish],
@@ -291,7 +286,7 @@ export interface BeefyPendleStrategyLib extends BaseContract {
     nameOrSignature: "BEEFY_VAULT"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "CAMELOT_QUOTER"
+    nameOrSignature: "CAMELOT_FACTORY"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "CAMELOT_SWAP_ROUTER"
@@ -309,15 +304,11 @@ export interface BeefyPendleStrategyLib extends BaseContract {
     nameOrSignature: "PRECISION"
   ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
-    nameOrSignature: "USDe"
+    nameOrSignature: "USDC_NON_BRIDGED"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "getQuoteOnCamelot"
-  ): TypedContractMethod<
-    [tokenFrom: AddressLike, tokenTo: AddressLike, amount: BigNumberish],
-    [bigint],
-    "view"
-  >;
+    nameOrSignature: "USDe"
+  ): TypedContractMethod<[], [string], "view">;
   getFunction(
     nameOrSignature: "previewFromBeefySharesToPendleLpConversion"
   ): TypedContractMethod<[shares: BigNumberish], [bigint], "view">;

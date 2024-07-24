@@ -50,9 +50,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IAlgebraSwapCallback__factory>;
     getContractFactory(
-      name: "IQuoter",
+      name: "IAlgebraFactory",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IQuoter__factory>;
+    ): Promise<Contracts.IAlgebraFactory__factory>;
     getContractFactory(
       name: "ISwapRouter",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -194,14 +194,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165__factory>;
     getContractFactory(
-      name: "BoringOwnableUpgradeable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.BoringOwnableUpgradeable__factory>;
-    getContractFactory(
-      name: "BoringOwnableUpgradeableData",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.BoringOwnableUpgradeableData__factory>;
-    getContractFactory(
       name: "Errors",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Errors__factory>;
@@ -262,10 +254,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IPPrincipalToken__factory>;
     getContractFactory(
-      name: "IPPYLpOracle",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IPPYLpOracle__factory>;
-    getContractFactory(
       name: "IPYieldToken",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IPYieldToken__factory>;
@@ -277,10 +265,6 @@ declare module "hardhat/types/runtime" {
       name: "IStandardizedYield",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IStandardizedYield__factory>;
-    getContractFactory(
-      name: "PendlePYLpOracle",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.PendlePYLpOracle__factory>;
     getContractFactory(
       name: "IPSwapAggregator",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -341,6 +325,10 @@ declare module "hardhat/types/runtime" {
       name: "IBeefyVault",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IBeefyVault__factory>;
+    getContractFactory(
+      name: "IGetGlobalStateFromPool",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IGetGlobalStateFromPool__factory>;
     getContractFactory(
       name: "IFactory",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -580,10 +568,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IAlgebraSwapCallback>;
     getContractAt(
-      name: "IQuoter",
+      name: "IAlgebraFactory",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
-    ): Promise<Contracts.IQuoter>;
+    ): Promise<Contracts.IAlgebraFactory>;
     getContractAt(
       name: "ISwapRouter",
       address: string | ethers.Addressable,
@@ -760,16 +748,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165>;
     getContractAt(
-      name: "BoringOwnableUpgradeable",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.BoringOwnableUpgradeable>;
-    getContractAt(
-      name: "BoringOwnableUpgradeableData",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.BoringOwnableUpgradeableData>;
-    getContractAt(
       name: "Errors",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -845,11 +823,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.IPPrincipalToken>;
     getContractAt(
-      name: "IPPYLpOracle",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IPPYLpOracle>;
-    getContractAt(
       name: "IPYieldToken",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -864,11 +837,6 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.IStandardizedYield>;
-    getContractAt(
-      name: "PendlePYLpOracle",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.PendlePYLpOracle>;
     getContractAt(
       name: "IPSwapAggregator",
       address: string | ethers.Addressable,
@@ -944,6 +912,11 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.IBeefyVault>;
+    getContractAt(
+      name: "IGetGlobalStateFromPool",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IGetGlobalStateFromPool>;
     getContractAt(
       name: "IFactory",
       address: string | ethers.Addressable,
@@ -1222,9 +1195,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IAlgebraSwapCallback>;
     deployContract(
-      name: "IQuoter",
+      name: "IAlgebraFactory",
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IQuoter>;
+    ): Promise<Contracts.IAlgebraFactory>;
     deployContract(
       name: "ISwapRouter",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1366,14 +1339,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC165>;
     deployContract(
-      name: "BoringOwnableUpgradeable",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.BoringOwnableUpgradeable>;
-    deployContract(
-      name: "BoringOwnableUpgradeableData",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.BoringOwnableUpgradeableData>;
-    deployContract(
       name: "Errors",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Errors>;
@@ -1434,10 +1399,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IPPrincipalToken>;
     deployContract(
-      name: "IPPYLpOracle",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IPPYLpOracle>;
-    deployContract(
       name: "IPYieldToken",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IPYieldToken>;
@@ -1449,10 +1410,6 @@ declare module "hardhat/types/runtime" {
       name: "IStandardizedYield",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IStandardizedYield>;
-    deployContract(
-      name: "PendlePYLpOracle",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.PendlePYLpOracle>;
     deployContract(
       name: "IPSwapAggregator",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1513,6 +1470,10 @@ declare module "hardhat/types/runtime" {
       name: "IBeefyVault",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IBeefyVault>;
+    deployContract(
+      name: "IGetGlobalStateFromPool",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IGetGlobalStateFromPool>;
     deployContract(
       name: "IFactory",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1752,10 +1713,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IAlgebraSwapCallback>;
     deployContract(
-      name: "IQuoter",
+      name: "IAlgebraFactory",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IQuoter>;
+    ): Promise<Contracts.IAlgebraFactory>;
     deployContract(
       name: "ISwapRouter",
       args: any[],
@@ -1932,16 +1893,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC165>;
     deployContract(
-      name: "BoringOwnableUpgradeable",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.BoringOwnableUpgradeable>;
-    deployContract(
-      name: "BoringOwnableUpgradeableData",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.BoringOwnableUpgradeableData>;
-    deployContract(
       name: "Errors",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -2017,11 +1968,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IPPrincipalToken>;
     deployContract(
-      name: "IPPYLpOracle",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IPPYLpOracle>;
-    deployContract(
       name: "IPYieldToken",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -2036,11 +1982,6 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IStandardizedYield>;
-    deployContract(
-      name: "PendlePYLpOracle",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.PendlePYLpOracle>;
     deployContract(
       name: "IPSwapAggregator",
       args: any[],
@@ -2116,6 +2057,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IBeefyVault>;
+    deployContract(
+      name: "IGetGlobalStateFromPool",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IGetGlobalStateFromPool>;
     deployContract(
       name: "IFactory",
       args: any[],

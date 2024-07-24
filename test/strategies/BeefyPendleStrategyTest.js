@@ -13,6 +13,7 @@ describe("BeefyPendleStrategy", function () {
       amountHex,
     ]);
   };
+
   const withImpersonatedSigner = async (signerAddress, action) => {
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
@@ -115,7 +116,7 @@ describe("BeefyPendleStrategy", function () {
       ],
       {
         initializer: "initialize",
-        kind: "transparent",
+        kind: "uups",
       }
     );
     await vault.waitForDeployment();
@@ -220,6 +221,14 @@ describe("BeefyPendleStrategy", function () {
     return { sgBridge, strategy, vault, deployer, want };
   }
 
+  async function sign(strategy, signer) {
+    const signPayload = await strategy.strategistSignMessageHash();
+    const signature = await signer.signMessage(
+      ethers.getBytes(signPayload)
+    );
+    return signature;
+  }
+
   let sgBridge;
   let strategy;
   let vault;
@@ -233,7 +242,58 @@ describe("BeefyPendleStrategy", function () {
     deployer = fixtureData.deployer;
   });
 
-  it('should', async () => {
-    console.log('do smth');
+  it('should deposit, harvest and withdraw', async () => {
+    const { strategy, vault, deployer, want } = await loadFixture(deployFixture);
+    let signature = await sign(strategy, deployer);
+
+    const balanceBefore = await want.balanceOf(deployer.address);
+    // console.log(balanceBefore.toString());
+    await want.connect(deployer).approve(vault, ethers.parseEther("10000"))
+    await vault.connect(deployer)["deposit(uint256,address)"](balanceBefore, deployer.address);
+    expect(await want.balanceOf(vault)).to.equal(balanceBefore);
+
+    let totalDebt = (await vault.strategies(110, strategy)).totalDebt;
+    let debtOutstanding = await vault.debtOutstanding(110, strategy);
+    let credit = await vault.creditAvailable(110, strategy);
+    let ratio = (await vault.strategies(110, strategy)).debtRatio;
+
+    // console.log(totalDebt, debtOutstanding, credit, ratio, signature);
+    
+    console.log((await strategy.estimatedTotalAssets()).toString());
+    await strategy.connect(deployer).harvest(totalDebt, debtOutstanding, credit, ratio, signature);
+    console.log((await strategy.estimatedTotalAssets()).toString());
+    
+    // expect(await strategy.estimatedTotalAssets()).to.be.closeTo(
+    //   balanceBefore,
+    //   ethers.parseUnits("100", 6)
+    // );
+    // expect(await want.balanceOf(await strategy.getAddress())).to.eq(0);
+
+    // let eta = await strategy.estimatedTotalAssets();
+    // await time.increase(60 * 60 * 24 * 15)
+
+    // totalDebt = (await vault.strategies(110, strategy)).totalDebt
+    // debtOutstanding = await vault.debtOutstanding(110, strategy)
+    // credit = await vault.creditAvailable(110, strategy)
+    // ratio = (await vault.strategies(110, strategy)).debtRatio
+    // signature = await sign(strategy, deployer);
+
+    // await strategy.connect(deployer).harvest(totalDebt, debtOutstanding, credit, ratio, signature);
+    // expect(await strategy.estimatedTotalAssets()).to.be.greaterThan(eta);
+
+    // await vault
+    //   .connect(deployer)
+    // ["withdraw(uint256,address,uint256)"](
+    //   await vault.balanceOf(deployer.address),
+    //   deployer.address,
+    //   1000
+    // );
+
+    // let tx = await vault.connect(deployer).handleWithdrawals();
+    // await tx.wait();
+    // tx = await vault.connect(deployer).handleWithdrawals();
+    // expect((await want.balanceOf(deployer.address))).to.be.greaterThan(
+    //   balanceBefore
+    // );
   });
 });

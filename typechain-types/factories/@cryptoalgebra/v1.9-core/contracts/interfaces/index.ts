@@ -2,3 +2,4 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as callback from "./callback";
+export { IAlgebraFactory__factory } from "./IAlgebraFactory__factory";

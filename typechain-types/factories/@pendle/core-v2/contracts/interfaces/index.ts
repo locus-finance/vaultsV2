@@ -13,7 +13,6 @@ export { IPGauge__factory } from "./IPGauge__factory";
 export { IPInterestManagerYT__factory } from "./IPInterestManagerYT__factory";
 export { IPMarket__factory } from "./IPMarket__factory";
 export { IPMarketSwapCallback__factory } from "./IPMarketSwapCallback__factory";
-export { IPPYLpOracle__factory } from "./IPPYLpOracle__factory";
 export { IPPrincipalToken__factory } from "./IPPrincipalToken__factory";
 export { IPYieldToken__factory } from "./IPYieldToken__factory";
 export { IRewardManager__factory } from "./IRewardManager__factory";

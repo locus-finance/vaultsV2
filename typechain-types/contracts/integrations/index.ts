@@ -3,6 +3,8 @@
 /* eslint-disable */
 import type * as beefy from "./beefy";
 export type { beefy };
+import type * as cryptoalgebra from "./cryptoalgebra";
+export type { cryptoalgebra };
 import type * as curve from "./curve";
 export type { curve };
 import type * as hop from "./hop";

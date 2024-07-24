@@ -3,6 +3,7 @@
 /* eslint-disable */
 import type {
   BaseContract,
+  BigNumberish,
   BytesLike,
   FunctionFragment,
   Result,
@@ -17,29 +18,66 @@ import type {
   TypedEventLog,
   TypedListener,
   TypedContractMethod,
-} from "../../../../../../common";
+} from "../../../common";
 
-export interface BoringOwnableUpgradeableDataInterface extends Interface {
-  getFunction(nameOrSignature: "owner" | "pendingOwner"): FunctionFragment;
+export declare namespace IGetGlobalStateFromPool {
+  export type GlobalStateStruct = {
+    price: BigNumberish;
+    tick: BigNumberish;
+    feeZto: BigNumberish;
+    feeOtz: BigNumberish;
+    timepointIndex: BigNumberish;
+    communityFeeToken0: BigNumberish;
+    communityFeeToken1: BigNumberish;
+    unlocked: boolean;
+  };
 
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "pendingOwner",
-    values?: undefined
-  ): string;
-
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "pendingOwner",
-    data: BytesLike
-  ): Result;
+  export type GlobalStateStructOutput = [
+    price: bigint,
+    tick: bigint,
+    feeZto: bigint,
+    feeOtz: bigint,
+    timepointIndex: bigint,
+    communityFeeToken0: bigint,
+    communityFeeToken1: bigint,
+    unlocked: boolean
+  ] & {
+    price: bigint;
+    tick: bigint;
+    feeZto: bigint;
+    feeOtz: bigint;
+    timepointIndex: bigint;
+    communityFeeToken0: bigint;
+    communityFeeToken1: bigint;
+    unlocked: boolean;
+  };
 }
 
-export interface BoringOwnableUpgradeableData extends BaseContract {
-  connect(runner?: ContractRunner | null): BoringOwnableUpgradeableData;
+export interface IGetGlobalStateFromPoolInterface extends Interface {
+  getFunction(
+    nameOrSignature: "globalState" | "token0" | "token1"
+  ): FunctionFragment;
+
+  encodeFunctionData(
+    functionFragment: "globalState",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "token0", values?: undefined): string;
+  encodeFunctionData(functionFragment: "token1", values?: undefined): string;
+
+  decodeFunctionResult(
+    functionFragment: "globalState",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "token0", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "token1", data: BytesLike): Result;
+}
+
+export interface IGetGlobalStateFromPool extends BaseContract {
+  connect(runner?: ContractRunner | null): IGetGlobalStateFromPool;
   waitForDeployment(): Promise<this>;
 
-  interface: BoringOwnableUpgradeableDataInterface;
+  interface: IGetGlobalStateFromPoolInterface;
 
   queryFilter<TCEvent extends TypedContractEvent>(
     event: TCEvent,
@@ -78,19 +116,32 @@ export interface BoringOwnableUpgradeableData extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
-  owner: TypedContractMethod<[], [string], "view">;
+  globalState: TypedContractMethod<
+    [],
+    [IGetGlobalStateFromPool.GlobalStateStructOutput],
+    "view"
+  >;
 
-  pendingOwner: TypedContractMethod<[], [string], "view">;
+  token0: TypedContractMethod<[], [string], "view">;
+
+  token1: TypedContractMethod<[], [string], "view">;
 
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
 
   getFunction(
-    nameOrSignature: "owner"
+    nameOrSignature: "globalState"
+  ): TypedContractMethod<
+    [],
+    [IGetGlobalStateFromPool.GlobalStateStructOutput],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "token0"
   ): TypedContractMethod<[], [string], "view">;
   getFunction(
-    nameOrSignature: "pendingOwner"
+    nameOrSignature: "token1"
   ): TypedContractMethod<[], [string], "view">;
 
   filters: {};

@@ -47,6 +47,7 @@ const config: HardhatUserConfig = {
       forking: {
         url: ARBITRUM_NODE || "",
       },
+      allowUnlimitedContractSize: true
     },
     mainnet: {
       url: ETH_NODE || "",
@@ -68,7 +69,6 @@ const config: HardhatUserConfig = {
       accounts: [`0x${PROD_DEPLOYER_PRIVATE_KEY}`],
     },
   },
-
   etherscan: {
     apiKey: {
       mainnet: process.env.ETHERSCAN_API_KEY || "",

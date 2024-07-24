@@ -2,12 +2,11 @@
 
 pragma solidity ^0.8.18;
 
-import "@openzeppelin/contracts/utils/Address.sol";
 import "@pendle/core-v2/contracts/interfaces/IPAllActionV3.sol";
 import "@pendle/core-v2/contracts/interfaces/IPMarket.sol";
 import "@pendle/core-v2/contracts/oracles/PendleLpOracleLib.sol";
 import "@cryptoalgebra/v1.9-periphery/contracts/interfaces/ISwapRouter.sol";
-import "@cryptoalgebra/v1.9-periphery/contracts/interfaces/IQuoter.sol";
+import "@cryptoalgebra/v1.9-core/contracts/interfaces/IAlgebraFactory.sol";
 
 import "../../integrations/beefy/IBeefyVault.sol";
 
@@ -29,8 +28,7 @@ library BeefyPendleStrategyLib {
         IBeefyVault(0x631d5C4bA949418D7D856Acc4e33EC2FFF96b590);
     ISwapRouter public constant CAMELOT_SWAP_ROUTER =
         ISwapRouter(0x1F721E2E82F6676FCE4eA07A5958cF098D339e18);
-    IQuoter public constant CAMELOT_QUOTER =
-        IQuoter(0x0Fc73040b26E9bC8514fA028D998E73A254Fa76E);
+    IAlgebraFactory public constant CAMELOT_FACTORY = IAlgebraFactory(0x1a3c9B1d2F0529D97f2afC5136Cc23e58f1FD35B);
 
     IPAllActionV3 public constant PENDLE_ROUTER =
         IPAllActionV3(0x888888888889758F76e7103c6CbF23ABbF58F946);
@@ -39,6 +37,8 @@ library BeefyPendleStrategyLib {
 
     IERC20Metadata public constant USDe =
         IERC20Metadata(0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34);
+    IERC20Metadata public constant USDC_NON_BRIDGED =
+        IERC20Metadata(0xaf88d065e77c8cC2239327C5EDb3A432268e5831);
 
     uint256 public constant PRECISION = 1 ether;
     uint256 public constant DEFAULT_SLIPPAGE = 9_500;
@@ -132,21 +132,22 @@ library BeefyPendleStrategyLib {
     }
 
     function swapOnCamelot(
-        address tokenIn,
-        address tokenOut,
+        address[] memory tokensChain,
         uint256 amountIn
     ) external returns (uint256 amountOut) {
-        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
-            .ExactInputSingleParams({
-                tokenIn: tokenIn,
-                tokenOut: tokenOut,
+        bytes memory path = abi.encodePacked(tokensChain[0]);
+        for (uint256 i = 1; i <= tokensChain.length - 1; i++) {
+            path = abi.encodePacked(path, tokensChain[i]);
+        }
+        ISwapRouter.ExactInputParams memory params = ISwapRouter
+            .ExactInputParams({
+                path: path,
                 recipient: address(this),
                 deadline: block.timestamp,
                 amountIn: amountIn,
-                amountOutMinimum: 0,
-                limitSqrtPrice: 0
+                amountOutMinimum: 0
             });
-        amountOut = CAMELOT_SWAP_ROUTER.exactInputSingle(params);
+        amountOut = CAMELOT_SWAP_ROUTER.exactInput(params);
     }
 
     function previewUsdeToPendleLpConversion(
@@ -181,24 +182,5 @@ library BeefyPendleStrategyLib {
         uint256 pendleLpIn
     ) external view returns (uint256 shares) {
         shares = (pendleLpIn * PRECISION) / BEEFY_VAULT.getPricePerFullShare();
-    }
-
-    function getQuoteOnCamelot(
-        address tokenFrom,
-        address tokenTo,
-        uint256 amount
-    ) external view returns (uint256 amountOut) {
-        bytes memory quoteCalldata = abi.encodeWithSelector(
-            CAMELOT_QUOTER.quoteExactInputSingle.selector,
-            tokenFrom,
-            tokenTo,
-            amount,
-            0
-        );
-        bytes memory quoteResult = Address.functionStaticCall(
-            address(CAMELOT_QUOTER),
-            quoteCalldata
-        );
-        (amountOut, ) = abi.decode(quoteResult, (uint256, uint16));
     }
 }

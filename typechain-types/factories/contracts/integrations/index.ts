@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export * as beefy from "./beefy";
+export * as cryptoalgebra from "./cryptoalgebra";
 export * as curve from "./curve";
 export * as hop from "./hop";
 export * as pearl from "./pearl";

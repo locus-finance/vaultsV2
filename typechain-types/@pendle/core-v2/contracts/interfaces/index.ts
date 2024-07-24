@@ -14,7 +14,6 @@ export type { IPGauge } from "./IPGauge";
 export type { IPInterestManagerYT } from "./IPInterestManagerYT";
 export type { IPMarket } from "./IPMarket";
 export type { IPMarketSwapCallback } from "./IPMarketSwapCallback";
-export type { IPPYLpOracle } from "./IPPYLpOracle";
 export type { IPPrincipalToken } from "./IPPrincipalToken";
 export type { IPYieldToken } from "./IPYieldToken";
 export type { IRewardManager } from "./IRewardManager";

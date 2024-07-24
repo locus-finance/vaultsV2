@@ -1,21 +1,27 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.18;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 import {BaseStrategy} from "../BaseStrategy.sol";
 
+import "@openzeppelin/contracts/utils/Address.sol";
+
+import "../integrations/cryptoalgebra/IGetGlobalStateFromPool.sol";
 import "./libraries/BeefyPendleStrategyLib.sol";
+
+import "hardhat/console.sol";
 
 contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
     using SafeERC20 for IERC20Metadata;
     using SafeERC20 for IERC20;
+    using SafeCast for uint256;
 
     // EmptySwap means no swap aggregator is involved
     SwapData public emptySwap;
@@ -57,6 +63,7 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
             address(BeefyPendleStrategyLib.CAMELOT_SWAP_ROUTER),
             type(uint256).max
         );
+
         BeefyPendleStrategyLib.USDe.approve(
             address(BeefyPendleStrategyLib.PENDLE_ROUTER),
             type(uint256).max
@@ -65,6 +72,21 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
             address(BeefyPendleStrategyLib.PENDLE_ROUTER),
             type(uint256).max
         );
+
+        BeefyPendleStrategyLib.PENDLE_MARKET.approve(
+            address(BeefyPendleStrategyLib.PENDLE_MARKET),
+            type(uint256).max
+        );
+
+        BeefyPendleStrategyLib.PENDLE_MARKET.approve(
+            address(BeefyPendleStrategyLib.BEEFY_VAULT),
+            type(uint256).max
+        );
+        BeefyPendleStrategyLib.BEEFY_VAULT.approve(
+            address(BeefyPendleStrategyLib.BEEFY_VAULT),
+            type(uint256).max
+        );
+
         durationForPendleOracle = 1800;
         defaultApprox = ApproxParams(0, type(uint256).max, 0, 256, 1e14);
     }
@@ -131,25 +153,56 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
             );
     }
 
-    function getQuoteOnCamelot(
-        address tokenFrom,
-        address tokenTo,
-        uint256 amount
+    function getQuoteOnCamelotWithDecimals6(
+        address[] memory tokensChain,
+        uint256 amountIn
     ) public view returns (uint256 amountOut) {
-        return
-            BeefyPendleStrategyLib.getQuoteOnCamelot(
-                tokenFrom,
-                tokenTo,
-                amount
-            );
+        if (amountIn == 0) return 0;
+        amountOut = amountIn;
+        uint256 precision = 1_000_000;
+        // uint256 qNotationScale = 1 << 96;
+        for (uint256 i = 1; i <= tokensChain.length - 1; i++) {
+            address firstToken = tokensChain[i - 1];
+            address secondToken = tokensChain[i];
+            console.log("---", i);
+            console.log(IERC20Metadata(firstToken).symbol(), " - ", IERC20Metadata(secondToken).symbol());
+            console.log("amountOut at start: ", amountOut);
+            IGetGlobalStateFromPool pool = IGetGlobalStateFromPool(BeefyPendleStrategyLib.CAMELOT_FACTORY.poolByPair(firstToken, secondToken));
+            console.log("pool address: ", address(pool));
+            IGetGlobalStateFromPool.GlobalState memory poolGlobalState = pool.globalState();
+
+            // if (i == 1) {
+            //     amountOut = amountOut.toUint160() << 96; // safe cast to Q64.96amo
+            // }
+            // console.log("unt out converted: ", amountOut);
+            
+            console.log("sqrtPrice: ", poolGlobalState.price);
+            uint256 price = (poolGlobalState.price >> 96) ** 2;
+            console.log("price: ", price);
+            if (pool.token0() == firstToken && pool.token1() == secondToken) {
+                // amountOut = (amountOut * poolGlobalState.price) >> 96; // multiply amountOut and price (that are both in Q64.96)
+                amountOut = (price * amountOut) / precision;
+            } else {
+                // amountOut = (amountOut * qNotationScale) / poolGlobalState.price; // divide amountOut by price (that are both in Q64.96)
+                amountOut = (amountOut * precision) / price;
+            }
+            
+            console.log("amount out with price: ", amountOut);
+            console.log("***", i);
+        }
+        // amountOut = amountOut >> 96; // cast back to uint256
+        console.log('finish: ', amountOut);
     }
 
     function estimatedTotalAssets() public view override returns (uint256) {
+        address[] memory tokensChain = new address[](3);
+        tokensChain[0] = address(BeefyPendleStrategyLib.USDe);
+        tokensChain[1] = address(BeefyPendleStrategyLib.USDC_NON_BRIDGED);
+        tokensChain[2] = address(want);
         return
             balanceOfWant() +
-            getQuoteOnCamelot(
-                address(BeefyPendleStrategyLib.USDe),
-                address(want),
+            getQuoteOnCamelotWithDecimals6(
+                tokensChain,
                 previewPendleLpToUsdeConversion(
                     previewFromBeefySharesToPendleLpConversion(
                         balanceOfBeefyShares()
@@ -236,9 +289,13 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
     function _swapWantToUsde(
         uint256 wantAmount
     ) internal returns (uint256 usdeOut) {
+        address[] memory tokensChain = new address[](3);
+        tokensChain[0] = address(want);
+        tokensChain[1] = address(BeefyPendleStrategyLib.USDC_NON_BRIDGED);
+        tokensChain[2] = address(BeefyPendleStrategyLib.USDe);
+
         usdeOut = BeefyPendleStrategyLib.swapOnCamelot(
-            address(want),
-            address(BeefyPendleStrategyLib.USDe),
+            tokensChain,
             wantAmount
         );
         emit BeefyPendleStrategyLib.WantToUsdeOperation(usdeOut, false);
@@ -247,9 +304,12 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
     function _swapUsdeToWant(
         uint256 usdeAmount
     ) internal returns (uint256 wantOut) {
+        address[] memory tokensChain = new address[](3);
+        tokensChain[0] = address(BeefyPendleStrategyLib.USDe);
+        tokensChain[1] = address(BeefyPendleStrategyLib.USDC_NON_BRIDGED);
+        tokensChain[2] = address(want);
         wantOut = BeefyPendleStrategyLib.swapOnCamelot(
-            address(BeefyPendleStrategyLib.USDe),
-            address(want),
+            tokensChain,
             usdeAmount
         );
         emit BeefyPendleStrategyLib.WantToUsdeOperation(wantOut, true);
@@ -259,13 +319,17 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
         if (_amountNeeded == 0) {
             return;
         }
+
+        address[] memory tokensChain = new address[](3);
+        tokensChain[0] = address(want);
+        tokensChain[1] = address(BeefyPendleStrategyLib.USDC_NON_BRIDGED);
+        tokensChain[2] = address(BeefyPendleStrategyLib.USDe);
         uint256 sharesToBurn = Math.min(
             balanceOfBeefyShares(),
             previewFromPendleLpToBeefySharesConversion(
                 previewUsdeToPendleLpConversion(
-                    getQuoteOnCamelot(
-                        address(want),
-                        address(BeefyPendleStrategyLib.USDe),
+                    getQuoteOnCamelotWithDecimals6(
+                        tokensChain,
                         _amountNeeded
                     )
                 )
