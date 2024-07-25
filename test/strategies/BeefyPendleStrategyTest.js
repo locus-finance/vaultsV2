@@ -3,7 +3,9 @@ const { utils } = require("ethers");
 const hre = require("hardhat");
 const { ethers } = hre;
 const {
-  loadFixture
+  loadFixture,
+  time,
+  reset
 } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 
 describe("BeefyPendleStrategy", function () {
@@ -183,6 +185,7 @@ describe("BeefyPendleStrategy", function () {
       }
     );
     await vaultToken.waitForDeployment();
+    await vaultToken.connect(deployer).approve(await vault.getAddress(), ethers.MaxUint256);
 
     const setSgLzSettingsTx = await vault.setSgLzSettings(
       await bridgeMock.getAddress(),
@@ -218,7 +221,7 @@ describe("BeefyPendleStrategy", function () {
       value: ethers.parseEther("1"),
     });
 
-    return { sgBridge, strategy, vault, deployer, want };
+    return { sgBridge, strategy, vault, deployer, want, vaultToken };
   }
 
   async function sign(strategy, signer) {
@@ -233,12 +236,14 @@ describe("BeefyPendleStrategy", function () {
   let strategy;
   let vault;
   let deployer;
+  let vaultToken;
 
   beforeEach(async function () {
     const fixtureData = await loadFixture(deployFixture);
     sgBridge = fixtureData.sgBridge;
     strategy = fixtureData.strategy;
     vault = fixtureData.vault;
+    vaultToken = fixtureData.vaultToken;
     deployer = fixtureData.deployer;
   });
 
@@ -257,43 +262,37 @@ describe("BeefyPendleStrategy", function () {
     let credit = await vault.creditAvailable(110, strategy);
     let ratio = (await vault.strategies(110, strategy)).debtRatio;
 
-    // console.log(totalDebt, debtOutstanding, credit, ratio, signature);
-    console.log("balance before", balanceBefore.toString());
-    console.log((await strategy.estimatedTotalAssets()).toString());
     await strategy.connect(deployer).harvest(totalDebt, debtOutstanding, credit, ratio, signature);
-    console.log((await strategy.estimatedTotalAssets()).toString());
-    
-    // expect(await strategy.estimatedTotalAssets()).to.be.closeTo(
-    //   balanceBefore,
-    //   ethers.parseUnits("100", 6)
-    // );
-    // expect(await want.balanceOf(await strategy.getAddress())).to.eq(0);
+    expect(await strategy.estimatedTotalAssets()).to.be.closeTo(
+      balanceBefore,
+      ethers.parseUnits("100", 6)
+    );
+    expect(await want.balanceOf(await strategy.getAddress())).to.eq(0);
 
-    // let eta = await strategy.estimatedTotalAssets();
-    // await time.increase(60 * 60 * 24 * 15)
+    let eta = await strategy.estimatedTotalAssets();
+    await time.increase(60 * 60 * 24 * 15)
 
-    // totalDebt = (await vault.strategies(110, strategy)).totalDebt
-    // debtOutstanding = await vault.debtOutstanding(110, strategy)
-    // credit = await vault.creditAvailable(110, strategy)
-    // ratio = (await vault.strategies(110, strategy)).debtRatio
-    // signature = await sign(strategy, deployer);
+    totalDebt = (await vault.strategies(110, strategy)).totalDebt
+    debtOutstanding = await vault.debtOutstanding(110, strategy)
+    credit = await vault.creditAvailable(110, strategy)
+    ratio = (await vault.strategies(110, strategy)).debtRatio
+    signature = await sign(strategy, deployer);
 
-    // await strategy.connect(deployer).harvest(totalDebt, debtOutstanding, credit, ratio, signature);
-    // expect(await strategy.estimatedTotalAssets()).to.be.greaterThan(eta);
+    await strategy.connect(deployer).harvest(totalDebt, debtOutstanding, credit, ratio, signature);
+    expect(await strategy.estimatedTotalAssets()).to.be.greaterThan(eta);
 
-    // await vault
-    //   .connect(deployer)
-    // ["withdraw(uint256,address,uint256)"](
-    //   await vault.balanceOf(deployer.address),
-    //   deployer.address,
-    //   1000
-    // );
+    await vault
+      .connect(deployer)
+    ["withdraw(uint256,address,uint256)"](
+      await vaultToken.balanceOf(deployer.address),
+      deployer.address,
+      1000
+    );
 
-    // let tx = await vault.connect(deployer).handleWithdrawals();
-    // await tx.wait();
-    // tx = await vault.connect(deployer).handleWithdrawals();
-    // expect((await want.balanceOf(deployer.address))).to.be.greaterThan(
-    //   balanceBefore
-    // );
+    let tx = await vault.connect(deployer).handleWithdrawals();
+    await tx.wait();
+    expect((await want.balanceOf(deployer.address))).to.be.lessThan(
+      balanceBefore
+    );
   });
 });
