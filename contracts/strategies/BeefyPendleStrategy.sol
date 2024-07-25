@@ -153,14 +153,13 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
             );
     }
 
-    function getQuoteOnCamelotWithDecimals6(
+    function getQuoteOnCamelot(
         address[] memory tokensChain,
         uint256 amountIn
     ) public view returns (uint256 amountOut) {
         if (amountIn == 0) return 0;
         amountOut = amountIn;
-        uint256 precision = 1_000_000;
-        // uint256 qNotationScale = 1 << 96;
+        uint256 qNotationScale = 1 << 96;
         for (uint256 i = 1; i <= tokensChain.length - 1; i++) {
             address firstToken = tokensChain[i - 1];
             address secondToken = tokensChain[i];
@@ -171,20 +170,16 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
             console.log("pool address: ", address(pool));
             IGetGlobalStateFromPool.GlobalState memory poolGlobalState = pool.globalState();
 
-            // if (i == 1) {
-            //     amountOut = amountOut.toUint160() << 96; // safe cast to Q64.96amo
-            // }
-            // console.log("unt out converted: ", amountOut);
-            
+            if (i == 1) {
+                amountOut = amountOut.toUint160() << 96; // safe cast to Q64.96
+            }
+            console.log("amount out converted: ", amountOut);
             console.log("sqrtPrice: ", poolGlobalState.price);
-            uint256 price = (poolGlobalState.price >> 96) ** 2;
-            console.log("price: ", price);
+            
             if (pool.token0() == firstToken && pool.token1() == secondToken) {
-                // amountOut = (amountOut * poolGlobalState.price) >> 96; // multiply amountOut and price (that are both in Q64.96)
-                amountOut = (price * amountOut) / precision;
+                amountOut = (amountOut * poolGlobalState.price) >> 96; // multiply amountOut and price (that are both in Q64.96)
             } else {
-                // amountOut = (amountOut * qNotationScale) / poolGlobalState.price; // divide amountOut by price (that are both in Q64.96)
-                amountOut = (amountOut * precision) / price;
+                amountOut = (amountOut * qNotationScale) / poolGlobalState.price; // divide amountOut by price (that are both in Q64.96)
             }
             
             console.log("amount out with price: ", amountOut);
@@ -201,7 +196,7 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
         tokensChain[2] = address(want);
         return
             balanceOfWant() +
-            getQuoteOnCamelotWithDecimals6(
+            getQuoteOnCamelot(
                 tokensChain,
                 previewPendleLpToUsdeConversion(
                     previewFromBeefySharesToPendleLpConversion(
@@ -328,7 +323,7 @@ contract BeefyPendleStrategy is Initializable, BaseStrategy, UUPSUpgradeable {
             balanceOfBeefyShares(),
             previewFromPendleLpToBeefySharesConversion(
                 previewUsdeToPendleLpConversion(
-                    getQuoteOnCamelotWithDecimals6(
+                    getQuoteOnCamelot(
                         tokensChain,
                         _amountNeeded
                     )
