@@ -1,6 +1,11 @@
 const hre = require("hardhat");
 
-module.exports = async function ({ getNamedAccounts, deployments }) {
+const bridgeConfig = require("../constants/bridgeConfig.json");
+const { vaultChain } = require("../utils");
+
+const TOKEN = "USDC";
+
+async function main() {
   const config = bridgeConfig[hre.network.name];
   const vaultConfig = bridgeConfig[vaultChain(hre.network.name)];
 
@@ -59,4 +64,4 @@ module.exports = async function ({ getNamedAccounts, deployments }) {
   });
 };
 
-module.exports.tags = ["BeefyPendleStrategyDeploy"];
+main();
