@@ -44,7 +44,7 @@ export interface BeefyPendleStrategyInterface extends Interface {
       | "forceResumeReceive"
       | "getConfig"
       | "getEthSignedMessageHash"
-      | "getQuoteOnCamelotWithDecimals6"
+      | "getQuoteOnCamelot"
       | "getTrustedRemoteAddress"
       | "harvest"
       | "harvester"
@@ -196,7 +196,7 @@ export interface BeefyPendleStrategyInterface extends Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "getQuoteOnCamelotWithDecimals6",
+    functionFragment: "getQuoteOnCamelot",
     values: [AddressLike[], BigNumberish]
   ): string;
   encodeFunctionData(
@@ -483,7 +483,7 @@ export interface BeefyPendleStrategyInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getQuoteOnCamelotWithDecimals6",
+    functionFragment: "getQuoteOnCamelot",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -1083,7 +1083,7 @@ export interface BeefyPendleStrategy extends BaseContract {
     "view"
   >;
 
-  getQuoteOnCamelotWithDecimals6: TypedContractMethod<
+  getQuoteOnCamelot: TypedContractMethod<
     [tokensChain: AddressLike[], amountIn: BigNumberish],
     [bigint],
     "view"
@@ -1509,7 +1509,7 @@ export interface BeefyPendleStrategy extends BaseContract {
     nameOrSignature: "getEthSignedMessageHash"
   ): TypedContractMethod<[_messageHash: BytesLike], [string], "view">;
   getFunction(
-    nameOrSignature: "getQuoteOnCamelotWithDecimals6"
+    nameOrSignature: "getQuoteOnCamelot"
   ): TypedContractMethod<
     [tokensChain: AddressLike[], amountIn: BigNumberish],
     [bigint],

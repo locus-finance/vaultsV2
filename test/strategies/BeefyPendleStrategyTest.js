@@ -258,7 +258,7 @@ describe("BeefyPendleStrategy", function () {
     let ratio = (await vault.strategies(110, strategy)).debtRatio;
 
     // console.log(totalDebt, debtOutstanding, credit, ratio, signature);
-    
+    console.log("balance before", balanceBefore.toString());
     console.log((await strategy.estimatedTotalAssets()).toString());
     await strategy.connect(deployer).harvest(totalDebt, debtOutstanding, credit, ratio, signature);
     console.log((await strategy.estimatedTotalAssets()).toString());
