@@ -251,11 +251,17 @@ describe("BeefyPendleStrategy", function () {
     const { strategy, vault, deployer, want } = await loadFixture(deployFixture);
     let signature = await sign(strategy, deployer);
 
+    console.log('before deposit');
+    console.log((await vault.connect(deployer).pricePerShare()).toString());
+
     const balanceBefore = await want.balanceOf(deployer.address);
     // console.log(balanceBefore.toString());
     await want.connect(deployer).approve(vault, ethers.parseEther("10000"))
     await vault.connect(deployer)["deposit(uint256,address)"](balanceBefore, deployer.address);
     expect(await want.balanceOf(vault)).to.equal(balanceBefore);
+
+    console.log('before harvest after deposit');
+    console.log((await vault.connect(deployer).pricePerShare()).toString());
 
     let totalDebt = (await vault.strategies(110, strategy)).totalDebt;
     let debtOutstanding = await vault.debtOutstanding(110, strategy);
@@ -269,6 +275,9 @@ describe("BeefyPendleStrategy", function () {
     );
     expect(await want.balanceOf(await strategy.getAddress())).to.eq(0);
 
+    console.log('after first harvest after deposit');
+    console.log((await vault.connect(deployer).pricePerShare()).toString());
+
     let eta = await strategy.estimatedTotalAssets();
     await time.increase(60 * 60 * 24 * 15)
 
@@ -281,6 +290,9 @@ describe("BeefyPendleStrategy", function () {
     await strategy.connect(deployer).harvest(totalDebt, debtOutstanding, credit, ratio, signature);
     expect(await strategy.estimatedTotalAssets()).to.be.greaterThan(eta);
 
+    console.log('after second harvest after deposit');
+    console.log((await vault.connect(deployer).pricePerShare()).toString());
+
     await vault
       .connect(deployer)
     ["withdraw(uint256,address,uint256)"](
@@ -289,10 +301,15 @@ describe("BeefyPendleStrategy", function () {
       1000
     );
 
+    console.log('after withdrawal request creation');
+    console.log((await vault.connect(deployer).pricePerShare()).toString());
+
     let tx = await vault.connect(deployer).handleWithdrawals();
     await tx.wait();
     expect((await want.balanceOf(deployer.address))).to.be.lessThan(
       balanceBefore
     );
+    console.log('after withdrawal handling');
+    console.log((await vault.connect(deployer).pricePerShare()).toString());
   });
 });
