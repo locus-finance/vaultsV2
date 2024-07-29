@@ -46,6 +46,18 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ENSResolver__factory>;
     getContractFactory(
+      name: "IAlgebraSwapCallback",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IAlgebraSwapCallback__factory>;
+    getContractFactory(
+      name: "IAlgebraFactory",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IAlgebraFactory__factory>;
+    getContractFactory(
+      name: "ISwapRouter",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ISwapRouter__factory>;
+    getContractFactory(
       name: "ILayerZeroEndpointUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ILayerZeroEndpointUpgradeable__factory>;
@@ -158,14 +170,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Ownable__factory>;
     getContractFactory(
-      name: "IERC1822Proxiable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IERC1822Proxiable__factory>;
-    getContractFactory(
-      name: "IBeacon",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IBeacon__factory>;
-    getContractFactory(
       name: "ERC20",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.ERC20__factory>;
@@ -189,6 +193,82 @@ declare module "hardhat/types/runtime" {
       name: "IERC165",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165__factory>;
+    getContractFactory(
+      name: "Errors",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Errors__factory>;
+    getContractFactory(
+      name: "IPActionAddRemoveLiqV3",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPActionAddRemoveLiqV3__factory>;
+    getContractFactory(
+      name: "IPActionCallbackV3",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPActionCallbackV3__factory>;
+    getContractFactory(
+      name: "IPActionMiscV3",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPActionMiscV3__factory>;
+    getContractFactory(
+      name: "IPActionStorageV4",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPActionStorageV4__factory>;
+    getContractFactory(
+      name: "IPActionSwapPTV3",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPActionSwapPTV3__factory>;
+    getContractFactory(
+      name: "IPActionSwapYTV3",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPActionSwapYTV3__factory>;
+    getContractFactory(
+      name: "IPAllActionV3",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPAllActionV3__factory>;
+    getContractFactory(
+      name: "IPGauge",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPGauge__factory>;
+    getContractFactory(
+      name: "IPInterestManagerYT",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPInterestManagerYT__factory>;
+    getContractFactory(
+      name: "IPLimitRouter",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPLimitRouter__factory>;
+    getContractFactory(
+      name: "IPLimitRouterCallback",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPLimitRouterCallback__factory>;
+    getContractFactory(
+      name: "IPMarket",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPMarket__factory>;
+    getContractFactory(
+      name: "IPMarketSwapCallback",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPMarketSwapCallback__factory>;
+    getContractFactory(
+      name: "IPPrincipalToken",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPPrincipalToken__factory>;
+    getContractFactory(
+      name: "IPYieldToken",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPYieldToken__factory>;
+    getContractFactory(
+      name: "IRewardManager",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IRewardManager__factory>;
+    getContractFactory(
+      name: "IStandardizedYield",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IStandardizedYield__factory>;
+    getContractFactory(
+      name: "IPSwapAggregator",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IPSwapAggregator__factory>;
     getContractFactory(
       name: "IUniswapV3SwapCallback",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -245,6 +325,10 @@ declare module "hardhat/types/runtime" {
       name: "IBeefyVault",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IBeefyVault__factory>;
+    getContractFactory(
+      name: "IGetGlobalStateFromPool",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IGetGlobalStateFromPool__factory>;
     getContractFactory(
       name: "IFactory",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -398,6 +482,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.BeefyCurveStrategy__factory>;
     getContractFactory(
+      name: "BeefyPendleStrategy",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.BeefyPendleStrategy__factory>;
+    getContractFactory(
       name: "HopStrategy",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.HopStrategy__factory>;
@@ -413,6 +501,10 @@ declare module "hardhat/types/runtime" {
       name: "VelodromeStrategy",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.VelodromeStrategy__factory>;
+    getContractFactory(
+      name: "BeefyPendleStrategyLib",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.BeefyPendleStrategyLib__factory>;
     getContractFactory(
       name: "SaverStrategy",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -471,6 +563,21 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.ENSResolver>;
     getContractAt(
+      name: "IAlgebraSwapCallback",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IAlgebraSwapCallback>;
+    getContractAt(
+      name: "IAlgebraFactory",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IAlgebraFactory>;
+    getContractAt(
+      name: "ISwapRouter",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ISwapRouter>;
+    getContractAt(
       name: "ILayerZeroEndpointUpgradeable",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -611,16 +718,6 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.Ownable>;
     getContractAt(
-      name: "IERC1822Proxiable",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IERC1822Proxiable>;
-    getContractAt(
-      name: "IBeacon",
-      address: string | ethers.Addressable,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IBeacon>;
-    getContractAt(
       name: "ERC20",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -650,6 +747,101 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.IERC165>;
+    getContractAt(
+      name: "Errors",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.Errors>;
+    getContractAt(
+      name: "IPActionAddRemoveLiqV3",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPActionAddRemoveLiqV3>;
+    getContractAt(
+      name: "IPActionCallbackV3",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPActionCallbackV3>;
+    getContractAt(
+      name: "IPActionMiscV3",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPActionMiscV3>;
+    getContractAt(
+      name: "IPActionStorageV4",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPActionStorageV4>;
+    getContractAt(
+      name: "IPActionSwapPTV3",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPActionSwapPTV3>;
+    getContractAt(
+      name: "IPActionSwapYTV3",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPActionSwapYTV3>;
+    getContractAt(
+      name: "IPAllActionV3",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPAllActionV3>;
+    getContractAt(
+      name: "IPGauge",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPGauge>;
+    getContractAt(
+      name: "IPInterestManagerYT",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPInterestManagerYT>;
+    getContractAt(
+      name: "IPLimitRouter",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPLimitRouter>;
+    getContractAt(
+      name: "IPLimitRouterCallback",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPLimitRouterCallback>;
+    getContractAt(
+      name: "IPMarket",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPMarket>;
+    getContractAt(
+      name: "IPMarketSwapCallback",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPMarketSwapCallback>;
+    getContractAt(
+      name: "IPPrincipalToken",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPPrincipalToken>;
+    getContractAt(
+      name: "IPYieldToken",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPYieldToken>;
+    getContractAt(
+      name: "IRewardManager",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IRewardManager>;
+    getContractAt(
+      name: "IStandardizedYield",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IStandardizedYield>;
+    getContractAt(
+      name: "IPSwapAggregator",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IPSwapAggregator>;
     getContractAt(
       name: "IUniswapV3SwapCallback",
       address: string | ethers.Addressable,
@@ -720,6 +912,11 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.IBeefyVault>;
+    getContractAt(
+      name: "IGetGlobalStateFromPool",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IGetGlobalStateFromPool>;
     getContractAt(
       name: "IFactory",
       address: string | ethers.Addressable,
@@ -911,6 +1108,11 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.BeefyCurveStrategy>;
     getContractAt(
+      name: "BeefyPendleStrategy",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.BeefyPendleStrategy>;
+    getContractAt(
       name: "HopStrategy",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
@@ -930,6 +1132,11 @@ declare module "hardhat/types/runtime" {
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.VelodromeStrategy>;
+    getContractAt(
+      name: "BeefyPendleStrategyLib",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.BeefyPendleStrategyLib>;
     getContractAt(
       name: "SaverStrategy",
       address: string | ethers.Addressable,
@@ -984,6 +1191,18 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ENSResolver>;
     deployContract(
+      name: "IAlgebraSwapCallback",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAlgebraSwapCallback>;
+    deployContract(
+      name: "IAlgebraFactory",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAlgebraFactory>;
+    deployContract(
+      name: "ISwapRouter",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ISwapRouter>;
+    deployContract(
       name: "ILayerZeroEndpointUpgradeable",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ILayerZeroEndpointUpgradeable>;
@@ -1096,14 +1315,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Ownable>;
     deployContract(
-      name: "IERC1822Proxiable",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IERC1822Proxiable>;
-    deployContract(
-      name: "IBeacon",
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IBeacon>;
-    deployContract(
       name: "ERC20",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ERC20>;
@@ -1127,6 +1338,82 @@ declare module "hardhat/types/runtime" {
       name: "IERC165",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC165>;
+    deployContract(
+      name: "Errors",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.Errors>;
+    deployContract(
+      name: "IPActionAddRemoveLiqV3",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPActionAddRemoveLiqV3>;
+    deployContract(
+      name: "IPActionCallbackV3",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPActionCallbackV3>;
+    deployContract(
+      name: "IPActionMiscV3",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPActionMiscV3>;
+    deployContract(
+      name: "IPActionStorageV4",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPActionStorageV4>;
+    deployContract(
+      name: "IPActionSwapPTV3",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPActionSwapPTV3>;
+    deployContract(
+      name: "IPActionSwapYTV3",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPActionSwapYTV3>;
+    deployContract(
+      name: "IPAllActionV3",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPAllActionV3>;
+    deployContract(
+      name: "IPGauge",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPGauge>;
+    deployContract(
+      name: "IPInterestManagerYT",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPInterestManagerYT>;
+    deployContract(
+      name: "IPLimitRouter",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPLimitRouter>;
+    deployContract(
+      name: "IPLimitRouterCallback",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPLimitRouterCallback>;
+    deployContract(
+      name: "IPMarket",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPMarket>;
+    deployContract(
+      name: "IPMarketSwapCallback",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPMarketSwapCallback>;
+    deployContract(
+      name: "IPPrincipalToken",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPPrincipalToken>;
+    deployContract(
+      name: "IPYieldToken",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPYieldToken>;
+    deployContract(
+      name: "IRewardManager",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IRewardManager>;
+    deployContract(
+      name: "IStandardizedYield",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IStandardizedYield>;
+    deployContract(
+      name: "IPSwapAggregator",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPSwapAggregator>;
     deployContract(
       name: "IUniswapV3SwapCallback",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1183,6 +1470,10 @@ declare module "hardhat/types/runtime" {
       name: "IBeefyVault",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IBeefyVault>;
+    deployContract(
+      name: "IGetGlobalStateFromPool",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IGetGlobalStateFromPool>;
     deployContract(
       name: "IFactory",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1336,6 +1627,10 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.BeefyCurveStrategy>;
     deployContract(
+      name: "BeefyPendleStrategy",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.BeefyPendleStrategy>;
+    deployContract(
       name: "HopStrategy",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.HopStrategy>;
@@ -1351,6 +1646,10 @@ declare module "hardhat/types/runtime" {
       name: "VelodromeStrategy",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.VelodromeStrategy>;
+    deployContract(
+      name: "BeefyPendleStrategyLib",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.BeefyPendleStrategyLib>;
     deployContract(
       name: "SaverStrategy",
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1409,6 +1708,21 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.ENSResolver>;
     deployContract(
+      name: "IAlgebraSwapCallback",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAlgebraSwapCallback>;
+    deployContract(
+      name: "IAlgebraFactory",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IAlgebraFactory>;
+    deployContract(
+      name: "ISwapRouter",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ISwapRouter>;
+    deployContract(
       name: "ILayerZeroEndpointUpgradeable",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1549,16 +1863,6 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Ownable>;
     deployContract(
-      name: "IERC1822Proxiable",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IERC1822Proxiable>;
-    deployContract(
-      name: "IBeacon",
-      args: any[],
-      signerOrOptions?: ethers.Signer | DeployContractOptions
-    ): Promise<Contracts.IBeacon>;
-    deployContract(
       name: "ERC20",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1588,6 +1892,101 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IERC165>;
+    deployContract(
+      name: "Errors",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.Errors>;
+    deployContract(
+      name: "IPActionAddRemoveLiqV3",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPActionAddRemoveLiqV3>;
+    deployContract(
+      name: "IPActionCallbackV3",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPActionCallbackV3>;
+    deployContract(
+      name: "IPActionMiscV3",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPActionMiscV3>;
+    deployContract(
+      name: "IPActionStorageV4",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPActionStorageV4>;
+    deployContract(
+      name: "IPActionSwapPTV3",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPActionSwapPTV3>;
+    deployContract(
+      name: "IPActionSwapYTV3",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPActionSwapYTV3>;
+    deployContract(
+      name: "IPAllActionV3",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPAllActionV3>;
+    deployContract(
+      name: "IPGauge",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPGauge>;
+    deployContract(
+      name: "IPInterestManagerYT",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPInterestManagerYT>;
+    deployContract(
+      name: "IPLimitRouter",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPLimitRouter>;
+    deployContract(
+      name: "IPLimitRouterCallback",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPLimitRouterCallback>;
+    deployContract(
+      name: "IPMarket",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPMarket>;
+    deployContract(
+      name: "IPMarketSwapCallback",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPMarketSwapCallback>;
+    deployContract(
+      name: "IPPrincipalToken",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPPrincipalToken>;
+    deployContract(
+      name: "IPYieldToken",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPYieldToken>;
+    deployContract(
+      name: "IRewardManager",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IRewardManager>;
+    deployContract(
+      name: "IStandardizedYield",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IStandardizedYield>;
+    deployContract(
+      name: "IPSwapAggregator",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IPSwapAggregator>;
     deployContract(
       name: "IUniswapV3SwapCallback",
       args: any[],
@@ -1658,6 +2057,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.IBeefyVault>;
+    deployContract(
+      name: "IGetGlobalStateFromPool",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.IGetGlobalStateFromPool>;
     deployContract(
       name: "IFactory",
       args: any[],
@@ -1849,6 +2253,11 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.BeefyCurveStrategy>;
     deployContract(
+      name: "BeefyPendleStrategy",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.BeefyPendleStrategy>;
+    deployContract(
       name: "HopStrategy",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
@@ -1868,6 +2277,11 @@ declare module "hardhat/types/runtime" {
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.VelodromeStrategy>;
+    deployContract(
+      name: "BeefyPendleStrategyLib",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.BeefyPendleStrategyLib>;
     deployContract(
       name: "SaverStrategy",
       args: any[],

@@ -64,6 +64,11 @@
       "address": "0xC4E7d7c15b8F5c2D77512460b84802D1D3693692",
       "txHash": "0x03c2b11996384cd6e13698b015b516333daa5556157837c398bd0ea39085fb97",
       "kind": "uups"
+    },
+    {
+      "address": "0xCA271d0DBd646d64423432dE8D0aa6300C9CDDF5",
+      "txHash": "0xf639a6edd19874b57dbcf3699929cf208179b3d2a7347ff4538ff56fa4554031",
+      "kind": "uups"
     }
   ],
   "impls": {
@@ -10914,6 +10919,639 @@
           "t_uint256": {
             "label": "uint256",
             "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    },
+    "6edd9e4393fc2b799876fd1ea89cc0c0df5d94b25ba106ba99fcbe377ef5c870": {
+      "address": "0xC1c27C2F979E1DBC38C406887B8F825B8254fEBa",
+      "txHash": "0xfd16d433d18d21ab36424b646cebf448f491267d6a5f5329fbcf27bad027e529",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:62",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:67"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:36"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "lzEndpoint",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_contract(ILayerZeroEndpointUpgradeable)413",
+            "contract": "LzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:20"
+          },
+          {
+            "label": "trustedRemoteLookup",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_mapping(t_uint16,t_bytes_storage)",
+            "contract": "LzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:21"
+          },
+          {
+            "label": "minDstGasLookup",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_mapping(t_uint16,t_mapping(t_uint16,t_uint256))",
+            "contract": "LzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:22"
+          },
+          {
+            "label": "payloadSizeLimitLookup",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_mapping(t_uint16,t_uint256)",
+            "contract": "LzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:23"
+          },
+          {
+            "label": "precrime",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_address",
+            "contract": "LzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:24"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "106",
+            "type": "t_array(t_uint256)45_storage",
+            "contract": "LzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\LzAppUpgradeable.sol:150"
+          },
+          {
+            "label": "failedMessages",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_mapping(t_uint16,t_mapping(t_bytes_memory_ptr,t_mapping(t_uint64,t_bytes32)))",
+            "contract": "NonblockingLzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\NonblockingLzAppUpgradeable.sol:23"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "NonblockingLzAppUpgradeable",
+            "src": "@layerzerolabs\\solidity-examples\\contracts\\contracts-upgradable\\lzApp\\NonblockingLzAppUpgradeable.sol:68"
+          },
+          {
+            "label": "strategist",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_address",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:104"
+          },
+          {
+            "label": "harvester",
+            "offset": 0,
+            "slot": "202",
+            "type": "t_address",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:105"
+          },
+          {
+            "label": "want",
+            "offset": 0,
+            "slot": "203",
+            "type": "t_contract(IERC20)4693",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:106"
+          },
+          {
+            "label": "vault",
+            "offset": 0,
+            "slot": "204",
+            "type": "t_address",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:107"
+          },
+          {
+            "label": "vaultChainId",
+            "offset": 20,
+            "slot": "204",
+            "type": "t_uint16",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:108"
+          },
+          {
+            "label": "currentChainId",
+            "offset": 22,
+            "slot": "204",
+            "type": "t_uint16",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:109"
+          },
+          {
+            "label": "wantDecimals",
+            "offset": 24,
+            "slot": "204",
+            "type": "t_uint8",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:110"
+          },
+          {
+            "label": "slippage",
+            "offset": 0,
+            "slot": "205",
+            "type": "t_uint256",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:111"
+          },
+          {
+            "label": "emergencyExit",
+            "offset": 0,
+            "slot": "206",
+            "type": "t_bool",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:112"
+          },
+          {
+            "label": "sgBridge",
+            "offset": 1,
+            "slot": "206",
+            "type": "t_contract(ISgBridge)18969",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:113"
+          },
+          {
+            "label": "sgRouter",
+            "offset": 0,
+            "slot": "207",
+            "type": "t_contract(IStargateRouter)18891",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:114"
+          },
+          {
+            "label": "performanceFee",
+            "offset": 0,
+            "slot": "208",
+            "type": "t_uint256",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:116"
+          },
+          {
+            "label": "managementFee",
+            "offset": 0,
+            "slot": "209",
+            "type": "t_uint256",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:117"
+          },
+          {
+            "label": "lastReport",
+            "offset": 0,
+            "slot": "210",
+            "type": "t_uint256",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:119"
+          },
+          {
+            "label": "treasury",
+            "offset": 0,
+            "slot": "211",
+            "type": "t_address",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:120"
+          },
+          {
+            "label": "feeThreshold",
+            "offset": 0,
+            "slot": "212",
+            "type": "t_uint256",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:121"
+          },
+          {
+            "label": "withdrawnInEpoch",
+            "offset": 0,
+            "slot": "213",
+            "type": "t_mapping(t_uint256,t_bool)",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:123"
+          },
+          {
+            "label": "_signNonce",
+            "offset": 0,
+            "slot": "214",
+            "type": "t_uint256",
+            "contract": "BaseStrategy",
+            "src": "contracts\\BaseStrategy.sol:125"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "215",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC1967UpgradeUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\ERC1967\\ERC1967UpgradeUpgradeable.sol:211"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "265",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "UUPSUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\UUPSUpgradeable.sol:107"
+          },
+          {
+            "label": "emptySwap",
+            "offset": 0,
+            "slot": "315",
+            "type": "t_struct(SwapData)17198_storage",
+            "contract": "BeefyPendleStrategy",
+            "src": "contracts\\strategies\\BeefyPendleStrategy.sol:26"
+          },
+          {
+            "label": "emptyLimit",
+            "offset": 0,
+            "slot": "318",
+            "type": "t_struct(LimitOrderData)13704_storage",
+            "contract": "BeefyPendleStrategy",
+            "src": "contracts\\strategies\\BeefyPendleStrategy.sol:28"
+          },
+          {
+            "label": "defaultApprox",
+            "offset": 0,
+            "slot": "323",
+            "type": "t_struct(ApproxParams)15299_storage",
+            "contract": "BeefyPendleStrategy",
+            "src": "contracts\\strategies\\BeefyPendleStrategy.sol:30"
+          },
+          {
+            "label": "durationForPendleOracle",
+            "offset": 0,
+            "slot": "328",
+            "type": "t_uint32",
+            "contract": "BeefyPendleStrategy",
+            "src": "contracts\\strategies\\BeefyPendleStrategy.sol:31"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_struct(FillOrderParams)13851_storage)dyn_storage": {
+            "label": "struct FillOrderParams[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)45_storage": {
+            "label": "uint256[45]",
+            "numberOfBytes": "1440"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_bytes_memory_ptr": {
+            "label": "bytes",
+            "numberOfBytes": "32"
+          },
+          "t_bytes_storage": {
+            "label": "bytes",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IERC20)4693": {
+            "label": "contract IERC20",
+            "numberOfBytes": "20"
+          },
+          "t_contract(ILayerZeroEndpointUpgradeable)413": {
+            "label": "contract ILayerZeroEndpointUpgradeable",
+            "numberOfBytes": "20"
+          },
+          "t_contract(ISgBridge)18969": {
+            "label": "contract ISgBridge",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IStargateRouter)18891": {
+            "label": "contract IStargateRouter",
+            "numberOfBytes": "20"
+          },
+          "t_enum(OrderType)13771": {
+            "label": "enum IPLimitOrderType.OrderType",
+            "members": [
+              "SY_FOR_PT",
+              "PT_FOR_SY",
+              "SY_FOR_YT",
+              "YT_FOR_SY"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(SwapType)17203": {
+            "label": "enum SwapType",
+            "members": [
+              "NONE",
+              "KYBERSWAP",
+              "ONE_INCH",
+              "ETH_WETH"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_bytes_memory_ptr,t_mapping(t_uint64,t_bytes32))": {
+            "label": "mapping(bytes => mapping(uint64 => bytes32))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_bytes_storage)": {
+            "label": "mapping(uint16 => bytes)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_mapping(t_bytes_memory_ptr,t_mapping(t_uint64,t_bytes32)))": {
+            "label": "mapping(uint16 => mapping(bytes => mapping(uint64 => bytes32)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_mapping(t_uint16,t_uint256))": {
+            "label": "mapping(uint16 => mapping(uint16 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint16,t_uint256)": {
+            "label": "mapping(uint16 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint64,t_bytes32)": {
+            "label": "mapping(uint64 => bytes32)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(ApproxParams)15299_storage": {
+            "label": "struct ApproxParams",
+            "members": [
+              {
+                "label": "guessMin",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "guessMax",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "guessOffchain",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "maxIteration",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "eps",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_struct(FillOrderParams)13851_storage": {
+            "label": "struct FillOrderParams",
+            "members": [
+              {
+                "label": "order",
+                "type": "t_struct(Order)13843_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "signature",
+                "type": "t_bytes_storage",
+                "offset": 0,
+                "slot": "11"
+              },
+              {
+                "label": "makingAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "12"
+              }
+            ],
+            "numberOfBytes": "416"
+          },
+          "t_struct(LimitOrderData)13704_storage": {
+            "label": "struct LimitOrderData",
+            "members": [
+              {
+                "label": "limitRouter",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "epsSkipMarket",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "normalFills",
+                "type": "t_array(t_struct(FillOrderParams)13851_storage)dyn_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "flashFills",
+                "type": "t_array(t_struct(FillOrderParams)13851_storage)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "optData",
+                "type": "t_bytes_storage",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_struct(Order)13843_storage": {
+            "label": "struct Order",
+            "members": [
+              {
+                "label": "salt",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "expiry",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "nonce",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "orderType",
+                "type": "t_enum(OrderType)13771",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 1,
+                "slot": "3"
+              },
+              {
+                "label": "YT",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "maker",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "receiver",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "makingAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "lnImpliedRate",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "failSafeRate",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "permit",
+                "type": "t_bytes_storage",
+                "offset": 0,
+                "slot": "10"
+              }
+            ],
+            "numberOfBytes": "352"
+          },
+          "t_struct(SwapData)17198_storage": {
+            "label": "struct SwapData",
+            "members": [
+              {
+                "label": "swapType",
+                "type": "t_enum(SwapType)17203",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "extRouter",
+                "type": "t_address",
+                "offset": 1,
+                "slot": "0"
+              },
+              {
+                "label": "extCalldata",
+                "type": "t_bytes_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "needScale",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint32": {
+            "label": "uint32",
+            "numberOfBytes": "4"
           },
           "t_uint64": {
             "label": "uint64",
